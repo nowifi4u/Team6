@@ -33,5 +33,5 @@
 
 *Debug
 *x64
-src/boost_any
+*boost*
 .vs

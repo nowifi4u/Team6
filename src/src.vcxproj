@@ -79,12 +79,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>D:\Documents\source\packages\boost_1_74_0;$(IncludePath)</IncludePath>
-    <SourcePath>$(VC_SourcePath)\boost_1_74_0;$(SourcePath)</SourcePath>
+    <SourcePath>$(VC_SourcePath)\libs\boost_1_74_0;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>D:\Documents\source\packages\boost_1_74_0;$(IncludePath)</IncludePath>
-    <SourcePath>$(VC_SourcePath)\boost_1_74_0;$(SourcePath)</SourcePath>
+    <SourcePath>$(VC_SourcePath)\libs\boost_1_74_0;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
