@@ -9,21 +9,21 @@ namespace gr {
 
 	using boost::property_tree::ptree;
 
-	struct VertexProps
+	struct VertexProperties
 	{
 		std::string name;
 		uint32_t post_idx;
 		uint64_t color;
 	};
 
-	struct EdgeProps
+	struct EdgeProperties
 	{
 		std::string name;
 		double length;
 		uint64_t color;
 	};
 
-	struct GraphProps
+	struct GraphProperties
 	{
 		std::string name;
 		uint32_t idx;
@@ -33,9 +33,9 @@ namespace gr {
 		boost::vecS, // edge container type
 		boost::vecS, // verte container type
 		boost::directedS,
-		VertexProps,
-		EdgeProps,
-		GraphProps
+		VertexProperties,
+		EdgeProperties,
+		GraphProperties
 	>;
 
 	using vertex_t = boost::graph_traits<graph_t>::vertex_descriptor;

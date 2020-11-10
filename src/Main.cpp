@@ -22,7 +22,7 @@ int main()
 	gr::vertex_iterator v, vend;
 	for (boost::tie(v, vend) = boost::vertices(graph); v != vend; ++v)
 	{
-		const gr::VertexProps& vertex = graph[*v];
+		const gr::VertexProperties& vertex = graph[*v];
 
 		std::cout << "id:" << *v
 			<< " name:" << vertex.name
@@ -35,7 +35,7 @@ int main()
 	gr::edge_iterator e, eend;
 	for (boost::tie(e, eend) = boost::edges(graph); e != eend; ++e)
 	{
-		const gr::EdgeProps& edge = graph[*e];
+		const gr::EdgeProperties& edge = graph[*e];
 
 		std::cout << "id:" << *e
 			<< " name:" << edge.name
