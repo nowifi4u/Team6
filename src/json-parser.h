@@ -17,7 +17,8 @@ namespace gr {
 
 	graph_t importGraph(const boost::property_tree::ptree& pt, graph_t& graph, vertexMap_t& vertexMap, edgeMap_t& edgeMap)
 	{
-		
+		graph.m_property->name = pt.get<std::string>("name");
+		graph.m_property->idx = pt.get<uint32_t>("idx");
 
 		for (const auto& point : pt.get_child("points"))
 		{
