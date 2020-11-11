@@ -1,6 +1,6 @@
 #include "json-parser.h"
+#include "render.h"
 
-#include <boost/graph/graphviz.hpp>
 
 #include <iomanip>
 
@@ -10,15 +10,41 @@ int main()
 	gr::vertexMap_t vertexMap;
 	gr::edgeMap_t edgeMap;
 
-	try {
-		gr::graph_t graph = gr::importGraph("small_graph.json", vertexMap, edgeMap);
-		gr::print_graph(std::cout, graph);
+	gr::importGraph(pt, graph, vertexMap, edgeMap);
+
+	auto graph_vertices = boost::vertices(graph);
+
+	std::cout << "vertices:" << std::endl;
+	gr::vertex_iterator v, vend;
+	for (boost::tie(v, vend) = boost::vertices(graph); v != vend; ++v)
+	{
+		const gr::VertexProperties& vertex = gr::properties(graph, v);
+
+		std::cout << "id:" << *v
+			<< " idx:" << vertex.idx
+			<< " post_idx:" << vertex.post_idx
+			<< " color:" << vertex.color
+			<< std::endl;
 	}
 	catch (boost::property_tree::json_parser_error err) {}
 
-	
+	std::cout << std::endl << "edges:" << std::endl;
+	gr::edge_iterator e, eend;
+	for (boost::tie(e, eend) = boost::edges(graph); e != eend; ++e)
+	{
+		const gr::EdgeProperties& edge = gr::properties(graph, e);
 
-	//boost::write_graphviz(std::cout, graph);
+		std::cout << "id:" << *e
+			<< " idx:" << edge.idx
+			<< " length:" << edge.length
+			<< " color:" << edge.color
+			<< std::endl;
+	}
+
+	std::cout << std::endl;
+	//gr::writeGraphDot(std::cout, graph);
+	gr::renderCoords(graph);
+	
 
 	return 0;
 }

@@ -26,20 +26,19 @@ namespace gr {
 		ptree pt = jsonParserInit(filename);
 
 		// Read Graph properties
-		graph_t graph;
-
-		//graph.m_property->idx = pt.get<uint32_t>("idx"); // idx
+		properties(graph).name = pt.get<std::string>("name");	// name
+		properties(graph).idx = pt.get<uint32_t>("idx");		// idx
 
 		// Read Vertex properties
 		for (const auto& point : pt.get_child("points"))
 		{
 			uint32_t idx = point.second.get<uint32_t>("idx");
 
-			vertex_t v = boost::add_vertex(VertexProperties
-				{
-				std::to_string(idx),															// name
-				point.second.get_optional<uint32_t>("post_idx").get_value_or(uint32_t_max)		// post_idx
-				}, graph);
+			vertex_descriptor v = boost::add_vertex(graph);
+
+			properties(graph, v).descriptor = v;
+			properties(graph, v).idx = idx;
+			properties(graph, v).post_idx = point.second.get_optional<uint32_t>("post_idx").get_value_or(uint32_t_max);
 
 			vertexMap[idx] = v;
 		}
@@ -50,11 +49,11 @@ namespace gr {
 			uint32_t idx = line.second.get<uint32_t>("idx");
 			auto pts = as_vector<uint32_t>(line.second, "points");
 
-			edge_t e = boost::add_edge(vertexMap[pts[0]], vertexMap[pts[1]], EdgeProperties
-				{
-				std::to_string(idx),					// name
-				line.second.get<double>("length")		// length
-				}, graph).first;
+			edge_descriptor e = boost::add_edge(vertexMap[pts[0]], vertexMap[pts[1]], graph).first;
+
+			properties(graph, e).descriptor = e;
+			properties(graph, e).idx = idx;
+			properties(graph, e).length = line.second.get<double>("length");
 
 			edgeMap[idx] = e;
 		}
