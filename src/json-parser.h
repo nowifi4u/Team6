@@ -15,11 +15,25 @@ namespace gr {
 
 	static constexpr uint32_t uint32_t_max = std::numeric_limits<uint32_t>::max();
 
-	graph_t importGraph(const boost::property_tree::ptree& pt, graph_t& graph, vertexMap_t& vertexMap, edgeMap_t& edgeMap)
+	ptree jsonParserInit(const char* filename) {
+		gr::ptree pt;
+		try {
+			boost::property_tree::read_json("small_graph.json", pt);
+		}
+		catch (boost::property_tree::json_parser_error error) {
+			return boost::property_tree::ptree();
+		}
+		return pt;
+	}
+
+	graph_t importGraph(const char* filename, vertexMap_t& vertexMap, edgeMap_t& edgeMap)
 	{
+		ptree pt = jsonParserInit(filename);
+
 		// Read Graph properties
-		graph.m_property->name = pt.get<std::string>("name"); // name
-		graph.m_property->idx = pt.get<uint32_t>("idx"); // idx
+		graph_t graph;
+
+		//graph.m_property->idx = pt.get<uint32_t>("idx"); // idx
 
 		// Read Vertex properties
 		for (const auto& point : pt.get_child("points"))
@@ -50,7 +64,11 @@ namespace gr {
 			edgeMap[idx] = e;
 		}
 
+		graph.m_property->name = pt.get<std::string>("name"); // name
+
 		return graph;
 	}
+
+
 
 } // namespace gr
