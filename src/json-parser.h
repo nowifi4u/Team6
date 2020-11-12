@@ -17,12 +17,7 @@ namespace gr {
 
 	ptree jsonParserInit(const char* filename) {
 		gr::ptree pt;
-		try {
-			boost::property_tree::read_json("small_graph.json", pt);
-		}
-		catch (boost::property_tree::json_parser_error error) {
-			return boost::property_tree::ptree();
-		}
+		boost::property_tree::read_json("small_graph.json", pt); 
 		return pt;
 	}
 
@@ -68,7 +63,5 @@ namespace gr {
 
 		return graph;
 	}
-
-
 
 } // namespace gr

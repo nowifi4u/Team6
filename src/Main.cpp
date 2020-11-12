@@ -10,9 +10,13 @@ int main()
 	gr::vertexMap_t vertexMap;
 	gr::edgeMap_t edgeMap;
 
-	gr::graph_t graph = gr::importGraph("small_graph.json", vertexMap, edgeMap);
+	try {
+		gr::graph_t graph = gr::importGraph("small_graph.json", vertexMap, edgeMap);
+		gr::print_graph(std::cout, graph);
+	}
+	catch (boost::property_tree::json_parser_error err) {}
 
-	gr::print_graph(std::cout, graph);
+	
 
 	//boost::write_graphviz(std::cout, graph);
 
