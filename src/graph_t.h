@@ -2,7 +2,6 @@
 
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/adjacency_matrix.hpp>
 #include <boost/graph/properties.hpp>
 #include <boost/graph/graphviz.hpp>
 #include <boost/property_map/property_map.hpp>
