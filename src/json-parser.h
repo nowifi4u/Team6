@@ -14,6 +14,13 @@ namespace gr {
 
 	static constexpr uint32_t uint32_null = std::numeric_limits<uint32_t>::max();
 
+	void importGraph(const std::string& filename, graph_t& g, vertexMap_t& vertexMap, edgeMap_t& edgeMap)
+	{
+		boost::property_tree::ptree pt;
+		boost::property_tree::read_json(filename, pt);
+		return importGraph(pt, g, vertexMap, edgeMap);
+	}
+
 	void importGraph(const boost::property_tree::ptree& pt, graph_t& g, vertexMap_t& vertexMap, edgeMap_t& edgeMap)
 	{
 		// Read Graph properties
