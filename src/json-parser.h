@@ -16,8 +16,6 @@ namespace gr {
 
 	void importGraph(const boost::property_tree::ptree& pt, graph_t& g, vertexMap_t& vertexMap, edgeMap_t& edgeMap)
 	{
-		ptree pt = jsonParserInit(filename);
-
 		// Read Graph properties
 		properties(g).name = pt.get<std::string>("name");	// name
 		properties(g).idx = pt.get<uint32_t>("idx");		// idx
