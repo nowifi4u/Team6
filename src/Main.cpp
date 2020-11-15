@@ -18,32 +18,7 @@ int main()
 
 	auto graph_vertices = boost::vertices(g);
 
-	std::cout << "vertices:" << std::endl;
-	gr::vertex_iterator v, vend;
-	for (boost::tie(v, vend) = boost::vertices(g); v != vend; ++v)
-	{
-		const gr::_VertexProperties& vertex = gr::properties(g, v);
-
-		std::cout << "id:" << *v
-			<< " idx:" << vertex.idx
-			<< " post_idx:" << (int32_t)vertex.post_idx
-			<< " color:" << vertex.color
-			<< std::endl;
-	}
-	catch (boost::property_tree::json_parser_error err) {}
-
-	std::cout << std::endl << "edges:" << std::endl;
-	gr::edge_iterator e, eend;
-	for (boost::tie(e, eend) = boost::edges(g); e != eend; ++e)
-	{
-		const gr::_EdgeProperties& edge = gr::properties(g, e);
-
-		std::cout << "id:" << *e
-			<< " idx:" << edge.idx
-			<< " length:" << edge.length
-			<< " color:" << edge.color
-			<< std::endl;
-	}
+	gr::print_graph(std::cout, g);
 
 	std::cout << std::endl;
 	//gr::writeGraphDot(std::cout, graph);
