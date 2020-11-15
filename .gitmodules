@@ -1,0 +1,3 @@
+[submodule "libs/graph"]
+	path = libs/graph
+	url = https://github.com/boostorg/graph
