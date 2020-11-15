@@ -24,7 +24,7 @@ namespace gr {
 	{
 		uint32_t idx;
 		uint32_t post_idx;
-		//uint64_t color; - �� ����� ������� ����������� ���������, ���������� Exterior Properties
+		uint64_t color;
 	};
 
 	using VertexProperties =
