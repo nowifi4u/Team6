@@ -6,15 +6,11 @@
 
 int main()
 {
-
-	gr::ptree pt;
-	boost::property_tree::read_json("small_graph.json", pt);
-
 	gr::graph_t g;
 	gr::vertexMap_t vmap;
 	gr::edgeMap_t emap;
 
-	gr::importGraph(pt, g, vmap, emap);
+	gr::importGraph("small_graph.json", g, vmap, emap);
 
 	auto graph_vertices = boost::vertices(g);
 
