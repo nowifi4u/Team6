@@ -24,7 +24,7 @@ namespace gr {
 	{
 		uint32_t idx;
 		uint32_t post_idx;
-		uint64_t color;
+		//uint64_t color; - �� ����� ������� ����������� ���������, ���������� Exterior Properties
 	};
 
 	using VertexProperties =
@@ -167,4 +167,36 @@ namespace gr {
 		return out;
 	}
 
+	void print_graph(std::ostream& out, const gr::graph_t& graph) {
+
+		auto graph_vertices = boost::vertices(graph);
+
+		out << "vertices:" << std::endl;
+		gr::vertex_iterator v, vend;
+		for (boost::tie(v, vend) = boost::vertices(graph); v != vend; ++v)
+		{
+			const gr::VertexProperties& vertex = graph[*v];
+
+			out << "id:" << *v
+				<< " name:" << vertex.name
+				<< " post_idx:" << vertex.post_idx
+				<< std::endl;
+		}
+
+		out << std::endl << "edges:" << std::endl;
+		gr::edge_iterator e, eend;
+		for (boost::tie(e, eend) = boost::edges(graph); e != eend; ++e)
+		{
+			const gr::EdgeProperties& edge = graph[*e];
+
+			out << "id:" << *e
+				<< " name:" << edge.name
+				<< " length:" << edge.length
+				<< std::endl;
+		}
+
+		out << std::endl;
+	}
+
 } // namespace gr
+

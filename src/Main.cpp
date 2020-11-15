@@ -30,6 +30,7 @@ int main()
 			<< " color:" << vertex.color
 			<< std::endl;
 	}
+	catch (boost::property_tree::json_parser_error err) {}
 
 	std::cout << std::endl << "edges:" << std::endl;
 	gr::edge_iterator e, eend;
