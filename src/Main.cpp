@@ -12,8 +12,6 @@ int main()
 
 	gr::importGraph("small_graph.json", g, vmap, emap);
 
-	auto graph_vertices = boost::vertices(g);
-
 	gr::print_graph(std::cout, g);
 
 	std::cout << std::endl;
