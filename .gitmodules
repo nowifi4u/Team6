@@ -1,3 +1,6 @@
 [submodule "libs/graph"]
 	path = libs/graph
 	url = https://github.com/boostorg/graph
+[submodule "libs/ogdf"]
+	path = libs/ogdf
+	url = https://github.com/ogdf/ogdf.git
