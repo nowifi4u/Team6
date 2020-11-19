@@ -1,9 +1,11 @@
 #pragma once
 #include "CoordsCalculator.h"
 
-struct kamada_kawai_done
+constexpr double eps = 0.01;
+
+struct KamadaKawaiDone
 {
-	kamada_kawai_done() : last_delta() {}
+	KamadaKawaiDone() : last_delta() {}
 
 	template<typename Graph>
 	bool operator()(double delta_p,
@@ -18,7 +20,7 @@ struct kamada_kawai_done
 			return diff < 0.01;
 		}
 		else {
-			return delta_p < 0.01;
+			return delta_p < eps;
 		}
 	}
 
