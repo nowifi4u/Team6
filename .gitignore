@@ -16,6 +16,8 @@
 *.dylib
 *.dll
 
+libs/OGDF
+
 # Fortran module files
 *.mod
 *.smod
@@ -37,3 +39,5 @@
 *boost*
 .vs
 
+*.vcxproj
+*.vcxproj.filters
