@@ -15,7 +15,7 @@ PositionMap KKSCoordsCalculator::get_coords(Graph& g, double topology_width, dou
 		boost::make_transform_value_property_map(to_double(), get(&EdgeProperties::length, g)),
 		topo,
 		boost::edge_length(unit_edge_length),
-		kamada_kawai_done()
+		KamadaKawaiDone()
 	);
 
 
