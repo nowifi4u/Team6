@@ -1,23 +1,24 @@
 #include "json-parser.h"
-#include "render.h"
-
-
+#include "KKSCoordsCalculator.h"
 #include <iomanip>
+#include <memory>
+#include <SFML/Graphics.hpp>
+
 
 int main()
 {
-	gr::graph_t g;
-	gr::vertexMap_t vmap;
-	gr::edgeMap_t emap;
+	Graph g;
 
-	gr::importGraph("small_graph.json", g, vmap, emap);
+	vertexMap vMap;
+	edgeMap eMap;
 
-	gr::print_graph(std::cout, g);
+	//catch json_parser_error!!!
+	importGraph("small_graph.json", g, vMap, eMap);
 
-	std::cout << std::endl;
-	//gr::writeGraphDot(std::cout, graph);
-	gr::renderCoords(g);
+	KKSCoordsCalculator b;
 	
+	PositionMap pos = b.get_coords(g, 200, 200, 3);
 
 	return 0;
 }
+
