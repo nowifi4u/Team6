@@ -1,6 +1,6 @@
 #include "KKSCoordsCalculator.h"
 
-PositionMap KKSCoordsCalculator::get_coords(Graph& g, double topology_width, double topology_height, double unit_edge_length)
+void KKSCoordsCalculator::calculate(Graph& g, double topology_width, double topology_height, double unit_edge_length)
 {
 	PositionVec position_vec(num_vertices(g));
 	PositionMap position(position_vec.begin(), get(boost::vertex_index, g));
@@ -19,5 +19,6 @@ PositionMap KKSCoordsCalculator::get_coords(Graph& g, double topology_width, dou
 	);
 
 
-	return position;
+	m_position_vec = std::move(position_vec);
+	m_position = boost::move(position);
 }
