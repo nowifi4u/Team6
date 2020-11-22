@@ -39,7 +39,10 @@ class KKSCoordsCalculator :
     public CoordsCalculator
 {
 public:
-	virtual PositionMap get_coords(Graph& g, double topology_width, double topology_height, double unit_edge_length);
+
+	KKSCoordsCalculator() : CoordsCalculator() {}
+
+	void calculate(Graph& g, double topology_width, double topology_height, double unit_edge_length);
 };
 
 
