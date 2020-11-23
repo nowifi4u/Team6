@@ -14,7 +14,6 @@ struct GameGtate
 
 	enum EventType
 	{
-		__EVENT__ = 0,
 		TRAIN_COLLISION = 1,
 		HIJACKERS_ASSAULT = 2,
 		PARASITES_ASSAULT = 3,
@@ -26,7 +25,7 @@ struct GameGtate
 
 	struct Event 
 	{
-		virtual constexpr EventType type() = 0;
+		virtual constexpr EventType type() const = 0;
 	};
 
 	struct Event_Parasites : public Event
@@ -34,7 +33,7 @@ struct GameGtate
 		uint8_t parasite_power;
 		uint64_t tick;
 
-		constexpr EventType type() { return EventType::PARASITES_ASSAULT; }
+		constexpr EventType type() const { return EventType::PARASITES_ASSAULT; }
 	};
 
 	struct Event_Bandits : public Event
@@ -42,7 +41,7 @@ struct GameGtate
 		uint8_t hijacker_power;
 		uint64_t tick;
 
-		constexpr EventType type() { return EventType::HIJACKERS_ASSAULT; }
+		constexpr EventType type() const { return EventType::HIJACKERS_ASSAULT; }
 	};
 
 	struct Event_Refugees : public Event
@@ -50,7 +49,7 @@ struct GameGtate
 		uint8_t refugees_number;
 		uint64_t tick;
 
-		constexpr EventType type() { return EventType::REFUGEES_ARRIVAL; }
+		constexpr EventType type() const { return EventType::REFUGEES_ARRIVAL; }
 	};
 
 	struct Event_TrainCrash : public Event
@@ -58,22 +57,22 @@ struct GameGtate
 		uint32_t train;
 		uint64_t tick;
 
-		constexpr EventType type() { return EventType::TRAIN_COLLISION; }
+		constexpr EventType type() const { return EventType::TRAIN_COLLISION; }
 	};
 
 	struct Event_ResourceOverflow : public Event
 	{
-		constexpr EventType type() { return EventType::RESOURCE_OVERFLOW; }
+		constexpr EventType type() const { return EventType::RESOURCE_OVERFLOW; }
 	};
 
 	struct Event_ResourceLack : public Event
 	{
-		constexpr EventType type() { return EventType::RESOURCE_LACK; }
+		constexpr EventType type() const { return EventType::RESOURCE_LACK; }
 	};
 
 	struct Event_GameOver : public Event
 	{
-		constexpr EventType type() { return EventType::GAME_OVER; }
+		constexpr EventType type() const { return EventType::GAME_OVER; }
 	};
 
 	struct Position
@@ -93,7 +92,6 @@ struct GameGtate
 	
 	enum PostType
 	{
-		__POST__ = 0,
 		TOWN = 1,
 		MARKET = 2,
 		STORAGE = 3
@@ -107,9 +105,7 @@ struct GameGtate
 		uint32_t point_idx;
 		EventType events;
 
-		static inline constexpr PostType type = PostType::__POST__;
-
-		VIRTUAL_DESTRUCTOR(Post);
+		virtual constexpr PostType type() const = 0;
 	};
 
 	struct Storage : public Post
@@ -118,7 +114,7 @@ struct GameGtate
 		uint32_t armor_capacity;
 		uint32_t replenishment;
 
-		static inline constexpr PostType type = PostType::STORAGE;
+		constexpr PostType type() const { PostType::STORAGE; }
 
 		VIRTUAL_DESTRUCTOR(Storage);
 	};
@@ -129,7 +125,7 @@ struct GameGtate
 		uint32_t product_capacity;
 		uint32_t replenishment;
 
-		static inline constexpr PostType type = PostType::MARKET;
+		constexpr PostType type() const { PostType::MARKET; }
 
 		VIRTUAL_DESTRUCTOR(Market);
 	};
@@ -152,7 +148,7 @@ struct GameGtate
 		uint32_t product_capacity;
 		uint32_t train_cooldown;
 
-		static inline constexpr PostType type = PostType::TOWN;
+		constexpr PostType type() const { PostType::TOWN; }
 
 		VIRTUAL_DESTRUCTOR(Town);
 	};
