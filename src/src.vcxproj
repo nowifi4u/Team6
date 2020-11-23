@@ -78,12 +78,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\Documents\source\packages\boost_1_74_0;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Documents\source\packages\boost_1_74_0;C:\source\wg-graph\libs\ogdf\include;C:\source\wg-graph\libs\SFML\include;$(IncludePath)</IncludePath>
     <SourcePath>$(SolutionDir)\libs\graph\include;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\Documents\source\packages\boost_1_74_0;$(IncludePath)</IncludePath>
+    <IncludePath>D:\Documents\source\packages\boost_1_74_0;C:\source\wg-graph\libs\ogdf\include;C:\source\wg-graph\libs\SFML\include;$(IncludePath)</IncludePath>
     <SourcePath>$(SolutionDir)\libs\graph\include;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -146,11 +146,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CoordsCalculator.h" />
+    <ClInclude Include="GameState.h" />
+    <ClInclude Include="graph.h" />
     <ClInclude Include="graph_t.h" />
     <ClInclude Include="json-parser.h" />
+    <ClInclude Include="KKSCoordsCalculator.h" />
     <ClInclude Include="render.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="KKSCoordsCalculator.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
