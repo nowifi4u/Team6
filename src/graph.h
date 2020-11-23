@@ -50,3 +50,41 @@ using edge_iterator = boost::graph_traits<Graph>::edge_iterator;
 
 using vertexMap = std::map<uint32_t, vertex_descriptor>;
 using edgeMap = std::map<uint32_t, edge_descriptor>;
+
+template <class _Func>
+void for_each_vertex(Graph& g, _Func f)
+{
+	vertex_iterator vi, vend;
+	for (boost::tie(vi, vend) = boost::vertices(g); vi != vend; ++vi)
+	{
+		f(*vi);
+	}
+}
+
+template <class _Func>
+void for_each_edge(Graph& g, _Func f)
+{
+	edge_iterator ei, eend;
+	for (boost::tie(ei, eend) = boost::edges(g); ei != eend; ++ei)
+	{
+		f(*ei);
+	}
+}
+
+template <class _Func>
+void for_each_vertex(const vertexMap& vmap, _Func f)
+{
+	for (const auto& vp : vmap)
+	{
+		f(vp);
+	}
+}
+
+template <class _Func>
+void for_each_edge(const edgeMap& emap, _Func f)
+{
+	for (const auto& ep : emap)
+	{
+		f(ep);
+	}
+}

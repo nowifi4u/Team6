@@ -20,8 +20,28 @@ using PositionMap = boost::iterator_property_map< PositionVec::iterator, boost::
 
 class CoordsCalculator
 {
+protected:
+
+	PositionVec m_position_vec;
+	PositionMap m_position;
+
 public:
-	virtual PositionMap get_coords(Graph& g, double width, double height, double unit_edge_length) = 0;
+
+	CoordsCalculator() = default;
+
+	virtual ~CoordsCalculator() = default;
+
+	virtual void calculate(Graph& g, double topology_width, double topology_height, double unit_edge_length) = 0;
+
+	PositionMap& get_map()
+	{
+		return m_position;
+	}
+
+	point_type& operator[](vertex_descriptor v)
+	{
+		return m_position[v];
+	}
 };
 
 
