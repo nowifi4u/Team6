@@ -4,6 +4,8 @@
 
 #include "graph.h"
 
+using boost::property_tree::ptree;
+
 static constexpr uint32_t uint32_max = std::numeric_limits<uint32_t>::max();
 
 template <typename Ty>
@@ -20,22 +22,19 @@ std::vector<Ty> as_vector(const ptree& pt, const ptree::key_type& key)
 
 
 
-void importGraph(const boost::property_tree::ptree& pt, Graph& g, vertexMap& vMap, edgeMap& eMap)
+void importGraph(const boost::property_tree::ptree& pt, GraphIdx& g)
 {
-	g[boost::graph_bundle].name= pt.get<std::string>("name");	// name
-	g[boost::graph_bundle].idx = pt.get<uint32_t>("idx");		// idx
+	g.graph[boost::graph_bundle].name= pt.get<std::string>("name");	// name
+	g.graph[boost::graph_bundle].idx = pt.get<uint32_t>("idx");		// idx
 
 	// Read Vertex properties
 	for (const auto& point : pt.get_child("points"))
 	{
 		uint32_t idx = point.second.get<uint32_t>("idx");
 
-		vertex_descriptor v = boost::add_vertex(g);
+		GraphIdx::vertex_descriptor v = g.add_vertex(idx);
 
-		g[v].idx = idx;
-		g[v].post_idx = point.second.get_optional<uint32_t>("post_idx").get_value_or(uint32_max);
-		
-		vMap[idx] = v;
+		g.graph[v].post_idx = point.second.get_optional<uint32_t>("post_idx").get_value_or(uint32_max);
 	}
 
 	// Read Edge properties
@@ -44,24 +43,21 @@ void importGraph(const boost::property_tree::ptree& pt, Graph& g, vertexMap& vMa
 		uint32_t idx = line.second.get<uint32_t>("idx");
 		auto pts = as_vector<uint32_t>(line.second, "points");
 
-		edge_descriptor e = boost::add_edge(vMap[pts[0]], vMap[pts[1]], g).first;
+		GraphIdx::edge_descriptor e = g.add_edge(idx, pts[0], pts[1]);
 
-		g[e].idx = idx;
-		g[e].length = line.second.get<double>("length");
-
-		eMap[idx] = e;
+		g.graph[e].length = line.second.get<double>("length");
 	}
 }
 
 
 
-void importGraph(const std::string& filename, Graph& g, vertexMap& vMap, edgeMap& eMap)
+void importGraph(const std::string& filename, GraphIdx& g)
 {
 	ptree pt;
 	
 	boost::property_tree::read_json(filename, pt);
 
-	importGraph(pt, g, vMap, eMap);
+	return importGraph(pt, g);
 }
 
 		

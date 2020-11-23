@@ -42,7 +42,7 @@ public:
 
 	KKSCoordsCalculator() : CoordsCalculator() {}
 
-	void calculate(Graph& g, double topology_width, double topology_height, double unit_edge_length);
+	void calculate(GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length);
 };
 
 
