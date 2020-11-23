@@ -10,16 +10,22 @@
 
 #include <algorithm>
 
-using topology_type = boost::rectangle_topology<>;
-using point_type = topology_type::point_type;
-
-using PositionVec = std::vector< point_type >;
-using PositionMap = boost::iterator_property_map< PositionVec::iterator, boost::property_map< Graph, boost::vertex_index_t >::type >;
-
 
 
 class CoordsCalculator
 {
+public:
+
+	//------------------------------ TYPEDEFS ------------------------------//
+
+	using topology_type = boost::rectangle_topology<>;
+	using point_type = topology_type::point_type;
+
+	using PositionVec = std::vector< point_type >;
+	using PositionMap = boost::iterator_property_map< PositionVec::iterator, boost::property_map< GraphIdx::Graph, boost::vertex_index_t >::type >;
+
+	//------------------------------ IMPL ------------------------------//
+
 protected:
 
 	PositionVec m_position_vec;
@@ -31,14 +37,14 @@ public:
 
 	virtual ~CoordsCalculator() = default;
 
-	virtual void calculate(Graph& g, double topology_width, double topology_height, double unit_edge_length) = 0;
+	virtual void calculate(GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length) = 0;
 
 	PositionMap& get_map()
 	{
 		return m_position;
 	}
 
-	point_type& operator[](vertex_descriptor v)
+	point_type& operator[](GraphIdx::vertex_descriptor v)
 	{
 		return m_position[v];
 	}

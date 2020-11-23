@@ -10,17 +10,21 @@
 
 int main()
 {
-	Graph g;
-	vertexMap vMap;
-	edgeMap eMap;
+	GraphIdx g;
 
-	importGraph("small_graph.json", g, vMap, eMap);
+	std::cout << "Importing Graph..." << std::endl;
+
+	importGraph("small_graph.json", g);
 	
-	KKSCoordsCalculator b;
-	b.calculate(g, 200, 200, 3);
+	std::cout << "Calculating coordinates..." << std::endl;
 
-	for_each_vertex(g, [&g, &b](vertex_descriptor v) {
-		const VertexProperties& vertex = g[v];
+	KKSCoordsCalculator b;
+	b.calculate(g.graph, 200, 200, 3);
+
+	std::cout << "Drawing Graph with coordinates..." << std::endl;
+
+	g.for_each_vertex([&g, &b](auto v) {
+		const auto& vertex = g.graph[v];
 		std::cout << v
 			<< " idx:" << vertex.idx
 			<< " length:" << (int32_t)vertex.post_idx
