@@ -4,13 +4,33 @@
 #include <map>
 #include <vector>
 
-#define VIRTUAL_DESTRUCTOR(CLASS) \
-virtual ~##CLASS##()
+#include "ClassDefines.h"
 
-struct GameGtate
+struct GameData
 {
 
-	//------------------------------ TYPEDEFS ------------------------------//
+	using player_uid_t = std::string;
+	using player_idx_t = uint32_t;
+	using train_idx_t = uint32_t;
+	using vertex_idx_t = uint32_t;
+	using edge_idx_t = uint32_t;
+	using edge_length_idx_t = uint32_t;
+
+	using tick_t = uint64_t;
+	using product_t = uint64_t;
+	using population_t = uint32_t;
+	using armor_t = uint32_t;
+
+	enum GameState
+	{
+		INIT = 1,
+		RUN = 2,
+		FINISHED = 3
+	};
+
+	GameState state;
+
+	//------------------------------ EVENT ------------------------------//
 
 	enum EventType
 	{
@@ -31,7 +51,7 @@ struct GameGtate
 	struct Event_Parasites : public Event
 	{
 		uint8_t parasite_power;
-		uint64_t tick;
+		tick_t tick;
 
 		constexpr EventType type() const { return EventType::PARASITES_ASSAULT; }
 	};
@@ -39,7 +59,7 @@ struct GameGtate
 	struct Event_Bandits : public Event
 	{
 		uint8_t hijacker_power;
-		uint64_t tick;
+		tick_t tick;
 
 		constexpr EventType type() const { return EventType::HIJACKERS_ASSAULT; }
 	};
@@ -47,15 +67,15 @@ struct GameGtate
 	struct Event_Refugees : public Event
 	{
 		uint8_t refugees_number;
-		uint64_t tick;
+		tick_t tick;
 
 		constexpr EventType type() const { return EventType::REFUGEES_ARRIVAL; }
 	};
 
 	struct Event_TrainCrash : public Event
 	{
-		uint32_t train;
-		uint64_t tick;
+		train_idx_t train;
+		tick_t tick;
 
 		constexpr EventType type() const { return EventType::TRAIN_COLLISION; }
 	};
@@ -75,20 +95,43 @@ struct GameGtate
 		constexpr EventType type() const { return EventType::GAME_OVER; }
 	};
 
+	//------------------------------ TRAIN ------------------------------//
+
+	struct Train_Tier
+	{
+		const uint32_t goods_capacity;
+		const uint32_t fuel_capacity;
+		const uint64_t next_level_price;
+	};
+
+	const Train_Tier TrainTiers[3]
+	{
+		{40,400,40},
+		{80,800,80},
+		{160,1600,UINT32_MAX}
+	};
+
+	struct Train
+	{
+		const train_idx_t idx;
+		uint8_t tier;
+		std::vector<Event> events;
+		uint64_t cooldown;
+		uint32_t fuel;
+		uint32_t goods;
+		edge_idx_t line_idx;
+		player_uid_t player_idx;
+		edge_length_idx_t position;
+		int8_t speed;
+	};
+
+	//------------------------------ POST ------------------------------//
+
 	struct Position
 	{
 		int32_t x;
 		int32_t y;
 	};
-
-	struct Vertex
-	{
-		const uint32_t idx;
-		Position pos; // const ??
-
-		VIRTUAL_DESTRUCTOR(Vertex);
-	};
-
 	
 	enum PostType
 	{
@@ -97,8 +140,10 @@ struct GameGtate
 		STORAGE = 3
 	};
 
-	struct Post : public Vertex
+	struct Post
 	{
+		const edge_idx_t idx;
+		const Position pos;
 		std::vector<Event> events;
 
 		const std::string name;
@@ -106,6 +151,8 @@ struct GameGtate
 		EventType events;
 
 		virtual constexpr PostType type() const = 0;
+
+		VIRTUAL_DESTRUCTOR(Post);
 	};
 
 	struct Storage : public Post
@@ -130,9 +177,13 @@ struct GameGtate
 		VIRTUAL_DESTRUCTOR(Market);
 	};
 
-	struct Train
+	struct Town_Tier
 	{
-
+		const uint32_t population_capacity;
+		const uint32_t product_capacity;
+		const uint32_t armor_capacity;
+		const uint64_t cooldown_after_crash;
+		const uint64_t next_level_price;
 	};
 
 	struct Town : public Post
@@ -141,12 +192,12 @@ struct GameGtate
 		uint32_t armor_capacity;
 		uint8_t level;
 		//uint32_t next_level_price;
-		std::string player_idx;
+		player_uid_t player_idx;
 		uint32_t population;
 		uint32_t population_capacity;
 		uint32_t product;
 		uint32_t product_capacity;
-		uint32_t train_cooldown;
+		uint64_t train_cooldown;
 
 		constexpr PostType type() const { PostType::TOWN; }
 
@@ -155,10 +206,10 @@ struct GameGtate
 
 	struct Player
 	{
-		uint32_t idx;
+		player_idx_t idx;
 		std::string name;
 		int32_t rating;
-		std::string player_idx;
+		player_uid_t player_idx;
 		std::string password;
 
 		//std::map<uint32_t, 
