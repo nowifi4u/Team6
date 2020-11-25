@@ -1,34 +1,35 @@
 #pragma once
 
-#include <string>
+#include <boost/ptr_container/ptr_map.hpp>
+
 #include <map>
-#include <vector>
 
 #include "ClassDefines.h"
+#include "GameList.h"
 
 struct GameData
 {
 
+	//------------------------------          ------------------------------//
+	//------------------------------          ------------------------------//
+	//------------------------------ TYPEDEFS ------------------------------//
+	//------------------------------          ------------------------------//
+	//------------------------------          ------------------------------//
+
+	using GameState = GameList::GameState;
+	using GameConfig = GameList::GameConfig;
+	using tick_t = GameList::tick_t;
+
 	using player_uid_t = std::string;
 	using player_idx_t = uint32_t;
 	using train_idx_t = uint32_t;
-	using vertex_idx_t = uint32_t;
+	using post_idx_t = uint32_t;
 	using edge_idx_t = uint32_t;
 	using edge_length_idx_t = uint32_t;
 
-	using tick_t = uint64_t;
 	using product_t = uint64_t;
 	using population_t = uint32_t;
 	using armor_t = uint32_t;
-
-	enum GameState
-	{
-		INIT = 1,
-		RUN = 2,
-		FINISHED = 3
-	};
-
-	GameState state;
 
 	//------------------------------ EVENT ------------------------------//
 
@@ -206,12 +207,33 @@ struct GameData
 
 	struct Player
 	{
-		player_idx_t idx;
-		std::string name;
+		const player_idx_t idx;
+		const std::string name;
+		const player_uid_t player_idx;
 		int32_t rating;
-		player_uid_t player_idx;
-		std::string password;
 
-		//std::map<uint32_t, 
+		std::map<train_idx_t, Train> trains;
 	};
+
+	struct PlayerCreds
+	{
+		std::string name;
+		std::string password;
+	};
+
+	//------------------------------          ------------------------------//
+	//------------------------------          ------------------------------//
+	//------------------------------   IMPL   ------------------------------//
+	//------------------------------          ------------------------------//
+	//------------------------------          ------------------------------//
+
+	GameConfig gamestatus;
+	std::map<player_uid_t, Player> players;
+	boost::ptr_map<post_idx_t, Post*> posts;
+	//std::map<post_idx_t, Post> posts;
+
+	GameData() {}
+
+
+
 };
