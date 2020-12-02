@@ -4,7 +4,8 @@
 #include "graph.h"
 
 
-const float vertex_scale_koeff = 0.1;
+constexpr float vertex_scale_koeff = 0.05;
+
 //to implement
 GameData::PostType getPostType(GraphIdx::vertex_descriptor v) {
     return GameData::TOWN;
@@ -57,16 +58,9 @@ void edgeGraphics(GraphIdx& g, GraphIdx::edge_descriptor e, Window& window,
 Game::Game()
     :window_(GAME_NAME, sf::Vector2u(1000, 800), 20), clock_(), textureManager_(), g(), calc()
 {
-    //std::cout << "constructed\n";
-
     state_ = GameList::RUN;
 
     importGraph("GraphExamples/big_graph.json", g);
-
-    //std::cout << window_.getWindowSize().x << " " << window_.getWindowSize().y << "\n";
-    //std::cout << (size_t)window_.getDelta() << "\n";
-    //std::cout << (double)window_.getWindowSize().x - 2. * ((double)window_.getDelta())<<"\n";
-    //std::cout << (double)window_.getWindowSize().y - 2. * ((double)window_.getDelta()) << "\n";
 
     calc.calculate(
         g.graph,
@@ -90,23 +84,28 @@ void Game::renderCalculations() {
 
     g.for_each_vertex([&](auto v) {
         bool b = false;
-        switch (getPostType(v)) {
-        case GameData::MARKET:
-            b = textureManager_.RequireResource("market");
-            window_.nodes_g[v] = sf::Sprite(*textureManager_.GetResource("market"));
-            break;
-        case GameData::TOWN:
-            b = textureManager_.RequireResource("castle");
-            window_.nodes_g[v] = sf::Sprite(*textureManager_.GetResource("castle"));
-            break;
-        case GameData::STORAGE:
-            b = textureManager_.RequireResource("storage");
-            window_.nodes_g[v] = sf::Sprite(*textureManager_.GetResource("storage"));
-            break;
-        default:
+        if (g.graph[v].post_idx != GraphIdx::uint32_max) {
+            switch (getPostType(v)) {
+            case GameData::MARKET:
+                b = textureManager_.RequireResource("market");
+                window_.nodes_g[v] = sf::Sprite(*textureManager_.GetResource("market"));
+                break;
+            case GameData::TOWN:
+                b = textureManager_.RequireResource("castle");
+                window_.nodes_g[v] = sf::Sprite(*textureManager_.GetResource("castle"));
+                break;
+            case GameData::STORAGE:
+                b = textureManager_.RequireResource("storage");
+                window_.nodes_g[v] = sf::Sprite(*textureManager_.GetResource("storage"));
+                break;
+            default:
+                break;
+            }
+        }
+        else{
             b = textureManager_.RequireResource("circle");
             window_.nodes_g[v] = sf::Sprite(*textureManager_.GetResource("circle"));
-            break;
+            window_.nodes_g[v].setColor(sf::Color::Yellow);
         }
         size_t topo_size = std::min(window_.getWindowSize().x, window_.getWindowSize().y);
         window_.nodes_g[v].setPosition(sf::Vector2f{
