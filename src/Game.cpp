@@ -4,7 +4,7 @@
 #include "graph.h"
 
 
-constexpr float vertex_scale_koeff = 0.05;
+constexpr float vertex_scale_koeff = 0.1;
 
 //to implement
 GameData::PostType getPostType(GraphIdx::vertex_descriptor v) {
@@ -58,7 +58,7 @@ void edgeGraphics(GraphIdx& g, GraphIdx::edge_descriptor e, Window& window,
 Game::Game()
     :window_(GAME_NAME, sf::Vector2u(1000, 800), 20), clock_(), textureManager_(), g(), calc()
 {
-    state_ = GameList::RUN;
+    state_ = GameData::RUN;
 
     importGraph("GraphExamples/big_graph.json", g);
 
@@ -103,9 +103,8 @@ void Game::renderCalculations() {
             }
         }
         else{
-            b = textureManager_.RequireResource("circle");
-            window_.nodes_g[v] = sf::Sprite(*textureManager_.GetResource("circle"));
-            window_.nodes_g[v].setColor(sf::Color::Yellow);
+            b = textureManager_.RequireResource("cs");
+            window_.nodes_g[v] = sf::Sprite(*textureManager_.GetResource("cs"));
         }
         size_t topo_size = std::min(window_.getWindowSize().x, window_.getWindowSize().y);
         window_.nodes_g[v].setPosition(sf::Vector2f{
@@ -130,14 +129,14 @@ void Game::update()
     {
         //std::cout << "Updating ";
         switch (state_) {
-        case(GameList::GameState::INIT):
+        case(GameData::GameState::INIT):
             //UpdateIntro();
             break;
-        case(GameList::GameState::RUN):
+        case(GameData::GameState::RUN):
             //std::cout << "Running\n";
             window_.update();
             break;
-        case(GameList::GameState::FINISHED):
+        case(GameData::GameState::FINISHED):
             //UpdateFinished();
             break;
         }
@@ -150,10 +149,10 @@ void Game::render()
         window_.beginDraw();
 
         switch (state_) {
-        case(GameList::GameState::INIT):
+        case(GameData::GameState::INIT):
             //UpdateIntro();
             break;
-        case(GameList::GameState::RUN):
+        case(GameData::GameState::RUN):
         {
             //Set background:
             window_.draw(window_.getBackGround());
@@ -171,7 +170,7 @@ void Game::render()
 
             break;
         } 
-        case(GameList::GameState::FINISHED):
+        case(GameData::GameState::FINISHED):
             //UpdateFinished();
             break;
         }

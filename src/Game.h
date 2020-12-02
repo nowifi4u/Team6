@@ -40,7 +40,7 @@ public:
 
     bool isDone() const { return window_.isDone(); }
 
-    void setGameState(GameList::GameState gs) { state_ = gs; }
+    void setGameState(GameData::GameState gs) { state_ = gs; }
 private:
     sf::Clock clock_;
     sf::Time elapsed_;
@@ -50,7 +50,7 @@ private:
     //how to store???
     GraphIdx g;
     KKSCoordsCalculator calc;
-    GameList::GameState state_;
+    GameData::GameState state_;
 };
 
 

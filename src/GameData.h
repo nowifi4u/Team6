@@ -3,97 +3,41 @@
 #include <boost/ptr_container/ptr_map.hpp>
 
 #include <map>
+#include <vector>
+#include <memory>
+#include <string>
+
 #include "ClassDefines.h"
-#include "GameList.h"
+#include "Events.h"
 
-struct GameData
-{
 
-	//------------------------------          ------------------------------//
-	//------------------------------          ------------------------------//
-	//------------------------------ TYPEDEFS ------------------------------//
-	//------------------------------          ------------------------------//
-	//------------------------------          ------------------------------//
+namespace GameData {
 
-	using GameState = GameList::GameState;
-	using GameConfig = GameList::GameConfig;
-	using tick_t = GameList::tick_t;
-
-	using player_uid_t = std::string;
-	using player_idx_t = uint32_t;
-	using train_idx_t = uint32_t;
-	using post_idx_t = uint32_t;
-	using edge_idx_t = uint32_t;
-	using edge_length_idx_t = uint32_t;
-
-	using product_t = uint64_t;
-	using population_t = uint32_t;
-	using armor_t = uint32_t;
-
-	//------------------------------ EVENT ------------------------------//
-
-	enum EventType
+	enum GameState
 	{
-		TRAIN_COLLISION = 1,
-		HIJACKERS_ASSAULT = 2,
-		PARASITES_ASSAULT = 3,
-		REFUGEES_ARRIVAL = 4,
-		RESOURCE_OVERFLOW = 5,
-		RESOURCE_LACK = 6,
-		GAME_OVER = 100
-	}; 
-
-	struct Event 
-	{
-		virtual const EventType type() const = 0;
+		INIT = 1,
+		RUN = 2,
+		FINISHED = 3
 	};
 
-	struct Event_Parasites : public Event
+	struct GameConfig
 	{
-		uint8_t parasite_power;
-		tick_t tick;
-
-		const EventType type() const { return EventType::PARASITES_ASSAULT; }
+		std::string name;
+		uint32_t num_players;
+		tick_t num_turns;
+		GameState state;
 	};
 
-	struct Event_Bandits : public Event
+	struct GameList
 	{
-		uint8_t hijacker_power;
-		tick_t tick;
-
-		const EventType type() const { return EventType::HIJACKERS_ASSAULT; }
+		std::vector<GameConfig> games;
 	};
 
-	struct Event_Refugees : public Event
-	{
-		uint8_t refugees_number;
-		tick_t tick;
+	
 
-		const EventType type() const { return EventType::REFUGEES_ARRIVAL; }
-	};
+	//------------------------------ EVENTS ------------------------------//
 
-	struct Event_TrainCrash : public Event
-	{
-		train_idx_t train;
-		tick_t tick;
-
-		const EventType type() const { return EventType::TRAIN_COLLISION; }
-	};
-
-	struct Event_ResourceOverflow : public Event
-	{
-		const EventType type() const { return EventType::RESOURCE_OVERFLOW; }
-	};
-
-	struct Event_ResourceLack : public Event
-	{
-		const EventType type() const { return EventType::RESOURCE_LACK; }
-	};
-
-	struct Event_GameOver : public Event
-	{
-		const EventType type() const { return EventType::GAME_OVER; }
-	};
+	
 
 	//------------------------------ TRAIN ------------------------------//
 
@@ -132,7 +76,7 @@ struct GameData
 		int32_t x;
 		int32_t y;
 	};
-	
+
 	enum PostType
 	{
 		TOWN = 1,
@@ -220,19 +164,13 @@ struct GameData
 		std::string password;
 	};
 
-	//------------------------------          ------------------------------//
-	//------------------------------          ------------------------------//
-	//------------------------------   IMPL   ------------------------------//
-	//------------------------------          ------------------------------//
-	//------------------------------          ------------------------------//
-
-	GameConfig gamestatus;
-	std::map<player_uid_t, Player> players;
-	boost::ptr_map<post_idx_t, Post*> posts;
-	//std::map<post_idx_t, Post> posts;
-
-	GameData() {}
-
-
-
-};
+	class GameDataClass
+	{
+	public:	
+		GameDataClass() {}
+		GameConfig gamestatus;
+		std::map<player_uid_t, Player> players;
+		boost::ptr_map<post_idx_t, Post*> posts;
+		//std::map<post_idx_t, Post> posts;
+	};
+}
