@@ -5,10 +5,12 @@ void KKSCoordsCalculator::calculate(GraphIdx::Graph& g, double topology_width, d
 	PositionVec position_vec(num_vertices(g));
 	PositionMap position(position_vec.begin(), get(boost::vertex_index, g));
 	boost::minstd_rand gen;
-	topology_type topo(gen, 0, 0, topology_width, topology_width);
+	auto top_size = std::min(topology_width, topology_height);
+	topology_type topo(gen, -top_size/2, -top_size / 2, top_size / 2, top_size / 2);
 
-	circle_graph_layout(g, position, std::min(topology_width, topology_height));
+	circle_graph_layout(g, position, top_size / 2 );
 
+	
 	bool kamada = kamada_kawai_spring_layout(
 		g,
 		position,

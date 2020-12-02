@@ -12,10 +12,10 @@
 #include <map>
 #include <limits>
 
+
 struct GraphIdx
 {
-public:
-
+public:	
 	//------------------------------ TYPEDEFS ------------------------------//
 
 	struct VertexProperties
@@ -53,6 +53,7 @@ public:
 
 	using vertexMap = std::map<uint32_t, vertex_descriptor>;
 	using edgeMap = std::map<uint32_t, edge_descriptor>;
+
 
 	static inline constexpr uint32_t uint32_max = std::numeric_limits<uint32_t>::max();
 
@@ -127,6 +128,7 @@ public:
 		edge_iterator ei, eend;
 		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
 		{
+			
 			f(*ei);
 		}
 	}
