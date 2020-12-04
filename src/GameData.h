@@ -15,25 +15,13 @@
 
 #include "Logging.h"
 
-struct GameData
-{
 
-	//------------------------------          ------------------------------//
-	//------------------------------          ------------------------------//
-	//------------------------------ TYPEDEFS ------------------------------//
-	//------------------------------          ------------------------------//
-	//------------------------------          ------------------------------//
 
-	enum GameState
-	{
-		INIT = 1,
-		RUN = 2,
-		FINISHED = 3
-	};
+//------------------------------ EVENTS ------------------------------//
 
-	
+namespace Events {
 
-	//------------------------------ EVENT ------------------------------//
+
 
 	enum EventType
 	{
@@ -44,9 +32,9 @@ struct GameData
 		RESOURCE_OVERFLOW = 5,
 		RESOURCE_LACK = 6,
 		GAME_OVER = 100
-	}; 
+	};
 
-	struct Event 
+	struct Event
 	{
 		virtual EventType type() const = 0;
 
@@ -138,7 +126,17 @@ struct GameData
 		CLASS_VIRTUAL_DESTRUCTOR(Event_GameOver);
 	};
 
-	//------------------------------ TRAIN ------------------------------//
+
+
+} // namespace Events
+
+
+
+//------------------------------ TRAINS ------------------------------//
+
+namespace Trains {
+
+
 
 	struct Train_Tier
 	{
@@ -166,14 +164,24 @@ struct GameData
 		Types::edge_length_t position;
 		int8_t speed;
 
-		boost::ptr_vector<Event> events;
+		boost::ptr_vector<Events::Event> events;
 
 		static void readJSON_L1(Train& val, const ptree& pt);
 
 		static void updateJSON(Train& val, const ptree& pt);
 	};
 
-	//------------------------------ POST ------------------------------//
+
+
+} // namespace Trains
+
+
+
+//------------------------------ POSTS ------------------------------//
+
+namespace Posts {
+
+
 
 	enum PostType
 	{
@@ -188,7 +196,7 @@ struct GameData
 		std::string name;
 		uint32_t point_idx;
 
-		boost::ptr_vector<Event> events;
+		boost::ptr_vector<Events::Event> events;
 
 		virtual PostType type() const = 0;
 
@@ -256,25 +264,42 @@ struct GameData
 		CLASS_VIRTUAL_DESTRUCTOR(Town);
 	};
 
-	struct Player
+
+
+} // namespace Posts
+
+
+
+//------------------------------ PLAYER ------------------------------//
+
+struct Player
+{
+	Types::player_uid_t idx;
+	std::string name;
+	int32_t rating;
+
+	std::map<Types::train_idx_t, Trains::Train> trains;
+
+	static void readJSON_L1(Player& val, const ptree& pt);
+	static void updateJSON(Player& val, const ptree& pt);
+
+	CLASS_VIRTUAL_DESTRUCTOR(Player);
+};
+
+
+
+//------------------------------ GAMEDATA ------------------------------//
+
+struct GameData
+{
+	enum GameState
 	{
-		Types::player_uid_t idx;
-		std::string name;
-		int32_t rating;
-
-		std::map<Types::train_idx_t, Train> trains;
-
-		static void readJSON_L1(Player& val, const ptree& pt);
-		static void updateJSON(Player& val, const ptree& pt);
-
-		CLASS_VIRTUAL_DESTRUCTOR(Player);
+		INIT = 1,
+		RUN = 2,
+		FINISHED = 3
 	};
 
-	//------------------------------          ------------------------------//
-	//------------------------------          ------------------------------//
-	//------------------------------   IMPL   ------------------------------//
-	//------------------------------          ------------------------------//
-	//------------------------------          ------------------------------//
+	GameState game_state;
 
 	Types::player_uid_t player_idx;
 	uint32_t home_idx;
@@ -284,7 +309,7 @@ struct GameData
 	std::map<Types::player_uid_t, Player> players;
 
 	GraphIdx graph;
-	boost::ptr_map<Types::post_idx_t, Post*> posts;
+	boost::ptr_map<Types::post_idx_t, Posts::Post> posts;
 
 	static void readJSON_Login(GameData& val, const ptree& pt);
 	static void readJSON_L0(GameData& val, const ptree& pt);
