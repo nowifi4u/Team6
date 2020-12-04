@@ -38,8 +38,8 @@ namespace Events {
 	{
 		Event_TrainCrash* event = new Event_TrainCrash;
 
-		event->train = pt.get<BOOST_TYPEOF(Event_TrainCrash::train)>("train");
-		event->tick = pt.get<BOOST_TYPEOF(Event_TrainCrash::tick)>("tick");
+		event->train = pt.get<Types::train_idx_t>("train");
+		event->tick = pt.get<Types::tick_t>("tick");
 
 		return event;
 	}
@@ -49,7 +49,7 @@ namespace Events {
 		Event_Parasites* event = new Event_Parasites;
 
 		event->parasite_power = pt.get<BOOST_TYPEOF(Event_Parasites::parasite_power)>("parasites_power");
-		event->tick = pt.get<BOOST_TYPEOF(Event_Parasites::tick)>("tick");
+		event->tick = pt.get<Types::tick_t>("tick");
 
 		return event;
 	}
@@ -59,7 +59,7 @@ namespace Events {
 		Event_Bandits* event = new Event_Bandits;
 
 		event->hijacker_power = pt.get<BOOST_TYPEOF(Event_Bandits::hijacker_power)>("hijackers_power");
-		event->tick = pt.get<BOOST_TYPEOF(Event_Bandits::tick)>("tick");
+		event->tick = pt.get<Types::tick_t>("tick");
 
 		return event;
 	}
@@ -69,7 +69,7 @@ namespace Events {
 		Event_Refugees* event = new Event_Refugees;
 
 		event->refugees_number = pt.get<BOOST_TYPEOF(Event_Refugees::refugees_number)>("refugees_number");
-		event->tick = pt.get<BOOST_TYPEOF(Event_Refugees::tick)>("tick");
+		event->tick = pt.get<Types::tick_t>("tick");
 
 		return event;
 	}
@@ -114,8 +114,8 @@ namespace Trains {
 		val.cooldown = pt.get<BOOST_TYPEOF(Train::cooldown)>("cooldown");
 		val.fuel = pt.get<BOOST_TYPEOF(Train::fuel)>("fuel");
 		val.goods = pt.get<BOOST_TYPEOF(Train::goods)>("goods");
-		val.line_idx = pt.get<BOOST_TYPEOF(Train::line_idx)>("line_idx");
-		val.player_idx = pt.get<BOOST_TYPEOF(Train::player_idx)>("player_idx");
+		val.line_idx = pt.get<Types::edge_idx_t>("line_idx");
+		val.player_idx = pt.get<Types::player_uid_t>("player_idx");
 		val.position = pt.get<BOOST_TYPEOF(Train::position)>("position");
 		val.speed = pt.get<BOOST_TYPEOF(Train::speed)>("speed");
 
@@ -129,8 +129,8 @@ namespace Trains {
 		val.cooldown = pt.get<BOOST_TYPEOF(Train::cooldown)>("cooldown");
 		val.fuel = pt.get<BOOST_TYPEOF(Train::fuel)>("fuel");
 		val.goods = pt.get<BOOST_TYPEOF(Train::goods)>("goods");
-		val.line_idx = pt.get<BOOST_TYPEOF(Train::line_idx)>("line_idx");
-		//val.player_idx = pt.get<BOOST_TYPEOF(Train::player_idx)>("player_idx");
+		val.line_idx = pt.get<Types::edge_idx_t>("line_idx");
+		//val.player_idx = pt.get<Types::player_uid_t>("player_idx");
 		val.position = pt.get<BOOST_TYPEOF(Train::position)>("position");
 		val.speed = pt.get<BOOST_TYPEOF(Train::speed)>("speed");
 
@@ -163,9 +163,9 @@ namespace Posts {
 		default: return nullptr;
 		}
 
-		ptr->idx = pt.get<BOOST_TYPEOF(Post::idx)>("idx");
+		ptr->idx = pt.get<Types::post_idx_t>("idx");
 		ptr->name = pt.get<BOOST_TYPEOF(Post::name)>("name");
-		ptr->point_idx = pt.get_optional<BOOST_TYPEOF(Post::point_idx)>("post_idx").get_value_or(UINT32_MAX);
+		ptr->point_idx = pt.get_optional<Types::vertex_idx_t>("post_idx").get_value_or(UINT32_MAX);
 
 		Events::Event::readJSON_L1_vector(ptr->events, pt);
 	}
@@ -254,7 +254,7 @@ namespace Posts {
 
 void Player::readJSON_L1(Player& val, const ptree& pt)
 {
-	val.idx = pt.get<BOOST_TYPEOF(Player::idx)>("idx");
+	val.idx = pt.get<Types::player_uid_t>("idx");
 	val.name = pt.get<BOOST_TYPEOF(Player::name)>("name");
 	val.rating = pt.get<BOOST_TYPEOF(Player::rating)>("rating");
 }
@@ -274,7 +274,7 @@ void GameData::readJSON_Login(GameData& val, const ptree& pt)
 {
 	val.player_idx = pt.get<BOOST_TYPEOF(GameData::player_idx)>("idx");
 	val.home_idx = pt.get_child("home").get<BOOST_TYPEOF(GameData::home_idx)>("idx");
-	val.post_idx = pt.get_child("home").get<BOOST_TYPEOF(GameData::post_idx)>("post_idx");
+	val.post_idx = pt.get_child("home").get<Types::post_idx_t>("post_idx");
 	val.in_game = pt.get<BOOST_TYPEOF(GameData::in_game)>("in_game");
 }
 
@@ -290,26 +290,50 @@ void GameData::readJSON_L10(GameData& val, const ptree& pt)
 
 void GameData::readJSON_L1(GameData& val, const ptree& pt)
 {
+	//Parse Players
 	for (const auto& player : pt.get_child("ratings"))
 	{
-		//Allocate Player for player_idx
-		val.players[player.first];
-
-		Player::readJSON_L1(val.players[player.first], pt);
+		//Player memory initialization + value initialization
+		Player::readJSON_L1(val.players[player.first], player.second);
 	}
 
-	/*ptree_array_foreach(pt, "posts", [&](const ptree& ipt) {
-		Types::train_idx_t train_idx = ipt.get_value<Types::train_idx_t>("idx");
-		Types::player_uid_t player_idx = ipt.get_value<Types::player_uid_t>("player_idx");
-		val.players[player_idx].trains.insert({});
-		Train::readJSON_L1(val.players[player_idx].trains.rbegin().operator*(), ipt);
-		});*/
+	//Parse Trains
+	ptree_array_foreach(pt, "trains", [&](const ptree& ipt) {
+		Types::train_idx_t train_idx = ipt.get<Types::train_idx_t>("idx");
+		Types::player_uid_t player_idx = ipt.get<Types::player_uid_t>("player_idx");
+
+		//Train memory initialization + value initialization
+		Trains::Train::readJSON_L1(val.players[player_idx].trains[train_idx], ipt);
+		});
+
+	//Parse Posts
+	ptree_array_foreach(pt, "posts", [&](const ptree& ipt) {
+		Types::post_idx_t post_idx = ipt.get<Types::post_idx_t>("idx");
+
+		val.posts[post_idx] = Posts::Post::readJSON_L1(ipt);
+		});
 }
 
 void GameData::updateJSON(GameData& val, const ptree& pt)
 {
+	//Parse Players
 	for (const auto& player : pt.get_child("ratings"))
 	{
-		Player::updateJSON(val.players[player.first], pt);
+		Player::updateJSON(val.players[player.first], player.second);
 	}
+
+	//Parse Trains
+	ptree_array_foreach(pt, "trains", [&](const ptree& ipt) {
+		Types::train_idx_t train_idx = ipt.get<Types::train_idx_t>("idx");
+		Types::player_uid_t player_idx = ipt.get<Types::player_uid_t>("player_idx");
+
+		Trains::Train::updateJSON(val.players[player_idx].trains[train_idx], ipt);
+		});
+
+	//Parse Posts
+	ptree_array_foreach(pt, "posts", [&](const ptree& ipt) {
+		Types::post_idx_t post_idx = ipt.get<Types::post_idx_t>("idx");
+
+		Posts::Post::updateJSON(val.posts[post_idx], ipt);
+		});
 }

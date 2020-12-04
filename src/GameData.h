@@ -194,7 +194,7 @@ namespace Posts {
 	{
 		Types::edge_idx_t idx;
 		std::string name;
-		uint32_t point_idx;
+		Types::vertex_idx_t point_idx;
 
 		boost::ptr_vector<Events::Event> events;
 
@@ -309,7 +309,7 @@ struct GameData
 	std::map<Types::player_uid_t, Player> players;
 
 	GraphIdx graph;
-	boost::ptr_map<Types::post_idx_t, Posts::Post> posts;
+	boost::ptr_map<Types::post_idx_t, Posts::Post*> posts;
 
 	static void readJSON_Login(GameData& val, const ptree& pt);
 	static void readJSON_L0(GameData& val, const ptree& pt);

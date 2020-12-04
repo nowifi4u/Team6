@@ -184,9 +184,11 @@ public:
 
 	static void readJSON_L10(GraphIdx& g, const ptree& pt)
 	{
+		// Read Graph border size
 		g.graph[boost::graph_bundle].size_width = pt.get_child("size").get<Types::position_t>("width");
 		g.graph[boost::graph_bundle].size_height = pt.get_child("size").get<Types::position_t>("height");
 
+		// Read Vertex coordinates
 		ptree_array_foreach(pt, "coordinates", [&](const ptree& pt) {
 			Types::vertex_idx_t idx = pt.get<Types::vertex_idx_t>("idx");
 			VertexProperties& vertex = g.get_vertex(idx);
