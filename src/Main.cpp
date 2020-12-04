@@ -14,7 +14,9 @@ int main()
 
 	std::cout << "Importing GameData..." << std::endl;
 
-	readJSON_L0_file(gamedata, "small_graph.json");
+	ptree_from_file("small_graph.json", [&](const ptree& pt) {
+		GameData::readJSON_L0(gamedata, pt);
+		});
 	
 	std::cout << "Calculating coordinates..." << std::endl;
 
