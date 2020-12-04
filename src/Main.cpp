@@ -1,4 +1,4 @@
-#include "json-parser.h"
+#include "graph.h"
 #include "KKSCoordsCalculator.h"
 #include <iostream>
 #include <iomanip>
@@ -14,7 +14,7 @@ int main()
 
 	std::cout << "Importing Graph..." << std::endl;
 
-	importGraph("small_graph.json", g);
+	readJSON_L0_file(g, "small_graph.json");
 	
 	std::cout << "Calculating coordinates..." << std::endl;
 
