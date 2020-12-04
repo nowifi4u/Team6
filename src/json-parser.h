@@ -1,63 +1,51 @@
 #pragma once
 
 #include <boost/property_tree/json_parser.hpp>
-
-#include "graph.h"
+#include <sstream>
+#include <fstream>
 
 using boost::property_tree::ptree;
 
-static constexpr uint32_t uint32_max = std::numeric_limits<uint32_t>::max();
 
-template <typename Ty>
-std::vector<Ty> as_vector(const ptree& pt, const ptree::key_type& key)
+[[nodiscard]] inline
+size_t ptree_array_size(const ptree& pt, const ptree::key_type& key)
+{
+	return pt.get_child(key).size();
+}
+
+template <class Func> inline
+void ptree_array_foreach(const ptree& pt, const ptree::key_type& key, Func f)
+{
+	for (const auto& item : pt.get_child(key))
+	{
+		f(item.second);
+	}
+}
+
+template <typename Ty> inline
+std::vector<Ty> ptree_as_vector(const ptree& pt, const ptree::key_type& key)
 {
 	std::vector<Ty> res;
-	res.reserve(pt.get_child(key).size());
-	for (auto& item : pt.get_child(key))
-	{
-		res.push_back(item.second.get_value<Ty>());
-	}
+	res.reserve(ptree_array_size(pt, key));
+	ptree_array_foreach(pt, key, [&res](const ptree& ipt) {
+		res.push_back(ipt.get_value<Ty>());
+		});
 	return res;
 }
 
-
-
-void importGraph(const boost::property_tree::ptree& pt, GraphIdx& g)
+template <class Ty, class Func> inline
+auto ptree_from_string(const std::string& data, Func f)
 {
-	g.graph[boost::graph_bundle].name= pt.get<std::string>("name");	// name
-	g.graph[boost::graph_bundle].idx = pt.get<uint32_t>("idx");		// idx
-
-	// Read Vertex properties
-	for (const auto& point : pt.get_child("points"))
-	{
-		uint32_t idx = point.second.get<uint32_t>("idx");
-
-		GraphIdx::vertex_descriptor v = g.add_vertex(idx);
-
-		g.graph[v].post_idx = point.second.get_optional<uint32_t>("post_idx").get_value_or(uint32_max);
-	}
-
-	// Read Edge properties
-	for (const auto& line : pt.get_child("lines"))
-	{
-		uint32_t idx = line.second.get<uint32_t>("idx");
-		auto pts = as_vector<uint32_t>(line.second, "points");
-
-		GraphIdx::edge_descriptor e = g.add_edge(idx, pts[0], pts[1]);
-
-		g.graph[e].length = line.second.get<double>("length");
-	}
+	std::istringstream in(data);
+	ptree pt;
+	boost::property_tree::read_json(in, pt);
+	return f(pt);
 }
 
-
-
-void importGraph(const std::string& filename, GraphIdx& g)
+template <class Func> inline
+auto ptree_from_file(const std::string& filename, Func f)
 {
 	ptree pt;
-	
 	boost::property_tree::read_json(filename, pt);
-
-	return importGraph(pt, g);
+	return f(pt);
 }
-
-		
