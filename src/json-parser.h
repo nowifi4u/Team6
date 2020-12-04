@@ -45,8 +45,7 @@ auto ptree_from_string(const std::string& data, Func f)
 template <class Func> inline
 auto ptree_from_file(const std::string& filename, Func f)
 {
-	std::ifstream in(filename);
 	ptree pt;
-	boost::property_tree::read_json(in, pt);
+	boost::property_tree::read_json(filename, pt);
 	return f(pt);
 }
