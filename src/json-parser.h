@@ -33,48 +33,20 @@ std::vector<Ty> ptree_as_vector(const ptree& pt, const ptree::key_type& key)
 	return res;
 }
 
-#define GENERATOR_readJSON_stream(func)					\
-template <class Ty>	inline								\
-auto func##_string##(Ty& val, const std::string& data)	\
-{														\
-	std::istringstream in(data);						\
-	ptree pt;											\
-	boost::property_tree::read_json(in, pt);			\
-	return Ty::##func##(val, pt);						\
-}														\
-														\
-template <class Ty>	inline								\
-auto func##_string##(const std::string& data)			\
-{														\
-	std::istringstream in(data);						\
-	ptree pt;											\
-	boost::property_tree::read_json(in, pt);			\
-	return Ty::##func##(pt);							\
-}														\
-														\
-template <class Ty>	inline								\
-auto func##_file##(Ty& val, const std::string filename)	\
-{														\
-	std::ifstream in(filename);							\
-	ptree pt;											\
-	boost::property_tree::read_json(in, pt);			\
-	return Ty::##func##(val, pt);						\
-}														\
-														\
-template <class Ty>	inline								\
-auto func##_file##(const std::string& filename)			\
-{														\
-	std::ifstream in(filename);							\
-	ptree pt;											\
-	boost::property_tree::read_json(in, pt);			\
-	return Ty::##func##(pt);							\
+template <class Ty, class Func> inline
+auto ptree_from_string(const std::string& data, Func f)
+{
+	std::istringstream in(data);
+	ptree pt;
+	boost::property_tree::read_json(in, pt);
+	return f(pt);
 }
 
-GENERATOR_readJSON_stream(readJSON_Login)
-GENERATOR_readJSON_stream(readJSON_L0)
-GENERATOR_readJSON_stream(readJSON_L10)
-GENERATOR_readJSON_stream(readJSON_L1)
-GENERATOR_readJSON_stream(updateJSON)
-
-
-#undef GENERATOR_readJSON_stream
+template <class Func> inline
+auto ptree_from_file(const std::string& filename, Func f)
+{
+	std::ifstream in(filename);
+	ptree pt;
+	boost::property_tree::read_json(in, pt);
+	return f(pt);
+}
