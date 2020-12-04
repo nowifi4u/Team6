@@ -33,7 +33,7 @@ std::vector<Ty> ptree_as_vector(const ptree& pt, const ptree::key_type& key)
 	return res;
 }
 
-#define GENERATOR_readJSON_string(func)					\
+#define GENERATOR_readJSON_stream(func)					\
 template <class Ty>	inline								\
 auto func##_string##(Ty& val, const std::string& data)	\
 {														\
@@ -70,11 +70,11 @@ auto func##_file##(const std::string& filename)			\
 	return Ty::##func##(pt);							\
 }
 
-GENERATOR_readJSON_string(readJSON_Login)
-GENERATOR_readJSON_string(readJSON_L0)
-GENERATOR_readJSON_string(readJSON_L10)
-GENERATOR_readJSON_string(readJSON_L1)
-GENERATOR_readJSON_string(updateJSON)
+GENERATOR_readJSON_stream(readJSON_Login)
+GENERATOR_readJSON_stream(readJSON_L0)
+GENERATOR_readJSON_stream(readJSON_L10)
+GENERATOR_readJSON_stream(readJSON_L1)
+GENERATOR_readJSON_stream(updateJSON)
 
 
-#undef GENERATOR_readJSON_string
+#undef GENERATOR_readJSON_stream
