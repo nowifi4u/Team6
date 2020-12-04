@@ -1,11 +1,19 @@
 #pragma once
 
 #include <boost/ptr_container/ptr_map.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 
+#include <vector>
+#include <memory>
 #include <map>
 
 #include "ClassDefines.h"
-#include "GameList.h"
+#include "Types.h"
+
+#include "json-parser.h"
+#include "graph.h"
+
+#include "Logging.h"
 
 struct GameData
 {
@@ -16,20 +24,14 @@ struct GameData
 	//------------------------------          ------------------------------//
 	//------------------------------          ------------------------------//
 
-	using GameState = GameList::GameState;
-	using GameConfig = GameList::GameConfig;
-	using tick_t = GameList::tick_t;
+	enum GameState
+	{
+		INIT = 1,
+		RUN = 2,
+		FINISHED = 3
+	};
 
-	using player_uid_t = std::string;
-	using player_idx_t = uint32_t;
-	using train_idx_t = uint32_t;
-	using post_idx_t = uint32_t;
-	using edge_idx_t = uint32_t;
-	using edge_length_idx_t = uint32_t;
-
-	using product_t = uint64_t;
-	using population_t = uint32_t;
-	using armor_t = uint32_t;
+	
 
 	//------------------------------ EVENT ------------------------------//
 
@@ -46,54 +48,94 @@ struct GameData
 
 	struct Event 
 	{
-		virtual constexpr EventType type() const = 0;
+		virtual EventType type() const = 0;
+
+		[[nodiscard]]
+		static Event* readJSON_L1(const ptree& pt);
+
+		static void readJSON_L1_vector(boost::ptr_vector<Event>& vec, const ptree& pt);
+	};
+
+	struct Event_TrainCrash : public Event
+	{
+		Types::train_idx_t train;
+		Types::tick_t tick;
+
+		EventType type() const { return EventType::TRAIN_COLLISION; }
+
+		[[nodiscard]]
+		static Event_TrainCrash* readJSON_L1(const ptree& pt);
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_TrainCrash);
 	};
 
 	struct Event_Parasites : public Event
 	{
 		uint8_t parasite_power;
-		tick_t tick;
+		Types::tick_t tick;
 
-		constexpr EventType type() const { return EventType::PARASITES_ASSAULT; }
+		EventType type() const { return EventType::PARASITES_ASSAULT; }
+
+		[[nodiscard]]
+		static Event_Parasites* readJSON_L1(const ptree& pt);
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_Parasites);
 	};
 
 	struct Event_Bandits : public Event
 	{
 		uint8_t hijacker_power;
-		tick_t tick;
+		Types::tick_t tick;
 
-		constexpr EventType type() const { return EventType::HIJACKERS_ASSAULT; }
+		EventType type() const { return EventType::HIJACKERS_ASSAULT; }
+
+		[[nodiscard]]
+		static Event_Bandits* readJSON_L1(const ptree& pt);
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_Bandits);
 	};
 
 	struct Event_Refugees : public Event
 	{
 		uint8_t refugees_number;
-		tick_t tick;
+		Types::tick_t tick;
 
-		constexpr EventType type() const { return EventType::REFUGEES_ARRIVAL; }
-	};
+		EventType type() const { return EventType::REFUGEES_ARRIVAL; }
 
-	struct Event_TrainCrash : public Event
-	{
-		train_idx_t train;
-		tick_t tick;
+		[[nodiscard]]
+		static Event_Refugees* readJSON_L1(const ptree& pt);
 
-		constexpr EventType type() const { return EventType::TRAIN_COLLISION; }
+		CLASS_VIRTUAL_DESTRUCTOR(Event_Refugees);
 	};
 
 	struct Event_ResourceOverflow : public Event
 	{
-		constexpr EventType type() const { return EventType::RESOURCE_OVERFLOW; }
+		EventType type() const { return EventType::RESOURCE_OVERFLOW; }
+
+		[[nodiscard]]
+		static Event_ResourceOverflow* readJSON_L1(const ptree& pt);
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_ResourceOverflow);
 	};
 
 	struct Event_ResourceLack : public Event
 	{
-		constexpr EventType type() const { return EventType::RESOURCE_LACK; }
+		EventType type() const { return EventType::RESOURCE_LACK; }
+
+		[[nodiscard]]
+		static Event_ResourceLack* readJSON_L1(const ptree& pt);
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_ResourceLack);
 	};
 
 	struct Event_GameOver : public Event
 	{
-		constexpr EventType type() const { return EventType::GAME_OVER; }
+		EventType type() const { return EventType::GAME_OVER; }
+
+		[[nodiscard]]
+		static Event_GameOver* readJSON_L1(const ptree& pt);
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_GameOver);
 	};
 
 	//------------------------------ TRAIN ------------------------------//
@@ -114,26 +156,25 @@ struct GameData
 
 	struct Train
 	{
-		const train_idx_t idx;
+		Types::train_idx_t idx;
 		uint8_t tier;
-		std::vector<Event> events;
-		uint64_t cooldown;
+		Types::tick_t cooldown;
 		uint32_t fuel;
 		uint32_t goods;
-		edge_idx_t line_idx;
-		player_uid_t player_idx;
-		edge_length_idx_t position;
+		Types::edge_idx_t line_idx;
+		Types::player_uid_t player_idx;
+		Types::edge_length_t position;
 		int8_t speed;
+
+		boost::ptr_vector<Event> events;
+
+		static void readJSON_L1(Train& val, const ptree& pt);
+
+		static void updateJSON(Train& val, const ptree& pt);
 	};
 
 	//------------------------------ POST ------------------------------//
 
-	struct Position
-	{
-		int32_t x;
-		int32_t y;
-	};
-	
 	enum PostType
 	{
 		TOWN = 1,
@@ -143,17 +184,19 @@ struct GameData
 
 	struct Post
 	{
-		const edge_idx_t idx;
-		const Position pos;
-		std::vector<Event> events;
-
-		const std::string name;
+		Types::edge_idx_t idx;
+		std::string name;
 		uint32_t point_idx;
-		EventType events;
 
-		virtual constexpr PostType type() const = 0;
+		boost::ptr_vector<Event> events;
 
-		VIRTUAL_DESTRUCTOR(Post);
+		virtual PostType type() const = 0;
+
+		[[nodiscard]]
+		static Post* readJSON_L1(const ptree& pt);
+		static void updateJSON(Post* ptr, const ptree& pt);
+
+		CLASS_VIRTUAL_DESTRUCTOR(Post);
 	};
 
 	struct Storage : public Post
@@ -162,9 +205,13 @@ struct GameData
 		uint32_t armor_capacity;
 		uint32_t replenishment;
 
-		constexpr PostType type() const { PostType::STORAGE; }
+		PostType type() const { return PostType::STORAGE; }
 
-		VIRTUAL_DESTRUCTOR(Storage);
+		[[nodiscard]]
+		static Storage* readJSON_L1(const ptree& pt);
+		static void updateJSON(Storage* ptr, const ptree& pt);
+
+		CLASS_VIRTUAL_DESTRUCTOR(Storage);
 	};
 
 	struct Market : public Post
@@ -173,9 +220,13 @@ struct GameData
 		uint32_t product_capacity;
 		uint32_t replenishment;
 
-		constexpr PostType type() const { PostType::MARKET; }
+		PostType type() const { return PostType::MARKET; }
 
-		VIRTUAL_DESTRUCTOR(Market);
+		[[nodiscard]]
+		static Market* readJSON_L1(const ptree& pt);
+		static void updateJSON(Market* ptr, const ptree& pt);
+
+		CLASS_VIRTUAL_DESTRUCTOR(Market);
 	};
 
 	struct Town_Tier
@@ -183,42 +234,40 @@ struct GameData
 		const uint32_t population_capacity;
 		const uint32_t product_capacity;
 		const uint32_t armor_capacity;
-		const uint64_t cooldown_after_crash;
+		const Types::tick_t cooldown_after_crash;
 		const uint64_t next_level_price;
 	};
 
 	struct Town : public Post
 	{
 		uint32_t armor;
-		uint32_t armor_capacity;
 		uint8_t level;
-		//uint32_t next_level_price;
-		player_uid_t player_idx;
+		Types::player_uid_t player_idx;
 		uint32_t population;
-		uint32_t population_capacity;
 		uint32_t product;
-		uint32_t product_capacity;
-		uint64_t train_cooldown;
+		Types::tick_t train_cooldown;
 
-		constexpr PostType type() const { PostType::TOWN; }
+		PostType type() const { return PostType::TOWN; }
 
-		VIRTUAL_DESTRUCTOR(Town);
+		[[nodiscard]]
+		static Town* readJSON_L1(const ptree& pt);
+		static void updateJSON(Town* ptr, const ptree& pt);
+
+		CLASS_VIRTUAL_DESTRUCTOR(Town);
 	};
 
 	struct Player
 	{
-		const player_idx_t idx;
-		const std::string name;
-		const player_uid_t player_idx;
+		Types::player_uid_t idx;
+		std::string name;
 		int32_t rating;
 
-		std::map<train_idx_t, Train> trains;
-	};
+		std::map<Types::train_idx_t, Train> trains;
 
-	struct PlayerCreds
-	{
-		std::string name;
-		std::string password;
+		static void readJSON_L1(Player& val, const ptree& pt);
+		static void updateJSON(Player& val, const ptree& pt);
+
+		CLASS_VIRTUAL_DESTRUCTOR(Player);
 	};
 
 	//------------------------------          ------------------------------//
@@ -227,13 +276,22 @@ struct GameData
 	//------------------------------          ------------------------------//
 	//------------------------------          ------------------------------//
 
-	GameConfig gamestatus;
-	std::map<player_uid_t, Player> players;
-	boost::ptr_map<post_idx_t, Post*> posts;
-	//std::map<post_idx_t, Post> posts;
+	Types::player_uid_t player_idx;
+	uint32_t home_idx;
+	Types::post_idx_t post_idx;
+	bool in_game;
 
-	GameData() {}
+	std::map<Types::player_uid_t, Player> players;
 
+	GraphIdx graph;
+	boost::ptr_map<Types::post_idx_t, Post*> posts;
 
+	static void readJSON_Login(GameData& val, const ptree& pt);
+	static void readJSON_L0(GameData& val, const ptree& pt);
+	static void readJSON_L10(GameData& val, const ptree& pt);
+	static void readJSON_L1(GameData& val, const ptree& pt);
 
+	static void updateJSON(GameData& val, const ptree& pt);
+
+	CLASS_VIRTUAL_DESTRUCTOR(GameData);
 };
