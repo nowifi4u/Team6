@@ -1,9 +1,9 @@
-[submodule "libs/ogdf"]
-	path = libs/ogdf
-	url = https://github.com/ogdf/ogdf.git
 [submodule "libs/SFML"]
 	path = libs/SFML
 	url = https://github.com/SFML/SFML.git
 [submodule "libs/boost"]
 	path = libs/boost
 	url = https://github.com/boostorg/boost
+[submodule "libs/json"]
+	path = libs/json
+	url = https://github.com/nlohmann/json
