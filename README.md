@@ -16,6 +16,7 @@ Team: **TODO**
 
 
 ### Used libraries:
-  • **Boost**    (https://www.boost.org/)
-  • **SFML**             (https://www.sfml-dev.org/)
+  • **Boost**         (https://www.boost.org/)
+  • **SFML**          (https://www.sfml-dev.org/)
+  • **nlohmann/json** (https://github.com/nlohmann/json)
    
