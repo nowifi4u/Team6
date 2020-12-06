@@ -23,9 +23,15 @@ public:
     }
 
     template <class Ty>
-    const Ty* read()
+    const Ty& get()
     {
-        const Ty* result = reinterpret_cast<const Ty*>(m_data + m_offset);
+        return *reinterpret_cast<const Ty*>(m_data + m_offset);
+    }
+
+    template <class Ty>
+    const Ty& read()
+    {
+        const Ty& result = get<Ty>();
         m_offset += sizeof(Ty);
         return result;
     }
@@ -62,9 +68,15 @@ public:
     }
 
     template <class Ty>
-    Ty* read()
+    Ty& get()
     {
-        Ty* result = reinterpret_cast<Ty*>(m_data + m_offset);
+        return *reinterpret_cast<Ty*>(m_data + m_offset);
+    }
+
+    template <class Ty>
+    Ty& read()
+    {
+        Ty& result = get<Ty>();
         m_offset += sizeof(Ty);
         return result;
     }
