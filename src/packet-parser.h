@@ -39,21 +39,6 @@ namespace Packets {
     };
 
 
-
-    inline std::pair<Action, json> decodeJSON(const char* data)
-    {
-        BinCharIStream parser(data);
-
-        std::pair<Action, json> result;
-        uint32_t _action = boost::endian::little_to_native(*parser.read<uint32_t>());
-        uint32_t _length = boost::endian::little_to_native(*parser.read<uint32_t>());
-        result.first = (Action) _action;
-        result.second = json::parse(parser.get_offset() + parser.release());
-        return result;
-    }
-
-
-
     inline std::string encodeString(Action action, const std::string& data = "")
     {
         uint32_t _action = boost::endian::native_to_little((uint32_t) action);
@@ -62,7 +47,7 @@ namespace Packets {
         writeStreamBinary(out, _action);
         writeStreamBinary(out, _length);
         out << data;
-        return data;
+        return out.str();
     }
 
     namespace encode {
