@@ -41,6 +41,8 @@ namespace Packets {
 
     inline std::string encodeString(Action action, const std::string& data = "")
     {
+        LOG_2("encodeString: Encoding {Action:" << action << ",data:" << data << "}");
+
         uint32_t _action = boost::endian::native_to_little((uint32_t) action);
         uint32_t _length = boost::endian::native_to_little(data.length());
         std::stringstream out;
@@ -63,24 +65,48 @@ namespace Packets {
             std::optional<Types::tick_t> num_turns;
             std::optional<uint8_t> num_players;
 
-            static std::string encodeJSON(const Login& val);
+            static std::string encodeJSON(const Login& val)
+            {
+                json j{
+                    {"name", val.name}
+                };
+                if (val.password.has_value()) j["password"] = val.password.value();
+                if (val.game.has_value()) j["game"] = val.game.value();
+                if (val.num_turns.has_value()) j["num_turns"] = val.num_turns.value();
+                if (val.num_players.has_value()) j["num_players"] = val.num_players.value();
+
+                return Packets::encodeString(Action::LOGIN, j.dump());
+            }
         };
 
         struct Player
         {
-            static std::string encodeJSON();
+            static std::string encodeJSON()
+            {
+                return Packets::encodeString(Action::PLAYER);
+            }
         };
 
         struct Logout
         {
-            static std::string encodeJSON();
+            static std::string encodeJSON()
+            {
+                return Packets::encodeString(Action::LOGOUT);
+            }
         };
 
         struct Map
         {
             uint8_t layer;
 
-            static std::string encodeJSON(const Map& val);
+            static std::string encodeJSON(const Map& val)
+            {
+                json j{
+                    {"layer", val.layer}
+                };
+
+                return Packets::encodeString(Action::MAP, j.dump());
+            }
         };
 
         struct Move
@@ -89,7 +115,16 @@ namespace Packets {
             int8_t speed;
             Types::train_idx_t train_idx;
 
-            static std::string encodeJSON(const Move& val);
+            static std::string encodeJSON(const Move& val)
+            {
+                json j{
+                    {"line_idx", val.line_idx},
+                    {"speed", val.speed},
+                    {"train_idx", val.train_idx}
+                };
+
+                return Packets::encodeString(Action::MOVE, j.dump());
+            }
         };
 
         struct Upgrade
@@ -97,17 +132,31 @@ namespace Packets {
             std::vector<Types::post_idx_t> posts;
             std::vector<Types::train_idx_t> trains;
 
-            static std::string encodeJSON(const Upgrade& val);
+            static std::string encodeJSON(const Upgrade& val)
+            {
+                json j{
+                    {"posts", val.posts},
+                    {"trains", val.trains}
+                };
+
+                return Packets::encodeString(Action::UPGRADE, j.dump());
+            }
         };
 
         struct Turn
         {
-            static std::string encodeJSON();
+            static std::string encodeJSON()
+            {
+                return Packets::encodeString(Action::TURN);
+            }
         };
 
         struct Games
         {
-            static std::string encodeJSON();
+            static std::string encodeJSON()
+            {
+                return Packets::encodeString(Action::GAMES);
+            }
         };
 
     } // namespace encode
