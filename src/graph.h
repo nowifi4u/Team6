@@ -137,10 +137,37 @@ public:
 		return graph[emap.at(eidx)];
 	}
 
+	GraphProperties& graph_props()
+	{
+		return graph[boost::graph_bundle];
+	}
+
+
+
 
 
 	template <class Func>
-	void for_each_vertex(Func f)
+	void for_each_vertex_iterator(Func f)
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			f(vi);
+		}
+	}
+
+	template <class Func>
+	void for_each_edge_iterator(Func f)
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			f(ei);
+		}
+	}
+
+	template <class Func>
+	void for_each_vertex_descriptor(Func f)
 	{
 		vertex_iterator vi, vend;
 		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
@@ -150,12 +177,32 @@ public:
 	}
 
 	template <class Func>
-	void for_each_edge(Func f)
+	void for_each_edge_descriptor(Func f)
 	{
 		edge_iterator ei, eend;
 		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
 		{
 			f(*ei);
+		}
+	}
+
+	template <class Func>
+	void for_each_vertex_props(Func f)
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			f(graph[*vi]);
+		}
+	}
+
+	template <class Func>
+	void for_each_edge_props(Func f)
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			f(graph[*ei]);
 		}
 	}
 
