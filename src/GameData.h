@@ -493,13 +493,13 @@ struct GameData
 
 	std::map<Types::player_uid_t, Player> players;
 
-	GraphIdx graph;
+	GraphIdx map_graph;
 	boost::ptr_map<Types::post_idx_t, Posts::Post*> posts;
 
 	void clear()
 	{
 		players.clear();
-		graph.clear();
+		map_graph.clear();
 		posts.clear();
 	}
 
@@ -515,12 +515,12 @@ struct GameData
 
 	static void readJSON_L0(GameData& val, const json& j)
 	{
-		GraphIdx::readJSON_L0(val.graph, j);
+		GraphIdx::readJSON_L0(val.map_graph, j);
 	}
 
 	static void readJSON_L10(GameData& val, const json& j)
 	{
-		GraphIdx::readJSON_L10(val.graph, j);
+		GraphIdx::readJSON_L10(val.map_graph, j);
 	}
 
 	static void readJSON_L1(GameData& val, const json& j)
