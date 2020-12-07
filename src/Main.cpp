@@ -12,12 +12,6 @@
 
 #include "game_connector.h"
 
-namespace
-{
-	bool keepGoing = true;
-	void shutdown(int) { keepGoing = false; }
-}
-
 int main()
 {
 	try
