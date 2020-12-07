@@ -5,7 +5,6 @@
 #include "packet-parser.h"
 #include "bincharstream.h"
 #include "binstream.h"
-#include "stringProc.h"
 
 #include <iostream>
 #include <iomanip>
