@@ -14,12 +14,12 @@
 
 int main()
 {
+	boost::asio::io_service io;
+	game_connector connector(io);
+	GameData gamedata;
+
 	try
 	{
-
-		boost::asio::io_service io;
-		game_connector connector(io);
-		GameData gamedata;
 
 		connector.connect("wgforge-srv.wargaming.net", "443");
 
@@ -28,8 +28,17 @@ int main()
 		connector.socket.set_option(boost::asio::socket_base::send_buffer_size(65536));
 
 		{
+			LOG_2("Sending Games request...");
+			connector.send(Packets::encode::Games::encodeJSON());
+
+			connector.wait_read();
+
+			const auto response = connector.read_packet();
+		}
+
+		{
 			LOG_2("Sending Login request...");
-			connector.send(Packets::encode::Login::encodeJSON({ "test3", "test3" }));
+			connector.send(Packets::encode::Login::encodeJSON({ "test2", "test2", "Game of Thrones", -1, 10 }));
 
 			connector.wait_read();
 
@@ -72,14 +81,28 @@ int main()
 			GameData::readJSON_L1(gamedata, json::parse(response.second));
 		}
 
-		connector.close();
+		{
+			LOG_2("Sending Games request...");
+			connector.send(Packets::encode::Games::encodeJSON());
 
+			connector.wait_read();
+
+			const auto response = connector.read_packet();
+
+			Sleep(1000);
+		}
 
 	}
 	catch (const nlohmann::detail::type_error& err)
 	{
 		std::cout << "ERROR! " << err.what() << std::endl;
 	}
+	catch (const std::runtime_error& err)
+	{
+		std::cout << "ERROR! " << err.what() << std::endl;
+	}
+
+	connector.close();
 
 	return 0;
 
