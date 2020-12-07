@@ -1,8 +1,11 @@
+#define LOG_LEVEL_2
+
 #include "GameData.h"
 
 #include "packet-parser.h"
 #include "bincharstream.h"
 #include "binstream.h"
+#include "stringProc.h"
 
 #include <iostream>
 #include <iomanip>
@@ -18,34 +21,74 @@ namespace
 
 int main()
 {
-	boost::asio::io_service io;
-	
-	game_connector connector(io);
-	connector.connect("wgforge-srv.wargaming.net", "443");
-	
-	connector.socket.set_option(tcp::no_delay(true));
-	connector.socket.set_option(boost::asio::socket_base::receive_buffer_size(65536));
-	connector.socket.set_option(boost::asio::socket_base::send_buffer_size(65536));
+	try
+	{
 
-	std::wcout << "Sending Login request..." << std::endl;
-	connector.send(Packets::encode::Games::encodeJSON());
-	std::cout << "OK" << std::endl;
+		boost::asio::io_service io;
+		game_connector connector(io);
+		GameData gamedata;
 
-	std::cout << "Waiting for answer..." << std::endl;
-	connector.wait_read();
-	std::cout << "OK" << std::endl;
+		connector.connect("wgforge-srv.wargaming.net", "443");
+
+		connector.socket.set_option(tcp::no_delay(true));
+		connector.socket.set_option(boost::asio::socket_base::receive_buffer_size(65536));
+		connector.socket.set_option(boost::asio::socket_base::send_buffer_size(65536));
+
+		{
+			LOG_2("Sending Login request...");
+			connector.send(Packets::encode::Login::encodeJSON({ "test3", "test3" }));
+
+			connector.wait_read();
 
 
-	auto response = connector.read_packet();
-	std::cout << "------------------------- BEGIN -------------------------" << std::endl;
-	std::cout << "Action: " << response.first << std::endl;
-	std::cout << response.second << std::endl;
-	std::cout << "-------------------------  END  -------------------------" << std::endl;
+			const auto response = connector.read_packet();
+
+			GameData::readJSON_Login(gamedata, json::parse(response.second));
+		}
+
+		{
+			LOG_2("Sending L0 request...");
+			connector.send(Packets::encode::Map::encodeJSON({ 0 }));
+
+			connector.wait_read();
+
+			const auto response = connector.read_packet();
+
+			GameData::readJSON_L0(gamedata, json::parse(response.second));
+		}
+
+		{
+			LOG_2("Sending L10 request...");
+			connector.send(Packets::encode::Map::encodeJSON({ 10 }));
+
+			connector.wait_read();
+
+			const auto response = connector.read_packet();
+
+			GameData::readJSON_L10(gamedata, json::parse(response.second));
+		}
+
+		{
+			LOG_2("Sending L1 request...");
+			connector.send(Packets::encode::Map::encodeJSON({ 1 }));
+
+			connector.wait_read();
+
+			const auto response = connector.read_packet();
+
+			GameData::readJSON_L1(gamedata, json::parse(response.second));
+		}
+
+		connector.close();
+
+
+	}
+	catch (const nlohmann::detail::type_error& err)
+	{
+		std::cout << "ERROR! " << err.what() << std::endl;
+	}
 
 	return 0;
-
-
-
 
 	/*GameData gamedata;
 
