@@ -7,6 +7,7 @@
 
 #include "packet-parser.h"
 #include "ClassDefines.h"
+#include "Logging.h"
 
 using boost::asio::ip::tcp;
 
@@ -28,6 +29,8 @@ struct game_connector
 
 	size_t send(const std::string data)
 	{
+		LOG_2("game_connector: Sending packet...");
+
 		return socket.send(boost::asio::buffer(data));
 	}
 
@@ -42,11 +45,15 @@ struct game_connector
 
 	void async_send(const std::string& data)
 	{
+		LOG_2("game_connector: Sending anync packet...");
+
 		socket.async_send(boost::asio::buffer(data), _async_send_handler);
 	}
 
 	void wait_read()
 	{
+		LOG_2("game_connector: Waiting for answer...");
+
 		socket.wait(boost::asio::socket_base::wait_type::wait_read);
 	}
 
@@ -83,8 +90,23 @@ struct game_connector
 
 	std::pair<Packets::Action, std::string> read_packet()
 	{
+		LOG_2("game_connector: Reading packet...");
+
 		const auto header = _read_header();
 
-		return std::make_pair(header.first, _read_until_size(header.second));
+		const std::string data = _read_until_size(header.second);
+
+		LOG_3("------------------------- BEGIN -------------------------");
+		LOG_3("Action:" << header.first << " Size:" << header.second);
+		LOG_3(data);
+		LOG_3("-------------------------  END  -------------------------");
+
+		return std::make_pair(header.first, data);
 	}
+
+	void close()
+	{
+		socket.close();
+	}
+
 };
