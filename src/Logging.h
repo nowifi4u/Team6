@@ -15,7 +15,7 @@
 #define LOG_1(args) std::cout << "log_1:" << args << std::endl
 
 #else
-#define LOG_1(args)
+#define LOG_1(args) 1
 
 #endif
 
@@ -23,7 +23,7 @@
 #define LOG_2(args) std::cout << "log_2:" << args << std::endl
 
 #else
-#define LOG_2(args)
+#define LOG_2(args) 1
 
 #endif
 
@@ -31,6 +31,6 @@
 #define LOG_3(args) std::cout << "log_3:" << args << std::endl
 
 #else
-#define LOG_3(args)
+#define LOG_3(args) 1
 
 #endif
