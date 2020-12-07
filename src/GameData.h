@@ -554,7 +554,7 @@ struct GameData
 		//Parse Players
 		for (const json& ji : j["players"])
 		{
-			Player::updateJSON_L1(val.players.at(ji.get<std::string>()), ji);
+			Player::updateJSON_L1(val.players[ji.get<std::string>()], ji);
 		}
 
 		//Parse Trains
@@ -563,7 +563,7 @@ struct GameData
 			Types::train_idx_t train_idx = ji["idx"].get<Types::train_idx_t>();
 			Types::player_uid_t player_idx = ji["player_idx"].get<Types::player_uid_t>();
 
-			Trains::Train::updateJSON_L1(val.players.at(player_idx).trains.at(train_idx), ji);
+			Trains::Train::updateJSON_L1(val.players.at(player_idx).trains[train_idx], ji);
 		}
 
 		//Parse Posts
