@@ -1,4 +1,4 @@
-#define LOG_LEVEL_2
+#define LOG_LEVEL_3
 
 #include "GameData.h"
 
@@ -7,10 +7,11 @@
 #include "binstream.h"
 
 #include <iostream>
-#include <iomanip>
-#include <algorithm>
 
 #include "game_connector.h"
+
+#include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
 
 int main()
 {
@@ -23,9 +24,9 @@ int main()
 
 		connector.connect("wgforge-srv.wargaming.net", "443");
 
-		connector.socket.set_option(tcp::no_delay(true));
-		connector.socket.set_option(boost::asio::socket_base::receive_buffer_size(65536));
-		connector.socket.set_option(boost::asio::socket_base::send_buffer_size(65536));
+		//connector.socket.set_option(tcp::no_delay(true));
+		//connector.socket.set_option(boost::asio::socket_base::receive_buffer_size(65536));
+		//connector.socket.set_option(boost::asio::socket_base::send_buffer_size(65536));
 
 		{
 			LOG_2("Sending Games request...");
@@ -38,7 +39,7 @@ int main()
 
 		{
 			LOG_2("Sending Login request...");
-			connector.send(Packets::encode::Login::encodeJSON({ "test2", "test2", "Game of Thrones" }));
+			connector.send(Packets::encode::Login::encodeJSON({ "test3", "test3", "Game of Thrones", -1, 3 }));
 
 			connector.wait_read();
 
@@ -89,7 +90,7 @@ int main()
 
 			const auto response = connector.read_packet();
 
-			GameData::updateJSON_L1(gamedata, json::parse(response.second));
+			GameData::readJSON_L1(gamedata, json::parse(response.second));
 		}
 
 		{
@@ -100,7 +101,54 @@ int main()
 
 			const auto response = connector.read_packet();
 
-			Sleep(1000);
+			sf::RenderWindow window(sf::VideoMode(gamedata.map_graph.graph_props().size_width + 20, gamedata.map_graph.graph_props().size_height + 20), "graph");
+
+			while (window.isOpen())
+			{
+				sf::Event event;
+				while (window.pollEvent(event))
+				{
+					// Request for closing the window
+					if (event.type == sf::Event::Closed)
+						window.close();
+				}
+
+				window.clear();
+
+				gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
+					const GraphIdx::VertexProperties& es = gamedata.map_graph.graph[boost::source(e, gamedata.map_graph.graph)];
+					const GraphIdx::VertexProperties& et = gamedata.map_graph.graph[boost::target(e, gamedata.map_graph.graph)];
+					
+					sf::Vertex line[2]{
+						sf::Vertex(sf::Vector2f(es.pos_x, es.pos_y)),
+						sf::Vertex(sf::Vector2f(et.pos_x, et.pos_y))
+					};
+					window.draw(line, 2, sf::Lines);
+
+					});
+
+				gamedata.map_graph.for_each_vertex_props([&](const GraphIdx::VertexProperties& v) {
+					sf::CircleShape dot(5);
+					if (v.post_idx == UINT32_MAX)
+					{
+						dot.setFillColor(sf::Color::White);
+					}
+					else
+					{
+						switch (gamedata.posts[v.post_idx]->type())
+						{
+						case Posts::TOWN: dot.setFillColor(sf::Color::Red); break;
+						case Posts::STORAGE: dot.setFillColor(sf::Color::Yellow); break;
+						case Posts::MARKET: dot.setFillColor(sf::Color::Green); break;
+						}
+					}
+					
+					dot.setPosition(v.pos_x - 5, v.pos_y - 5);
+					window.draw(dot);
+					});
+
+				window.display();
+			}
 		}
 
 	}
