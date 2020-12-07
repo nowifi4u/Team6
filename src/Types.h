@@ -6,7 +6,7 @@
 namespace Types
 {
 
-	using tick_t = uint64_t;
+	using tick_t = int64_t;
 
 	using vertex_idx_t = uint32_t;
 	using edge_idx_t = uint32_t;
