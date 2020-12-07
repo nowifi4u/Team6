@@ -505,6 +505,8 @@ struct GameData
 
 	static void readJSON_Login(GameData& val, const json& j)
 	{
+		if (j.find("error") != j.end()) throw std::runtime_error(j["error"].get<std::string>());
+
 		j["idx"].get_to(val.player_idx);
 		j["home"]["idx"].get_to(val.home_idx);
 		j["home"]["post_idx"].get_to(val.post_idx);
