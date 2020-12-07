@@ -38,7 +38,7 @@ int main()
 
 		{
 			LOG_2("Sending Login request...");
-			connector.send(Packets::encode::Login::encodeJSON({ "test2", "test2", "Game of Thrones", -1, 10 }));
+			connector.send(Packets::encode::Login::encodeJSON({ "test2", "test2", "Game of Thrones" }));
 
 			connector.wait_read();
 
@@ -79,6 +79,17 @@ int main()
 			const auto response = connector.read_packet();
 
 			GameData::readJSON_L1(gamedata, json::parse(response.second));
+		}
+
+		{
+			LOG_2("Sending L1 request...");
+			connector.send(Packets::encode::Map::encodeJSON({ 1 }));
+
+			connector.wait_read();
+
+			const auto response = connector.read_packet();
+
+			GameData::updateJSON_L1(gamedata, json::parse(response.second));
 		}
 
 		{
