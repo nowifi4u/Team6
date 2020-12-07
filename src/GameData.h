@@ -249,7 +249,7 @@ namespace Trains {
 		static void updateJSON_L1(Train& val, const json& j)
 		{
 			//j["idx"].get_to(val.idx);
-			j["tier"].get_to(val.level);
+			j["level"].get_to(val.level);
 			j["cooldown"].get_to(val.cooldown);
 			//DISABLED j["fuel"].get_to(val.fuel);
 			j["goods"].get_to(val.goods);
@@ -554,9 +554,10 @@ struct GameData
 	static void updateJSON_L1(GameData& val, const json& j)
 	{
 		//Parse Players
-		for (const json& ji : j["players"])
+		for (const auto& [player_idx, ji] : j["ratings"].items())
 		{
-			Player::updateJSON_L1(val.players[ji.get<std::string>()], ji);
+			//Player memory initialization + value initialization
+			Player::updateJSON_L1(val.players[player_idx], ji);
 		}
 
 		//Parse Trains
