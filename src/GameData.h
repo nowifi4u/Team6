@@ -20,7 +20,7 @@
 
 namespace Events {
 
-	enum EventType
+	enum EventType : uint8_t
 	{
 		TRAIN_COLLISION = 1,
 		HIJACKERS_ASSAULT = 2,
@@ -217,7 +217,7 @@ namespace Trains {
 		{160,1600,UINT32_MAX}
 	};
 
-	enum GoodsType
+	enum GoodsType : uint8_t
 	{
 		None = 0,
 		Product = 1,
@@ -284,7 +284,7 @@ namespace Posts {
 
 
 
-	enum PostType
+	enum PostType : uint8_t
 	{
 		TOWN = 1,
 		MARKET = 2,
@@ -487,7 +487,7 @@ struct Player
 
 struct GameData
 {
-	enum GameState
+	enum GameState : uint8_t
 	{
 		INIT = 1,
 		RUN = 2,
