@@ -217,6 +217,13 @@ namespace Trains {
 		{160,1600,UINT32_MAX}
 	};
 
+	enum GoodsType
+	{
+		None = 0,
+		Product = 1,
+		Armor = 2
+	};
+
 	struct Train
 	{
 		Types::train_idx_t idx;
@@ -224,6 +231,7 @@ namespace Trains {
 		Types::tick_t cooldown;
 		//DISABLED uint32_t fuel;
 		uint32_t goods;
+		GoodsType goods_type;
 		Types::edge_idx_t line_idx;
 		Types::player_uid_t player_idx;
 		Types::edge_length_t position;
@@ -238,6 +246,7 @@ namespace Trains {
 			j["cooldown"].get_to(val.cooldown);
 			//DISABLED j["fuel"].get_to(val.fuel);
 			j["goods"].get_to(val.goods);
+			val.goods_type = j["goods_type"].is_null() ? GoodsType::None : j["goods_type"].get<GoodsType>();
 			j["line_idx"].get_to(val.line_idx);
 			j["player_idx"].get_to(val.player_idx);
 			j["position"].get_to(val.position);
@@ -253,6 +262,7 @@ namespace Trains {
 			j["cooldown"].get_to(val.cooldown);
 			//DISABLED j["fuel"].get_to(val.fuel);
 			j["goods"].get_to(val.goods);
+			val.goods_type = j["goods_type"].is_null() ? GoodsType::None : j["goods_type"].get<GoodsType>();
 			j["line_idx"].get_to(val.line_idx);
 			//j["player_idx"].get_to(val.player_idx);
 			j["position"].get_to(val.position);
