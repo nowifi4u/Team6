@@ -197,6 +197,14 @@ public:
 		}
 	}
 
+	void reset()
+	{
+		for (game_drawer_layer::_interface& layer : layers)
+		{
+			layer.reset();
+		}
+	}
+
 	game_drawer(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config = {})
 		: window(window), gamedata(gamedata), config(config)
 	{
