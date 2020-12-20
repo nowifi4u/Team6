@@ -23,11 +23,158 @@ struct game_drawer_config
 
 	sf::Color edge_color = sf::Color::White;
 	sf::Color edge_length_color = sf::Color::Magenta;
-	sf::String edge_length_font = "../res/arial.ttf";
+	std::string edge_length_font = "../res/arial.ttf";
 	float edge_length_size = 15;
 	float edge_length_offset_x = -7;
 	float edge_length_offset_y = -7;
 };
+
+namespace game_drawer_layer {
+
+
+
+	class _interface
+	{
+	public:
+
+		virtual void init(const GameData& gamedata, const game_drawer_config& config) = 0;
+		virtual void reset() = 0;
+
+		virtual void draw(sf::RenderWindow& window, const GameData& gamedata) = 0;
+	};
+
+
+
+	class vertecies : public _interface
+	{
+		std::map<Types::vertex_idx_t, sf::CircleShape> cached_vertecies;
+
+	public:
+
+		void init(const GameData& gamedata, const game_drawer_config& config)
+		{
+			LOG_2("game_drawer: init_vertecies");
+
+			gamedata.map_graph.for_each_vertex_props([&](const GraphIdx::VertexProperties& v) {
+				sf::CircleShape& dot = cached_vertecies[v.idx];
+				dot.setRadius(config.vertex_radius);
+
+				if (v.post_idx == UINT32_MAX)
+				{
+					dot.setFillColor(config.vertex_color_empty);
+				}
+				else
+				{
+					switch (gamedata.posts.at(v.post_idx)->type())
+					{
+					case Posts::TOWN: dot.setFillColor(config.vertex_color_town); break;
+					case Posts::STORAGE: dot.setFillColor(config.vertex_color_storage); break;
+					case Posts::MARKET: dot.setFillColor(config.vertex_color_market); break;
+					}
+				}
+
+				dot.setPosition(v.pos_x - config.vertex_radius, v.pos_y - config.vertex_radius);
+				});
+		}
+
+		void reset()
+		{
+			cached_vertecies.clear();
+		}
+
+		void draw(sf::RenderWindow& window, const GameData& gamedata)
+		{
+			for (const auto& vertex : cached_vertecies)
+			{
+				window.draw(vertex.second);
+			}
+		}
+	};
+
+
+
+	class edges : public _interface
+	{
+		std::map<Types::edge_idx_t, sf::Vertex[2]> cached_edges;
+
+	public:
+
+		void init(const GameData& gamedata, const game_drawer_config& config)
+		{
+			LOG_2("game_drawer: init_edges");
+
+			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
+				const GraphIdx::VertexProperties& es = gamedata.map_graph.graph[boost::source(e, gamedata.map_graph.graph)];
+				const GraphIdx::VertexProperties& et = gamedata.map_graph.graph[boost::target(e, gamedata.map_graph.graph)];
+				const GraphIdx::EdgeProperties& eprops = gamedata.map_graph.graph[e];
+
+				sf::Vertex* line = cached_edges[eprops.idx];
+				line[0] = sf::Vertex(sf::Vector2f(es.pos_x, es.pos_y), config.edge_color);
+				line[1] = sf::Vertex(sf::Vector2f(et.pos_x, et.pos_y), config.edge_color);
+				});
+		}
+
+		void reset()
+		{
+			cached_edges.clear();
+		}
+
+		void draw(sf::RenderWindow& window, const GameData& gamedata)
+		{
+			for (const auto& edge : cached_edges)
+			{
+				window.draw(edge.second, 2, sf::Lines);
+			}
+		}
+	};
+
+
+
+	class edges_length : public _interface
+	{
+		sf::Font cached_font;
+		std::map<Types::edge_idx_t, sf::Text> cached_edges_length;
+
+	public:
+
+		void init(const GameData& gamedata, const game_drawer_config& config)
+		{
+			cached_font.loadFromFile(config.edge_length_font);
+
+			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
+				const GraphIdx::VertexProperties& es = gamedata.map_graph.graph[boost::source(e, gamedata.map_graph.graph)];
+				const GraphIdx::VertexProperties& et = gamedata.map_graph.graph[boost::target(e, gamedata.map_graph.graph)];
+				const GraphIdx::EdgeProperties& eprops = gamedata.map_graph.graph[e];
+
+				sf::Text& line_length = cached_edges_length[eprops.idx];
+				const std::string text = std::to_string(eprops.length);
+				line_length.setString(text.c_str());
+				line_length.setPosition(sf::Vector2f(
+					(es.pos_x + et.pos_x) / 2 + config.edge_length_offset_x,
+					(es.pos_y + et.pos_y) / 2 + config.edge_length_offset_y
+				));
+
+				line_length.setFont(cached_font);
+				line_length.setCharacterSize(config.edge_length_size);
+				line_length.setFillColor(config.edge_length_color);
+				});
+		}
+
+		void reset()
+		{
+			cached_edges_length.clear();
+		}
+
+		void draw(sf::RenderWindow& window, const GameData& gamedata)
+		{
+			for (const auto& edge : cached_edges_length)
+			{
+				window.draw(edge.second);
+			}
+		}
+	};
+
+} // namespace game_drawer_layer
 
 
 class game_drawer
@@ -38,102 +185,27 @@ protected:
 	const GameData& gamedata;
 	const game_drawer_config& config;
 
-	std::map<Types::vertex_idx_t, sf::CircleShape> cached_vertecies;
-	std::map<Types::edge_idx_t, sf::Vertex[2]> cached_edges;
-	std::map<Types::edge_idx_t, sf::Text> cached_edges_length;
-
-	sf::Font cached_font;
-
-	void init_vertecies()
-	{
-		LOG_2("game_drawer: init_vertecies");
-
-		gamedata.map_graph.for_each_vertex_props([&](const GraphIdx::VertexProperties& v) {
-			sf::CircleShape& dot = cached_vertecies[v.idx];
-			dot.setRadius(config.vertex_radius);
-
-			if (v.post_idx == UINT32_MAX)
-			{
-				dot.setFillColor(config.vertex_color_empty);
-			}
-			else
-			{
-				switch (gamedata.posts.at(v.post_idx)->type())
-				{
-				case Posts::TOWN: dot.setFillColor(config.vertex_color_town); break;
-				case Posts::STORAGE: dot.setFillColor(config.vertex_color_storage); break;
-				case Posts::MARKET: dot.setFillColor(config.vertex_color_market); break;
-				}
-			}
-
-			dot.setPosition(v.pos_x - config.vertex_radius, v.pos_y - config.vertex_radius);
-			});
-	}
-
-	void init_edges()
-	{
-		LOG_2("game_drawer: init_edges");
-
-		gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
-			const GraphIdx::VertexProperties& es = gamedata.map_graph.graph[boost::source(e, gamedata.map_graph.graph)];
-			const GraphIdx::VertexProperties& et = gamedata.map_graph.graph[boost::target(e, gamedata.map_graph.graph)];
-			const GraphIdx::EdgeProperties& eprops = gamedata.map_graph.graph[e];
-
-			sf::Vertex* line = cached_edges[eprops.idx];
-			line[0] = sf::Vertex(sf::Vector2f(es.pos_x, es.pos_y), config.edge_color);
-			line[1] = sf::Vertex(sf::Vector2f(et.pos_x, et.pos_y), config.edge_color);
-
-			sf::Text& line_length = cached_edges_length[eprops.idx];
-			line_length.setString(std::to_string(gamedata.map_graph.graph[e].length));
-			line_length.setPosition(sf::Vector2f(
-				(es.pos_x + et.pos_x) / 2 + config.edge_length_offset_x, 
-				(es.pos_y + et.pos_y) / 2 + config.edge_length_offset_y
-			));
-
-			line_length.setFont(cached_font);
-			line_length.setCharacterSize(config.edge_length_size);
-			line_length.setFillColor(config.edge_length_color);
-			});
-	}
-
+	boost::ptr_vector<game_drawer_layer::_interface> layers;
+	
 public:
 
 	void update_config()
 	{
-		cached_font.loadFromFile(config.edge_length_font);
-
-		init_vertecies();
-		init_edges();
+		for (game_drawer_layer::_interface& layer : layers)
+		{
+			layer.init(gamedata, config);
+		}
 	}
 
 	game_drawer(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config = {})
 		: window(window), gamedata(gamedata), config(config)
 	{
+		layers.reserve(3);
+		layers.push_back(new game_drawer_layer::edges);
+		layers.push_back(new game_drawer_layer::vertecies);
+		layers.push_back(new game_drawer_layer::edges_length);
+
 		update_config();
-	}
-
-	void draw_vertecies()
-	{
-		for (const auto& vertex : cached_vertecies)
-		{
-			window.draw(vertex.second);
-		}
-	}
-
-	void draw_edges()
-	{
-		for (const auto& edge : cached_edges)
-		{
-			window.draw(edge.second, 2, sf::Lines);
-		}
-	}
-
-	void draw_edges_length()
-	{
-		for (const auto& edge : cached_edges_length)
-		{
-			window.draw(edge.second);
-		}
 	}
 
 	enum status : uint8_t
@@ -143,29 +215,27 @@ public:
 		CALCULATING = 2,
 	};
 
+	void _draw()
+	{
+		for (game_drawer_layer::_interface& layer : layers)
+		{
+			layer.draw(window, gamedata);
+		}
+	}
+
 	void draw(status s)
 	{
-		try
+		switch (s)
 		{
-
-			switch (s)
-			{
 			case status::UPDATING:  window.clear(sf::Color::Red);  break;
 			case status::CALCULATING:  window.clear(sf::Color::Yellow);   break;
-				case status::READY: 
-				{
-					window.clear(config.clear_color);
+			case status::READY:
+			{
+				window.clear(config.clear_color);
 
-					draw_edges();
-					draw_vertecies();
-					draw_edges_length();
+				_draw();
 
-				} break;
-			}
-		}
-		catch (boost::thread_interrupted&)
-		{
-			LOG_2("game_render: Render thread interrupted");
+			} break;
 		}
 	}
 
