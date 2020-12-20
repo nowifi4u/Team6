@@ -31,7 +31,7 @@ public:
 		this->reset();
 	}
 
-	void init_gamedata(const std::string& addr, const std::string& port, const game_connector::Login& lobby)
+	void init(const std::string& addr, const std::string& port, const game_connector::Login& lobby)
 	{
 		connector.connect(addr, port);
 
