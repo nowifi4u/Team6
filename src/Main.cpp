@@ -5,8 +5,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
-#include "GameData.h"
-
 #include "game_connector.h"
 #include "game_drawer.h"
 
