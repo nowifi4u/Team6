@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "GameData.h"
+#include "game_data.h"
 
 
 struct game_drawer_config
@@ -147,7 +147,6 @@ public:
 	{
 		try
 		{
-			
 
 			switch (s)
 			{
@@ -166,7 +165,7 @@ public:
 		}
 		catch (boost::thread_interrupted&)
 		{
-
+			LOG_2("game_render: Render thread interrupted");
 		}
 	}
 
@@ -174,20 +173,28 @@ public:
 	{
 		while (window.isOpen())
 		{
-			sf::Event event;
-			while (window.pollEvent(event))
-			{
-				// Request for closing the window
-				if (event.type == sf::Event::Closed)
+			try {
+
+				sf::Event event;
+				while (window.pollEvent(event))
 				{
-					window.close();
-					exit(0);
+					// Request for closing the window
+					if (event.type == sf::Event::Closed)
+					{
+						window.close();
+						exit(0);
+					}
+
 				}
 
-			}
+				this->draw(s);
+				window.display();
 
-			this->draw(s);
-			window.display();
+			}
+			catch (boost::thread_interrupted&)
+			{
+				LOG_2("game_render: Render thread interrupted");
+			}
 		}
 	}
 };
