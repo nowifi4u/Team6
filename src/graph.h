@@ -96,7 +96,7 @@ public:
 		graph.clear();
 	}
 
-	std::pair<edge_descriptor, bool> find_edge(Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2) throw(std::out_of_range)
+	std::pair<edge_descriptor, bool> find_edge(Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2) const
 	{
 		return boost::edge(vmap.at(vidx1), vmap.at(vidx2), graph);
 	}
@@ -109,7 +109,7 @@ public:
 		return v;
 	}
 
-	edge_descriptor add_edge(Types::edge_idx_t eidx, Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2) throw(std::runtime_error)
+	edge_descriptor add_edge(Types::edge_idx_t eidx, Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2)
 	{
 		auto er = boost::add_edge(vmap.at(vidx1), vmap.at(vidx2), graph);
 		if (er.second == false) throw std::runtime_error("Edge already exists");
@@ -120,24 +120,46 @@ public:
 		return e;
 	}
 
-	VertexProperties& get_vertex(Types::vertex_idx_t vidx) throw(std::out_of_range)
+	VertexProperties& get_vertex(Types::vertex_idx_t vidx)
 	{
 		return graph[vmap.at(vidx)];
 	}
 
-	EdgeProperties& get_edge(Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2) throw(std::out_of_range, std::runtime_error)
+	const VertexProperties& get_vertex(Types::vertex_idx_t vidx) const
+	{
+		return graph[vmap.at(vidx)];
+	}
+
+	EdgeProperties& get_edge(Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2)
 	{
 		auto e = find_edge(vidx1, vidx2);
 		if (e.second == false) throw std::runtime_error("Edge does not exist");
 		return graph[e.first];
 	}
 
-	EdgeProperties& get_edge(Types::edge_idx_t eidx) throw(std::out_of_range)
+	const EdgeProperties& get_edge(Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2) const
+	{
+		auto e = find_edge(vidx1, vidx2);
+		if (e.second == false) throw std::runtime_error("Edge does not exist");
+		return graph[e.first];
+	}
+
+	EdgeProperties& get_edge(Types::edge_idx_t eidx)
+	{
+		return graph[emap.at(eidx)];
+	}
+
+	const EdgeProperties& get_edge(Types::edge_idx_t eidx) const
 	{
 		return graph[emap.at(eidx)];
 	}
 
 	GraphProperties& graph_props()
+	{
+		return graph[boost::graph_bundle];
+	}
+
+	const GraphProperties& graph_props() const
 	{
 		return graph[boost::graph_bundle];
 	}
@@ -157,7 +179,27 @@ public:
 	}
 
 	template <class Func>
+	void for_each_vertex_iterator(Func f) const
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			f(vi);
+		}
+	}
+
+	template <class Func>
 	void for_each_edge_iterator(Func f)
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			f(ei);
+		}
+	}
+
+	template <class Func>
+	void for_each_edge_iterator(Func f) const
 	{
 		edge_iterator ei, eend;
 		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
@@ -177,7 +219,27 @@ public:
 	}
 
 	template <class Func>
+	void for_each_vertex_descriptor(Func f) const
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			f(*vi);
+		}
+	}
+
+	template <class Func>
 	void for_each_edge_descriptor(Func f)
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			f(*ei);
+		}
+	}
+
+	template <class Func>
+	void for_each_edge_descriptor(Func f) const
 	{
 		edge_iterator ei, eend;
 		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
@@ -197,7 +259,27 @@ public:
 	}
 
 	template <class Func>
+	void for_each_vertex_props(Func f) const
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			f(graph[*vi]);
+		}
+	}
+
+	template <class Func>
 	void for_each_edge_props(Func f)
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			f(graph[*ei]);
+		}
+	}
+
+	template <class Func>
+	void for_each_edge_props(Func f) const
 	{
 		edge_iterator ei, eend;
 		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
