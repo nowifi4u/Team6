@@ -18,12 +18,13 @@ protected:
 
 public:
 
+	sf::RenderWindow* drawer_window = nullptr;
 	game_drawer_config drawer_config;
 
 	Game(boost::asio::io_service& io)
 		: connector(io)
 	{
-
+		
 	}
 
 	~Game()
@@ -36,7 +37,7 @@ public:
 		connector.connect(addr, port);
 
 		{
-			LOG_1("Sending Login request...");
+			LOG_1("Game::init: Sending Login request...");
 			connector.send_Login(lobby);
 
 			const auto response = connector.read_packet();
@@ -45,7 +46,7 @@ public:
 		}
 
 		{
-			LOG_1("Sending L0 request...");
+			LOG_1("Game::init: Sending L0 request...");
 			connector.send_Map({ 0 });
 
 			const auto response = connector.read_packet();
@@ -54,7 +55,7 @@ public:
 		}
 
 		{
-			LOG_1("Sending L10 request...");
+			LOG_1("Game::init: Sending L10 request...");
 			connector.send_Map({ 10 });
 
 			const auto response = connector.read_packet();
@@ -63,7 +64,7 @@ public:
 		}
 
 		{
-			LOG_1("Sending L1 request...");
+			LOG_1("Game::init: Sending L1 request...");
 			connector.send_Map({ 1 });
 
 			const auto response = connector.read_packet();
@@ -72,10 +73,10 @@ public:
 		}
 	}
 
-	void update_gamedata()
+	void update()
 	{
 		{
-			LOG_1("Sending L1 request...");
+			LOG_1("Game::update: Sending L1 request...");
 			connector.send_Map({ 1 });
 
 			const auto response = connector.read_packet();
@@ -86,6 +87,8 @@ public:
 
 	void reset()
 	{
+		LOG_2("Game::reset");
+
 		connector.disconnect();
 		this->drawer_stop();
 		gamedata.clear();
@@ -95,10 +98,11 @@ public:
 	{
 		if (drawer_thread == nullptr)
 		{
-			std::cerr << "Render thread not started yet" << std::endl;
+			LOG_2("Game::drawer_set_state: Render thread not started yet");
 			return;
 		}
 
+		LOG_2("Game::drawer_set_state: Setting state [" << (uint32_t)s << "]...");
 		drawer_status = s;
 		drawer_thread->interrupt();
 	}
@@ -107,36 +111,46 @@ public:
 	{
 		if (drawer_thread != nullptr)
 		{
-			std::cerr << "Render thread already running!" << std::endl;
+			LOG_2("Game::drawer_start: Render thread already running!");
 			return;
 		}
 
-		LOG_2("Game: Starting game_drawer thread...");
-		drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status));
+		drawer_config.window_videomode = sf::VideoMode(gamedata.map_graph.graph_props().size_width + 20, gamedata.map_graph.graph_props().size_height + 20);
+
+		LOG_2("Game::drawer_start: Starting game_drawer thread...");
+		drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
 	}
 
 	void drawer_stop()
 	{
 		if (drawer_thread == nullptr)
 		{
-			std::cerr << "Render thread not started yet" << std::endl;
+			LOG_2("Game::drawer_stop: Render thread not started yet");
 			return;
 		}
 
-		LOG_2("Game: Stopping game_drawer thread...");
+		LOG_2("Game::drawer_stop: Stopping game_drawer thread...");
 		delete drawer_thread;
 		drawer_thread = nullptr;
+		drawer_window = nullptr;
+	}
+
+	void drawer_window_wait() const
+	{
+		LOG_2("Game::drawer_window_wait: Waiting for drawer_window...");
+		while (drawer_window == nullptr);
+		LOG_2("Game::drawer_window_wait: drawer_window ready!");
 	}
 
 	void drawer_join()
 	{
 		if (drawer_thread == nullptr)
 		{
-			std::cerr << "Render thread not started yet" << std::endl;
+			LOG_2("Game::drawer_join: Render thread not started yet");
 			return;
 		}
 
-		LOG_2("Game: Joining game_drawer thread...");
+		LOG_2("Game::drawer_join: Joining game_drawer thread...");
 		drawer_thread->join();
 	}
 };

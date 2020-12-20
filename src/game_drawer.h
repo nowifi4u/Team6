@@ -14,6 +14,9 @@
 struct game_drawer_config
 {
 	sf::Color clear_color = sf::Color::Black;
+	uint32_t window_framerate_limit = 60;
+	sf::VideoMode window_videomode;
+	std::string window_name;
 
 	float vertex_radius = 5;
 	sf::Color vertex_color_empty = sf::Color::White;
@@ -53,7 +56,7 @@ namespace game_drawer_layer {
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
-			LOG_2("game_drawer: init_vertecies");
+			LOG_3("game_drawer_layer::vertecies::init");
 
 			gamedata.map_graph.for_each_vertex_props([&](const GraphIdx::VertexProperties& v) {
 				sf::CircleShape& dot = cached_vertecies[v.idx];
@@ -79,6 +82,8 @@ namespace game_drawer_layer {
 
 		void reset()
 		{
+			LOG_3("game_drawer_layer::vertecies::reset");
+
 			cached_vertecies.clear();
 		}
 
@@ -101,7 +106,7 @@ namespace game_drawer_layer {
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
-			LOG_2("game_drawer: init_edges");
+			LOG_3("game_drawer_layer::edges::init");
 
 			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
 				const GraphIdx::VertexProperties& es = gamedata.map_graph.graph[boost::source(e, gamedata.map_graph.graph)];
@@ -116,6 +121,8 @@ namespace game_drawer_layer {
 
 		void reset()
 		{
+			LOG_3("game_drawer_layer::edges::reset");
+
 			cached_edges.clear();
 		}
 
@@ -139,6 +146,8 @@ namespace game_drawer_layer {
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
+			LOG_3("game_drawer_layer::edges_length::init");
+
 			cached_font.loadFromFile(config.edge_length_font);
 
 			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
@@ -162,6 +171,8 @@ namespace game_drawer_layer {
 
 		void reset()
 		{
+			LOG_3("game_drawer_layer::edges_length::reset");
+			
 			cached_edges_length.clear();
 		}
 
@@ -181,16 +192,16 @@ class game_drawer
 {
 protected:
 
-	sf::RenderWindow& window;
-	const GameData& gamedata;
 	const game_drawer_config& config;
 
 	boost::ptr_vector<game_drawer_layer::_interface> layers;
 	
 public:
 
-	void update_config()
+	void init(const GameData& gamedata)
 	{
+		LOG_2("game_drawer::init");
+
 		for (game_drawer_layer::_interface& layer : layers)
 		{
 			layer.init(gamedata, config);
@@ -199,21 +210,23 @@ public:
 
 	void reset()
 	{
+		LOG_2("game_drawer::reset");
+
 		for (game_drawer_layer::_interface& layer : layers)
 		{
 			layer.reset();
 		}
 	}
 
-	game_drawer(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config = {})
-		: window(window), gamedata(gamedata), config(config)
+	game_drawer(const GameData& gamedata, const game_drawer_config& config = {})
+		: config(config)
 	{
 		layers.reserve(3);
 		layers.push_back(new game_drawer_layer::edges);
 		layers.push_back(new game_drawer_layer::vertecies);
 		layers.push_back(new game_drawer_layer::edges_length);
 
-		update_config();
+		init(gamedata);
 	}
 
 	enum status : uint8_t
@@ -223,7 +236,7 @@ public:
 		CALCULATING = 2,
 	};
 
-	void _draw()
+	void _draw(sf::RenderWindow& window, const GameData& gamedata)
 	{
 		for (game_drawer_layer::_interface& layer : layers)
 		{
@@ -231,7 +244,7 @@ public:
 		}
 	}
 
-	void draw(status s)
+	void draw(sf::RenderWindow& window, const GameData& gamedata, status s)
 	{
 		switch (s)
 		{
@@ -241,14 +254,16 @@ public:
 			{
 				window.clear(config.clear_color);
 
-				_draw();
+				_draw(window, gamedata);
 
 			} break;
 		}
 	}
 
-	void start(const status& s)
+	void start(sf::RenderWindow& window, const GameData& gamedata, const status& s)
 	{
+		LOG_2("game_drawer: start");
+
 		while (window.isOpen())
 		{
 			try {
@@ -265,7 +280,7 @@ public:
 
 				}
 
-				this->draw(s);
+				this->draw(window, gamedata, s);
 				window.display();
 
 			}
@@ -277,13 +292,17 @@ public:
 	}
 };
 
-void game_drawer_thread(const GameData& gamedata, const game_drawer_config& config, const game_drawer::status& s)
+void game_drawer_thread(const GameData& gamedata, const game_drawer_config& config, const game_drawer::status& s, sf::RenderWindow*& callback)
 {
-	LOG_2("Creating RenderWindow...");
-	sf::RenderWindow window(sf::VideoMode(gamedata.map_graph.graph_props().size_width + 20, gamedata.map_graph.graph_props().size_height + 20), "graph");
+	LOG_2("game_drawer_thread: Creating RenderWindow...");
+	sf::RenderWindow window(config.window_videomode, config.window_name);
+	LOG_2("game_drawer_thread: Saving RenderWindow pointer...");
+	callback = &window;
+	
 
-	LOG_2("Creating game_drawer...");
-	game_drawer drawer(window, gamedata, config);
+	LOG_2("game_drawer_thread: Creating game_drawer...");
+	game_drawer drawer(gamedata, config);
 
-	drawer.start(s);
+	LOG_2("game_drawer_thread: Starting draw loop...");
+	drawer.start(window, gamedata, s);
 }
