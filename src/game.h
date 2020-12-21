@@ -32,9 +32,14 @@ public:
 		this->reset();
 	}
 
-	void init(const std::string& addr, const std::string& port, const game_connector::Login& lobby)
+	void connect(const std::string& addr, const std::string& port)
 	{
 		connector.connect(addr, port);
+	}
+
+	void init(const game_connector::Login& lobby)
+	{
+		this->drawer_set_state(game_drawer::UPDATING);
 
 		{
 			LOG_1("Game::init: Sending Login request...");
@@ -75,6 +80,8 @@ public:
 
 	void update()
 	{
+		this->drawer_set_state(game_drawer::UPDATING);
+
 		{
 			LOG_1("Game::update: Sending L1 request...");
 			connector.send_Map({ 1 });
@@ -152,5 +159,48 @@ public:
 
 		LOG_2("Game::drawer_join: Joining game_drawer thread...");
 		drawer_thread->join();
+	}
+
+	void await_run()
+	{
+		this->drawer_set_state(game_drawer::AWAIT_PLAYERS);
+
+
+	}
+
+	void calculate_move()
+	{
+		throw "TODO";
+
+		this->drawer_set_state(game_drawer::CALCULATING);
+	}
+
+	void await_move()
+	{
+		this->drawer_set_state(game_drawer::READY);
+
+		Sleep(1000);
+	}
+
+	void start(const std::string& addr, const std::string& port, const game_connector::Login& lobby)
+	{
+		this->connect(addr, port);
+		this->init(lobby);
+
+		this->drawer_start();
+
+		this->await_run();
+		this->update();
+
+		while (gamedata.game_state != GameData::GameState::RUN)
+		{
+			this->calculate_move();
+
+			connector.send_Turn();
+
+			this->await_move();
+
+			this->update();
+		}
 	}
 };
