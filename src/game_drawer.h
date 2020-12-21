@@ -156,8 +156,7 @@ namespace game_drawer_layer {
 				const GraphIdx::EdgeProperties& eprops = gamedata.map_graph.graph[e];
 
 				sf::Text& line_length = cached_edges_length[eprops.idx];
-				const std::string text = std::to_string(eprops.length);
-				line_length.setString(text.c_str());
+				line_length.setString(std::to_string(eprops.length));
 				line_length.setPosition(sf::Vector2f(
 					(es.pos_x + et.pos_x) / 2 + config.edge_length_offset_x,
 					(es.pos_y + et.pos_y) / 2 + config.edge_length_offset_y
