@@ -230,9 +230,10 @@ public:
 
 	enum status : uint8_t
 	{
-		READY = 0,
-		UPDATING = 1,
-		CALCULATING = 2,
+		AWAIT_PLAYERS = 0,
+		READY = 1,
+		UPDATING = 2,
+		CALCULATING = 3,
 	};
 
 	void _draw(sf::RenderWindow& window, const GameData& gamedata)
@@ -247,6 +248,7 @@ public:
 	{
 		switch (s)
 		{
+			case status::AWAIT_PLAYERS:  window.clear(sf::Color::Blue);  break;
 			case status::UPDATING:  window.clear(sf::Color::Red);  break;
 			case status::CALCULATING:  window.clear(sf::Color::Yellow);   break;
 			case status::READY:
