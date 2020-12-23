@@ -74,24 +74,34 @@ protected:
 		return out.str();
 	}
 
-	std::pair<Action, size_t> _read_header()
+    enum Result : uint32_t
+    {
+        OKEY = 0,
+        BAD_COMMAND = 1,
+        RESOURCE_NOT_FOUND = 2,
+        ACCESS_DENIED = 3,
+        INAPPROPRIATE_GAME_STATE = 4,
+        TIMEOUT = 5,
+        INTERNAL_SERVER_ERROR = 500
+    };
+
+	std::pair<Result, size_t> _read_header()
 	{
 		std::string buffer = tcp_connector::read_until_size(8);
 
 		BinCharIStream parser(buffer.c_str());
 
-		Action header_action = (Action)boost::endian::little_to_native(parser.read<uint32_t>());
+        Result header_action = (Result)boost::endian::little_to_native(parser.read<uint32_t>());
 		uint32_t header_size = boost::endian::little_to_native(parser.read<uint32_t>());
 
 		return std::make_pair(header_action, header_size);
-
 	}
 
 public:
 
-    std::pair<Action, std::string> read_packet()
+    std::pair<Result, std::string> read_packet()
     {
-        LOG_2("game_connector: Reading packet...");
+        LOG_2("game_connector::read_packet: Reading packet...");
 
         const auto header = _read_header();
 
