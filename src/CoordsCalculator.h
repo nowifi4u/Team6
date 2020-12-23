@@ -48,6 +48,11 @@ public:
 	{
 		return m_position[v];
 	}
+
+	const point_type& operator[](GraphIdx::vertex_descriptor v) const
+	{
+		return m_position[v];
+	}
 };
 
 
