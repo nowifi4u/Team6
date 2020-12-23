@@ -64,7 +64,7 @@ public:
 		GraphIdx::vertex_iterator vi, vend;
 		for (boost::tie(vi, vend) = boost::vertices(g); vi != vend; ++vi)
 		{
-			f(m_position[vi]);
+			f(m_position[*vi]);
 		}
 	}
 
@@ -74,7 +74,7 @@ public:
 		GraphIdx::vertex_iterator vi, vend;
 		for (boost::tie(vi, vend) = boost::vertices(g); vi != vend; ++vi)
 		{
-			f(m_position[vi]);
+			f(m_position[*vi]);
 		}
 	}
 };
