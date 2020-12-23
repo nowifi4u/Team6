@@ -60,17 +60,19 @@ namespace game_drawer_layer {
 		{
 			LOG_3("game_drawer_layer::vertecies::init");
 
-			gamedata.map_graph.for_each_vertex_props([&](const GraphIdx::VertexProperties& v) {
-				sf::CircleShape& dot = cached_vertecies[v.idx];
+			gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+				const GraphIdx::VertexProperties& vprops = gamedata.map_graph.graph[v];
+
+				sf::CircleShape& dot = cached_vertecies[vprops.idx];
 				dot.setRadius(config.vertex_radius);
 
-				if (v.post_idx == UINT32_MAX)
+				if (vprops.post_idx == UINT32_MAX)
 				{
 					dot.setFillColor(config.vertex_color_empty);
 				}
 				else
 				{
-					switch (gamedata.posts.at(v.post_idx)->type())
+					switch (gamedata.posts.at(vprops.post_idx)->type())
 					{
 					case Posts::TOWN: dot.setFillColor(config.vertex_color_town); break;
 					case Posts::STORAGE: dot.setFillColor(config.vertex_color_storage); break;
@@ -78,7 +80,9 @@ namespace game_drawer_layer {
 					}
 				}
 
-				dot.setPosition(v.pos_x - config.vertex_radius, v.pos_y - config.vertex_radius);
+				const CoordsHolder::point_type& vcoords = gamedata.map_graph_coords->get_map()[v];
+
+				dot.setPosition(vcoords[0] - config.vertex_radius, vcoords[1] - config.vertex_radius);
 				});
 		}
 
@@ -111,13 +115,13 @@ namespace game_drawer_layer {
 			LOG_3("game_drawer_layer::edges::init");
 
 			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
-				const GraphIdx::VertexProperties& es = gamedata.map_graph.graph[boost::source(e, gamedata.map_graph.graph)];
-				const GraphIdx::VertexProperties& et = gamedata.map_graph.graph[boost::target(e, gamedata.map_graph.graph)];
+				const CoordsHolder::point_type& es = gamedata.map_graph_coords->get_map()[boost::source(e, gamedata.map_graph.graph)];
+				const CoordsHolder::point_type& et = gamedata.map_graph_coords->get_map()[boost::target(e, gamedata.map_graph.graph)];
 				const GraphIdx::EdgeProperties& eprops = gamedata.map_graph.graph[e];
 
 				sf::Vertex* line = cached_edges[eprops.idx];
-				line[0] = sf::Vertex(sf::Vector2f(es.pos_x, es.pos_y), config.edge_color);
-				line[1] = sf::Vertex(sf::Vector2f(et.pos_x, et.pos_y), config.edge_color);
+				line[0] = sf::Vertex(sf::Vector2f(es[0], es[1]), config.edge_color);
+				line[1] = sf::Vertex(sf::Vector2f(et[0], et[1]), config.edge_color);
 				});
 		}
 
@@ -153,15 +157,15 @@ namespace game_drawer_layer {
 			cached_font.loadFromFile(config.edge_length_font);
 
 			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
-				const GraphIdx::VertexProperties& es = gamedata.map_graph.graph[boost::source(e, gamedata.map_graph.graph)];
-				const GraphIdx::VertexProperties& et = gamedata.map_graph.graph[boost::target(e, gamedata.map_graph.graph)];
+				const CoordsHolder::point_type& es = gamedata.map_graph_coords->get_map()[boost::source(e, gamedata.map_graph.graph)];
+				const CoordsHolder::point_type& et = gamedata.map_graph_coords->get_map()[boost::target(e, gamedata.map_graph.graph)];
 				const GraphIdx::EdgeProperties& eprops = gamedata.map_graph.graph[e];
 
 				sf::Text& line_length = cached_edges_length[eprops.idx];
 				line_length.setString(std::to_string(eprops.length));
 				line_length.setPosition(sf::Vector2f(
-					(es.pos_x + et.pos_x) / 2 + config.edge_length_offset_x,
-					(es.pos_y + et.pos_y) / 2 + config.edge_length_offset_y
+					(es[0] + et[0]) / 2 + config.edge_length_offset_x,
+					(es[1] + et[1]) / 2 + config.edge_length_offset_y
 				));
 
 				line_length.setFont(cached_font);

@@ -26,8 +26,6 @@ public:
 	{
 		Types::vertex_idx_t idx;
 		Types::post_idx_t post_idx;
-		Types::position_t pos_x;
-		Types::position_t pos_y;
 	};
 
 	struct EdgeProperties
@@ -38,8 +36,6 @@ public:
 
 	struct GraphProperties
 	{
-		Types::position_t size_width;
-		Types::position_t size_height;
 	};
 
 	using Graph = boost::adjacency_list<
@@ -312,23 +308,6 @@ public:
 			GraphIdx::edge_descriptor e = g.add_edge(idx, vidx1, vidx2);
 
 			ji["length"].get_to(g.graph[e].length);
-		}
-	}
-
-	static void readJSON_L10(GraphIdx& g, const json& j)
-	{
-		// Read Graph border size
-		g.graph[boost::graph_bundle].size_width = j["size"][0].get<Types::position_t>();
-		g.graph[boost::graph_bundle].size_height = j["size"][1].get<Types::position_t>();
-
-		// Read Vertex coordinates
-		for (const json& ji : j["coordinates"])
-		{
-			Types::vertex_idx_t idx = ji["idx"].get<Types::vertex_idx_t>();
-			VertexProperties& vertex = g.get_vertex(idx);
-
-			ji["x"].get_to(vertex.pos_x);
-			ji["y"].get_to(vertex.pos_y);
 		}
 	}
 };

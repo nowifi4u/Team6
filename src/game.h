@@ -9,14 +9,14 @@ class Game
 {
 protected:
 
-	GameData gamedata;
-
 	boost::thread* drawer_thread = nullptr;
 	game_drawer::status drawer_status = game_drawer::READY;
 
 	game_connector connector;
 
 public:
+
+	GameData gamedata;
 
 	sf::RenderWindow* drawer_window = nullptr;
 	game_drawer_config drawer_config;
@@ -123,7 +123,7 @@ public:
 			return;
 		}
 
-		drawer_config.window_videomode = sf::VideoMode(gamedata.map_graph.graph_props().size_width + 20, gamedata.map_graph.graph_props().size_height + 20);
+		drawer_config.window_videomode = sf::VideoMode(gamedata.map_graph_width + 20, gamedata.map_graph_height + 20);
 
 		LOG_2("Game::drawer_start: Starting game_drawer thread...");
 		drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
@@ -191,9 +191,6 @@ public:
 
 	void start(const std::string& addr, const std::string& port, const game_connector::Login& lobby)
 	{
-		this->connect(addr, port);
-		this->init(lobby);
-
 		this->drawer_start();
 		this->drawer_window_wait();
 
