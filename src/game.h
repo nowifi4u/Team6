@@ -191,9 +191,6 @@ public:
 
 	void start(const std::string& addr, const std::string& port, const game_connector::Login& lobby)
 	{
-		this->connect(addr, port);
-		this->init(lobby);
-
 		this->drawer_start();
 		this->drawer_window_wait();
 
