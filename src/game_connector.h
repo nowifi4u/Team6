@@ -112,6 +112,8 @@ public:
         LOG_3(data);
         LOG_3("-------------------------  END  -------------------------");
 
+        if (header.first != Result::OKEY) throw header.first;
+
         return std::make_pair(header.first, data);
     }
 
