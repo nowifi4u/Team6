@@ -54,6 +54,8 @@ public:
 		calculate(g, topology_width, topology_height, unit_edge_length);
 	}
 
+	virtual ~KKSCoordsCalculator() = default;
+
 	void calculate(GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length)
 	{
 		CoordsHolder::init(g);
