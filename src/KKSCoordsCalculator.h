@@ -43,12 +43,16 @@ struct to_double {
 };
 
 
-class KKSCoordsCalculator :
-    public CoordsCalculator
+class KKSCoordsCalculator : public CoordsCalculator
 {
 public:
 
 	KKSCoordsCalculator() : CoordsCalculator() {}
+
+	KKSCoordsCalculator(GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length) : KKSCoordsCalculator()
+	{
+		calculate(g, topology_width, topology_height, unit_edge_length);
+	}
 
 	void calculate(GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length)
 	{
