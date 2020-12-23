@@ -7,6 +7,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/random/linear_congruential.hpp>
 
+#include <algorithm>
+
 constexpr double eps = 0.01;
 
 struct KamadaKawaiDone

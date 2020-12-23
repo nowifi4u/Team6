@@ -5,8 +5,6 @@
 #include <boost/property_map/transform_value_property_map.hpp>
 #include <boost/graph/topology.hpp>
 
-#include <algorithm>
-
 
 
 class CoordsCalculator
