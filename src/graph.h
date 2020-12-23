@@ -11,7 +11,8 @@
 #include "ClassDefines.h"
 #include "Types.h"
 
-#include "json-parser.h"
+#include <nlohmann/json.hpp>
+using nlohmann::json;
 
 #include "Logging.h"
 
@@ -95,7 +96,7 @@ public:
 		graph.clear();
 	}
 
-	std::pair<edge_descriptor, bool> find_edge(Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2) throw(std::out_of_range)
+	std::pair<edge_descriptor, bool> find_edge(Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2) const
 	{
 		return boost::edge(vmap.at(vidx1), vmap.at(vidx2), graph);
 	}
@@ -108,7 +109,7 @@ public:
 		return v;
 	}
 
-	edge_descriptor add_edge(Types::edge_idx_t eidx, Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2) throw(std::runtime_error)
+	edge_descriptor add_edge(Types::edge_idx_t eidx, Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2)
 	{
 		auto er = boost::add_edge(vmap.at(vidx1), vmap.at(vidx2), graph);
 		if (er.second == false) throw std::runtime_error("Edge already exists");
@@ -119,27 +120,96 @@ public:
 		return e;
 	}
 
-	VertexProperties& get_vertex(Types::vertex_idx_t vidx) throw(std::out_of_range)
+	VertexProperties& get_vertex(Types::vertex_idx_t vidx)
 	{
 		return graph[vmap.at(vidx)];
 	}
 
-	EdgeProperties& get_edge(Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2) throw(std::out_of_range, std::runtime_error)
+	const VertexProperties& get_vertex(Types::vertex_idx_t vidx) const
+	{
+		return graph[vmap.at(vidx)];
+	}
+
+	EdgeProperties& get_edge(Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2)
 	{
 		auto e = find_edge(vidx1, vidx2);
 		if (e.second == false) throw std::runtime_error("Edge does not exist");
 		return graph[e.first];
 	}
 
-	EdgeProperties& get_edge(Types::edge_idx_t eidx) throw(std::out_of_range)
+	const EdgeProperties& get_edge(Types::vertex_idx_t vidx1, Types::vertex_idx_t vidx2) const
+	{
+		auto e = find_edge(vidx1, vidx2);
+		if (e.second == false) throw std::runtime_error("Edge does not exist");
+		return graph[e.first];
+	}
+
+	EdgeProperties& get_edge(Types::edge_idx_t eidx)
 	{
 		return graph[emap.at(eidx)];
 	}
 
+	const EdgeProperties& get_edge(Types::edge_idx_t eidx) const
+	{
+		return graph[emap.at(eidx)];
+	}
+
+	GraphProperties& graph_props()
+	{
+		return graph[boost::graph_bundle];
+	}
+
+	const GraphProperties& graph_props() const
+	{
+		return graph[boost::graph_bundle];
+	}
+
+
+
 
 
 	template <class Func>
-	void for_each_vertex(Func f)
+	void for_each_vertex_iterator(Func f)
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			f(vi);
+		}
+	}
+
+	template <class Func>
+	void for_each_vertex_iterator(Func f) const
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			f(vi);
+		}
+	}
+
+	template <class Func>
+	void for_each_edge_iterator(Func f)
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			f(ei);
+		}
+	}
+
+	template <class Func>
+	void for_each_edge_iterator(Func f) const
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			f(ei);
+		}
+	}
+
+	template <class Func>
+	void for_each_vertex_descriptor(Func f)
 	{
 		vertex_iterator vi, vend;
 		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
@@ -149,7 +219,17 @@ public:
 	}
 
 	template <class Func>
-	void for_each_edge(Func f)
+	void for_each_vertex_descriptor(Func f) const
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			f(*vi);
+		}
+	}
+
+	template <class Func>
+	void for_each_edge_descriptor(Func f)
 	{
 		edge_iterator ei, eend;
 		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
@@ -158,43 +238,97 @@ public:
 		}
 	}
 
+	template <class Func>
+	void for_each_edge_descriptor(Func f) const
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			f(*ei);
+		}
+	}
+
+	template <class Func>
+	void for_each_vertex_props(Func f)
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			f(graph[*vi]);
+		}
+	}
+
+	template <class Func>
+	void for_each_vertex_props(Func f) const
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			f(graph[*vi]);
+		}
+	}
+
+	template <class Func>
+	void for_each_edge_props(Func f)
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			f(graph[*ei]);
+		}
+	}
+
+	template <class Func>
+	void for_each_edge_props(Func f) const
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			f(graph[*ei]);
+		}
+	}
 
 
-	static void readJSON_L0(GraphIdx& g, const ptree& pt)
+
+	static void readJSON_L0(GraphIdx& g, const json& j)
 	{
 		// Read Vertex properties
-		ptree_array_foreach(pt, "points", [&](const ptree& pt) {
-			Types::vertex_idx_t idx = pt.get<Types::vertex_idx_t>("idx");
+		for (const json& ji : j["points"])
+		{
+			Types::vertex_idx_t idx = ji["idx"].get<Types::vertex_idx_t>();
 
 			GraphIdx::vertex_descriptor v = g.add_vertex(idx);
 
-			g.graph[v].post_idx = pt.get_optional<Types::post_idx_t>("post_idx").get_value_or(UINT32_MAX);
-			});
+			g.graph[v].post_idx = ji["post_idx"].is_null() ? UINT32_MAX : ji["post_idx"].get<Types::post_idx_t>();
+		}
 
 		// Read Edge properties
-		ptree_array_foreach(pt, "lines", [&](const ptree& pt) {
-			Types::edge_idx_t idx = pt.get<Types::edge_idx_t>("idx");
-			auto pts = ptree_as_vector<Types::vertex_idx_t>(pt, "points");
+		for (const json& ji : j["lines"])
+		{
+			Types::edge_idx_t idx = ji["idx"].get<Types::edge_idx_t>();
+			Types::vertex_idx_t vidx1 = ji["points"][0].get<Types::vertex_idx_t>();
+			Types::vertex_idx_t vidx2 = ji["points"][1].get<Types::vertex_idx_t>();
 
-			GraphIdx::edge_descriptor e = g.add_edge(idx, pts[0], pts[1]);
+			GraphIdx::edge_descriptor e = g.add_edge(idx, vidx1, vidx2);
 
-			g.graph[e].length = pt.get<Types::edge_length_t>("length");
-			});
+			ji["length"].get_to(g.graph[e].length);
+		}
 	}
 
-	static void readJSON_L10(GraphIdx& g, const ptree& pt)
+	static void readJSON_L10(GraphIdx& g, const json& j)
 	{
 		// Read Graph border size
-		g.graph[boost::graph_bundle].size_width = pt.get_child("size").get<Types::position_t>("width");
-		g.graph[boost::graph_bundle].size_height = pt.get_child("size").get<Types::position_t>("height");
+		g.graph[boost::graph_bundle].size_width = j["size"][0].get<Types::position_t>();
+		g.graph[boost::graph_bundle].size_height = j["size"][1].get<Types::position_t>();
 
 		// Read Vertex coordinates
-		ptree_array_foreach(pt, "coordinates", [&](const ptree& pt) {
-			Types::vertex_idx_t idx = pt.get<Types::vertex_idx_t>("idx");
+		for (const json& ji : j["coordinates"])
+		{
+			Types::vertex_idx_t idx = ji["idx"].get<Types::vertex_idx_t>();
 			VertexProperties& vertex = g.get_vertex(idx);
 
-			vertex.pos_x = pt.get<Types::position_t>("x");
-			vertex.pos_y = pt.get<Types::position_t>("y");
-			});
+			ji["x"].get_to(vertex.pos_x);
+			ji["y"].get_to(vertex.pos_y);
+		}
 	}
 };

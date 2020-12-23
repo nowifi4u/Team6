@@ -11,13 +11,13 @@ virtual ~CLASS() {}
 #define CLASS_MAKE_STATIC(CLASS, ...) \
 CLASS() = delete; \
 ~CLASS() = delete; \
-CLASS ( CLASS __VA_ARGS__ & ) = delete; \
+CLASS ( const CLASS __VA_ARGS__ & ) = delete; \
 CLASS & operator=( const CLASS __VA_ARGS__ & ) = delete; \
 CLASS ( CLASS __VA_ARGS__ && ) = delete; \
 CLASS & operator=( CLASS __VA_ARGS__ && ) = delete
 
 #define CLASS_DEFAULT_COPY(CLASS, ...) \
-CLASS ( CLASS __VA_ARGS__ & ) = default; \
+CLASS ( const CLASS __VA_ARGS__ & ) = default; \
 CLASS & operator=( const CLASS __VA_ARGS__ & ) = default
 
 #define CLASS_DEFAULT_MOVE(CLASS, ...) \

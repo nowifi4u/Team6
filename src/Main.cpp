@@ -1,35 +1,38 @@
-#include "GameData.h"
+#define LOG_LEVEL_1
+
+#include <sdkddkver.h>
 
 #include <iostream>
-#include <iomanip>
-#include <memory>
+
 #include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
 
-
-#include <iomanip>
+#include "game.h"
 
 int main()
 {
-	GameData gamedata;
+	boost::asio::io_service io;
+	game_connector connector(io);
 
-	std::cout << "Importing GameData..." << std::endl;
+	try
+	{
 
-	ptree_from_file("small_graph.json", [&](const ptree& pt) {
-		GameData::readJSON_L0(gamedata, pt);
-		});
-	
-	std::cout << "Calculating coordinates..." << std::endl;
+		Game game(io);
 
-	std::cout << "Drawing Graph with coordinates..." << std::endl;
+		game.start("wgforge-srv.wargaming.net", "443", { "test3", "test3", "Game of Thrones", -1, 1 });
 
-	gamedata.graph.for_each_vertex([&](auto v) {
-		const auto& vertex = gamedata.graph.graph[v];
-		std::cout << v
-			<< " idx:" << vertex.idx
-			<< " length:" << (int32_t)vertex.post_idx
-			<< " pos:[" << vertex.pos_x << ' ' << vertex.pos_y << ']'
-			<< std::endl;
-		});
+		game.drawer_join();
+	}
+	catch (const nlohmann::detail::type_error& err)
+	{
+		std::cout << "ERROR! " << err.what() << std::endl;
+	}
+	catch (const std::runtime_error& err)
+	{
+		std::cout << "ERROR! " << err.what() << std::endl;
+	}
+
+	//connector.disconnect();
 
 	return 0;
 }
