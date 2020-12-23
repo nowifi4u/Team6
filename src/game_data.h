@@ -508,6 +508,8 @@ struct GameData
 
 	GraphIdx map_graph;
 	CoordsHolder* map_graph_coords = nullptr;
+	Types::position_t map_graph_width;
+	Types::position_t map_graph_height;
 
 	boost::ptr_map<Types::post_idx_t, Posts::Post*> posts;
 
@@ -539,13 +541,21 @@ struct GameData
 		GraphIdx::readJSON_L0(val.map_graph, j);
 	}
 
+	//-------------------- CLIENT-SIDE COORDINATES --------------------//
+
+	static void calculateCoordinates(GameData& val, Types::position_t width, Types::position_t height)
+	{
+		val.map_graph_coords = (CoordsHolder*) new KKSCoordsCalculator(val.map_graph.graph, width, height, 1.);
+
+		// Read Graph border size
+		val.map_graph_width = width;
+		val.map_graph_height = height;
+	}
+
+	//-------------------- SERVER-SIDE COORDINATES --------------------//
+
 	static void readJSON_L10(GameData& val, const json& j)
 	{
-		//val.map_graph_coords = (CoordsHolder*) new KKSCoordsCalculator(val.map_graph.graph, 100., 100., 1.);
-		
-
-		GraphIdx::readJSON_L10(val.map_graph, j);
-
 		val.map_graph_coords = new CoordsHolder(val.map_graph.graph);
 
 		// Read Vertex coordinates
@@ -558,6 +568,10 @@ struct GameData
 			ji["x"].get_to(point[0]);
 			ji["y"].get_to(point[1]);
 		}
+
+		// Read Graph border size
+		val.map_graph_width = j["size"][0].get<Types::position_t>();
+		val.map_graph_height = j["size"][1].get<Types::position_t>();
 	}
 
 	static void readJSON_L1(GameData& val, const json& j)
