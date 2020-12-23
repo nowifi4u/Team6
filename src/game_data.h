@@ -295,7 +295,7 @@ namespace Posts {
 
 	struct Post
 	{
-		Types::edge_idx_t idx;
+		Types::vertex_idx_t idx;
 		std::string name;
 		Types::vertex_idx_t point_idx;
 
@@ -532,7 +532,6 @@ struct GameData
 
 	static void readJSON_L10(GameData& val, const json& j)
 	{
-		GraphIdx::readJSON_L10(val.map_graph, j);
 	}
 
 	static void readJSON_L1(GameData& val, const json& j)
