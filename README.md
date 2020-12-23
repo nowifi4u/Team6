@@ -2,7 +2,7 @@
 
 
 ## Team name:
-Team: **TODO**
+Team: **Rising Edge**
 
 
 ## Team members:
