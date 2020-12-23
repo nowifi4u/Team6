@@ -37,3 +37,4 @@
 .vs
 
 *.vcxproj*
+*.sln
