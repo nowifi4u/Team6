@@ -170,6 +170,8 @@ namespace Events {
 	{
 		EventType event_type = (EventType)j["type"].get<int>();
 
+		LOG_1("game_data::make_Event: " << j);
+
 		switch (event_type)
 		{
 		case EventType::TRAIN_COLLISION:	return dynamic_cast<Event*>(Event_TrainCrash::readJSON_L1(j));
