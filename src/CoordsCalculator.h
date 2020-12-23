@@ -1,10 +1,7 @@
 #pragma once
+
 #include "graph.h"
 
-#include <boost/graph/kamada_kawai_spring_layout.hpp>
-#include <boost/graph/circle_layout.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/random/linear_congruential.hpp>
 #include <boost/property_map/transform_value_property_map.hpp>
 #include <boost/graph/topology.hpp>
 
