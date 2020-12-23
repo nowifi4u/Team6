@@ -11,6 +11,7 @@
 #include "Types.h"
 
 #include "graph.h"
+#include "KKSCoordsCalculator.h"
 
 #include "Logging.h"
 
@@ -506,6 +507,8 @@ struct GameData
 	std::map<Types::player_uid_t, Player> players;
 
 	GraphIdx map_graph;
+	CoordsHolder* map_graph_coords = nullptr;
+
 	boost::ptr_map<Types::post_idx_t, Posts::Post*> posts;
 
 	void clear()
@@ -513,6 +516,12 @@ struct GameData
 		players.clear();
 		map_graph.clear();
 		posts.clear();
+
+		if (map_graph_coords != nullptr)
+		{
+			delete map_graph_coords;
+			map_graph_coords = nullptr;
+		}
 	}
 
 	static void readJSON_Login(GameData& val, const json& j)
@@ -532,6 +541,23 @@ struct GameData
 
 	static void readJSON_L10(GameData& val, const json& j)
 	{
+		//val.map_graph_coords = (CoordsHolder*) new KKSCoordsCalculator(val.map_graph.graph, 100., 100., 1.);
+		
+
+		GraphIdx::readJSON_L10(val.map_graph, j);
+
+		val.map_graph_coords = new CoordsHolder(val.map_graph.graph);
+
+		// Read Vertex coordinates
+		for (const json& ji : j["coordinates"])
+		{
+			Types::vertex_idx_t idx = ji["idx"].get<Types::vertex_idx_t>();
+
+			CoordsHolder::point_type& point = (*val.map_graph_coords)[val.map_graph.vmap.at(idx)];
+
+			ji["x"].get_to(point[0]);
+			ji["y"].get_to(point[1]);
+		}
 	}
 
 	static void readJSON_L1(GameData& val, const json& j)
