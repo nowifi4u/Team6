@@ -42,7 +42,7 @@ public:
 		this->drawer_set_state(game_drawer::UPDATING);
 
 		{
-			LOG_1("Game::init: Sending Login request...");
+			LOG_2("Game::init: Sending Login request...");
 			connector.send_Login(lobby);
 
 			const auto response = connector.read_packet();
@@ -51,7 +51,7 @@ public:
 		}
 
 		{
-			LOG_1("Game::init: Sending L0 request...");
+			LOG_2("Game::init: Sending L0 request...");
 			connector.send_Map({ 0 });
 
 			const auto response = connector.read_packet();
@@ -60,7 +60,7 @@ public:
 		}
 
 		{
-			LOG_1("Game::init: Sending L10 request...");
+			LOG_2("Game::init: Sending L10 request...");
 			connector.send_Map({ 10 });
 
 			const auto response = connector.read_packet();
@@ -69,7 +69,7 @@ public:
 		}
 
 		{
-			LOG_1("Game::init: Sending L1 request...");
+			LOG_2("Game::init: Sending L1 request...");
 			connector.send_Map({ 1 });
 
 			const auto response = connector.read_packet();
@@ -81,9 +81,10 @@ public:
 	void update()
 	{
 		this->drawer_set_state(game_drawer::UPDATING);
+		this->drawer_window->setTitle("Update game data...");
 
 		{
-			LOG_1("Game::update: Sending L1 request...");
+			LOG("Updating game data...");
 			connector.send_Map({ 1 });
 
 			const auto response = connector.read_packet();
@@ -164,22 +165,28 @@ public:
 	void await_run()
 	{
 		this->drawer_set_state(game_drawer::AWAIT_PLAYERS);
+		this->drawer_window->setTitle("Awaiting players...");
 
-
+		this->connector.send_Turn();
+		this->connector.read_packet();
 	}
 
 	void calculate_move()
 	{
 		throw "TODO";
 
-		this->drawer_set_state(game_drawer::CALCULATING);
+		//this->drawer_set_state(game_drawer::CALCULATING);
 	}
 
 	void await_move()
 	{
 		this->drawer_set_state(game_drawer::READY);
+		this->drawer_window->setTitle("Awaiting next tick...");
 
-		Sleep(1000);
+		this->connector.send_Turn();
+		this->connector.read_packet();
+
+		//Sleep(1000);
 	}
 
 	void start(const std::string& addr, const std::string& port, const game_connector::Login& lobby)
@@ -188,19 +195,22 @@ public:
 		this->init(lobby);
 
 		this->drawer_start();
+		this->drawer_window_wait();
 
 		this->await_run();
 		this->update();
 
-		while (gamedata.game_state != GameData::GameState::RUN)
+		while (true /*gamedata.game_state == GameData::GameState::RUN*/)
 		{
-			this->calculate_move();
+			//this->calculate_move();
 
-			connector.send_Turn();
+			
 
 			this->await_move();
 
 			this->update();
 		}
+
+		LOG("Game::start: Game ended.");
 	}
 };
