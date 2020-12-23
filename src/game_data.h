@@ -543,13 +543,18 @@ struct GameData
 
 	//-------------------- CLIENT-SIDE COORDINATES --------------------//
 
-	static void calculateCoordinates(GameData& val, Types::position_t width, Types::position_t height)
+	static void calculateCoordinates(GameData& val, double topology_width, double topology_height, double unit_edge_length)
 	{
-		val.map_graph_coords = (CoordsHolder*) new KKSCoordsCalculator(val.map_graph.graph, width, height, 1.);
+		val.map_graph_coords = (CoordsHolder*) new KKSCoordsCalculator(val.map_graph.graph, topology_width, topology_height, unit_edge_length);
 
 		// Read Graph border size
-		val.map_graph_width = width;
-		val.map_graph_height = height;
+		val.map_graph_width = topology_width;
+		val.map_graph_height = topology_height;
+
+		val.map_graph_coords->for_each(val.map_graph.graph, [&](CoordsHolder::point_type& point) {
+			point[0] = (point[0] + topology_width) / 2;
+			point[1] = (point[1] + topology_height) / 2;
+			});
 	}
 
 	//-------------------- SERVER-SIDE COORDINATES --------------------//
