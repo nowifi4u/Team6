@@ -123,7 +123,7 @@ public:
 			return;
 		}
 
-		drawer_config.window_videomode = sf::VideoMode(gamedata.map_graph.graph_props().size_width + 20, gamedata.map_graph.graph_props().size_height + 20);
+		drawer_config.window_videomode = sf::VideoMode(gamedata.map_graph_width + 20, gamedata.map_graph_height + 20);
 
 		LOG_2("Game::drawer_start: Starting game_drawer thread...");
 		drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
