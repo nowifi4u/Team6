@@ -23,13 +23,15 @@ struct game_drawer_config
 	sf::Color vertex_color_storage = sf::Color::Yellow;
 	sf::Color vertex_color_market = sf::Color::Red;
 	sf::Color vertex_color_town = sf::Color::Green;
-
+	
 	sf::Color edge_color = sf::Color::White;
 	sf::Color edge_length_color = sf::Color::Magenta;
 	std::string edge_length_font = "../res/arial.ttf";
 	float edge_length_size = 15;
 	float edge_length_offset_x = -7;
 	float edge_length_offset_y = -7;
+
+	bool to_draw_edge_length = true;
 };
 
 namespace game_drawer_layer {
