@@ -57,4 +57,24 @@ public:
 	{
 		return m_position[v];
 	}
+
+	template <class Func>
+	void for_each(GraphIdx::Graph& g, Func f)
+	{
+		GraphIdx::vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(g); vi != vend; ++vi)
+		{
+			f(m_position[vi]);
+		}
+	}
+
+	template <class Func>
+	void for_each(const GraphIdx::Graph& g, Func f) const
+	{
+		GraphIdx::vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(g); vi != vend; ++vi)
+		{
+			f(m_position[vi]);
+		}
+	}
 };
