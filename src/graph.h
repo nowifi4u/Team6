@@ -26,8 +26,6 @@ public:
 	{
 		Types::vertex_idx_t idx;
 		Types::post_idx_t post_idx;
-		Types::position_t pos_x;
-		Types::position_t pos_y;
 	};
 
 	struct EdgeProperties
@@ -320,15 +318,5 @@ public:
 		// Read Graph border size
 		g.graph[boost::graph_bundle].size_width = j["size"][0].get<Types::position_t>();
 		g.graph[boost::graph_bundle].size_height = j["size"][1].get<Types::position_t>();
-
-		// Read Vertex coordinates
-		for (const json& ji : j["coordinates"])
-		{
-			Types::vertex_idx_t idx = ji["idx"].get<Types::vertex_idx_t>();
-			VertexProperties& vertex = g.get_vertex(idx);
-
-			ji["x"].get_to(vertex.pos_x);
-			ji["y"].get_to(vertex.pos_y);
-		}
 	}
 };
