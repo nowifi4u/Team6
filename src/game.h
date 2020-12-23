@@ -9,14 +9,14 @@ class Game
 {
 protected:
 
-	GameData gamedata;
-
 	boost::thread* drawer_thread = nullptr;
 	game_drawer::status drawer_status = game_drawer::READY;
 
 	game_connector connector;
 
 public:
+
+	GameData gamedata;
 
 	sf::RenderWindow* drawer_window = nullptr;
 	game_drawer_config drawer_config;
