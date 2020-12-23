@@ -1,5 +1,11 @@
 #pragma once
+
 #include "CoordsCalculator.h"
+
+#include <boost/graph/kamada_kawai_spring_layout.hpp>
+#include <boost/graph/circle_layout.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/random/linear_congruential.hpp>
 
 constexpr double eps = 0.01;
 
