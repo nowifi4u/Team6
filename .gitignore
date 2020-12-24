@@ -38,3 +38,6 @@
 
 *.vcxproj*
 *.sln
+
+# Clion specific
+.idea/
