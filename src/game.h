@@ -2,7 +2,7 @@
 
 
 #include "network/server_connector.h"
-#include "game/drawer.h"
+#include "render/drawer.h"
 
 
 class Game
