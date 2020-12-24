@@ -9,8 +9,9 @@ using nlohmann::json;
 
 #include "tcp_connector.h"
 #include "Types.h"
-#include "bincharstream.h"
-#include "binstream.h"
+
+#include "../utils/bincharstream.h"
+#include "../utils/binstream.h"
 
 class game_connector : protected tcp_connector
 {
