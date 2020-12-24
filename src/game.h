@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "game_connector.h"
+#include "network/game_connector.h"
 #include "game_drawer.h"
 
 
