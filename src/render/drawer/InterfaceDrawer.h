@@ -9,12 +9,5 @@ class InterfaceDrawer
 {
 public:
 
-	enum class Type
-	{
-		GAME
-	};
-
-	virtual Type getType() const = 0;
-
 	virtual void draw(sf::RenderWindow& window) = 0;
 };
