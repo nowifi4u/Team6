@@ -3,25 +3,44 @@
 #include <sdkddkver.h>
 
 #include <iostream>
+#include <fstream>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
-#include "game.h"
+#include "game_drawer.h"
 
 int main()
 {
-	boost::asio::io_service io;
-	game_connector connector(io);
 
 	try
 	{
+		GameData gamedata;
 
-		Game game(io);
+		{
+			std::cout << "Enter file name: ";
+			std::string filename;
+			std::getline(std::cin, filename);
 
-		game.start("wgforge-srv.wargaming.net", "443", { "test3", "test3", "Game of Thrones", -1, 1 });
+			std::ifstream fin(filename);
 
-		game.drawer_join();
+			GameData::readJSON_L0(gamedata, json::parse(fin));
+
+			std::cout << "Unit length: ";
+			double unit_length;
+			std::cin >> unit_length;
+
+			GameData::calculateCoordinates(gamedata, 800, 800, unit_length);
+		}
+
+		
+		
+		game_drawer_config drawer_config;
+		drawer_config.window_videomode = sf::VideoMode(800, 800);
+		sf::RenderWindow* drawer_window;
+		game_drawer::status drawer_status = game_drawer::READY;
+
+		game_drawer_thread(gamedata, drawer_config, drawer_status, drawer_window);
 	}
 	catch (const nlohmann::detail::type_error& err)
 	{
@@ -31,8 +50,6 @@ int main()
 	{
 		std::cout << "ERROR! " << err.what() << std::endl;
 	}
-
-	//connector.disconnect();
 
 	return 0;
 }
