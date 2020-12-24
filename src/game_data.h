@@ -7,13 +7,13 @@
 #include <memory>
 #include <map>
 
-#include "ClassDefines.h"
+#include "utils/ClassDefines.h"
 #include "Types.h"
 
 #include "graph.h"
 #include "KKSCoordsCalculator.h"
 
-#include "Logging.h"
+#include "utils/Logging.h"
 
 
 
