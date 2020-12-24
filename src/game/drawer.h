@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "game_data.h"
+#include "data.h"
 
 
 struct game_drawer_config
