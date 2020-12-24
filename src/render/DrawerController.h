@@ -32,10 +32,10 @@ inline void drawer_thread(InterfaceDrawer*& drawable, sf::RenderWindow*& callbac
 
 class DrawerController
 {
-	InterfaceDrawer* drawable_;
-	sf::RenderWindow* drawer_window_;
+	sf::RenderWindow* drawer_window_ = nullptr;
 
-	boost::thread* drawer_thread_;
+	boost::thread* drawer_thread_ = nullptr;
+	InterfaceDrawer* drawable_;
 
 public:
 
@@ -55,20 +55,92 @@ public:
 		return dynamic_cast<ConvertionTy*>(drawable_);
 	}
 
-	DrawerController(InterfaceDrawer* drawable, const sf::VideoMode& videomode, const sf::String& title, sf::Uint32 style = 7U, const sf::ContextSettings& context = sf::ContextSettings())
+	void start(InterfaceDrawer* drawable, const sf::VideoMode& videomode, const sf::String& title = "", sf::Uint32 style = 7U, const sf::ContextSettings& context = sf::ContextSettings())
+	{
+		LOG_2("DrawerController::start");
+
+		if (drawable != nullptr && drawer_thread_ == nullptr)
+		{
+			drawable_ = drawable;
+			drawer_thread_ = new boost::thread(drawer_thread, boost::ref(drawable_), boost::ref(drawer_window_), boost::ref(videomode), boost::ref(title), style, boost::ref(context));
+		}
+	}
+
+	void start(const sf::VideoMode& videomode, const sf::String& title = "", sf::Uint32 style = 7U, const sf::ContextSettings& context = sf::ContextSettings())
+	{
+		LOG_2("DrawerController::start");
+
+		if (drawable_ != nullptr && drawer_thread_ == nullptr)
+		{
+			drawer_thread_ = new boost::thread(drawer_thread, boost::ref(drawable_), boost::ref(drawer_window_), boost::ref(videomode), boost::ref(title), style, boost::ref(context));
+		}
+	}
+
+	void stop()
+	{
+		LOG_2("DrawerController::stop");
+
+		if (drawer_thread_ != nullptr)
+		{
+			delete drawer_thread_;
+			drawer_thread_ = nullptr;
+			drawer_window_ = nullptr;
+		}
+	}
+
+	void window_wait() const
+	{
+		LOG_2("DrawerController::window_wait");
+
+		while (drawer_window_ == nullptr);
+
+		LOG_2("DrawerController::window_wait done");
+	}
+
+	void window_join()
+	{
+		LOG_2("DrawerController::window_join");
+
+		if (drawer_thread_ != nullptr)
+		{
+			drawer_thread_->join();
+		}
+	}
+
+	DrawerController(InterfaceDrawer* drawable)
 		: drawable_(drawable)
 	{
-		drawer_thread_ = new boost::thread(drawer_thread, boost::ref(drawable_), boost::ref(drawer_window_), boost::ref(videomode), boost::ref(title), style, boost::ref(context));
+	}
+
+	DrawerController(InterfaceDrawer* drawable, const sf::VideoMode& videomode, const sf::String& title = "", sf::Uint32 style = 7U, const sf::ContextSettings& context = sf::ContextSettings())
+		: DrawerController(drawable)
+	{
+		start(videomode, title, style, context);
 	}
 
 	~DrawerController()
 	{
-		delete drawer_thread_;
+		stop();
 	}
 
 	void interrupt(InterfaceDrawer* drawable)
 	{
-		drawable_ = drawable;
-		drawer_thread_->interrupt();
+		LOG_2("DrawerController::interrupt with set");
+
+		if (drawer_thread_ != nullptr)
+		{
+			drawable_ = drawable;
+			drawer_thread_->interrupt();
+		}
+	}
+
+	void interrupt()
+	{
+		LOG_2("DrawerController::interrupt");
+
+		if (drawer_thread_ != nullptr)
+		{
+			drawer_thread_->interrupt();
+		}
 	}
 };
