@@ -308,6 +308,8 @@ public:
 			GraphIdx::edge_descriptor e = g.add_edge(idx, vidx1, vidx2);
 
 			ji["length"].get_to(g.graph[e].length);
+
+			LOG("Edge " << vidx1 << "=>" << vidx2 << " length:" << g.graph[e].length);
 		}
 	}
 };
