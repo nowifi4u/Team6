@@ -5,8 +5,8 @@
 #include <functional>
 #include <boost/asio.hpp>
 
-#include "ClassDefines.h"
-#include "Logging.h"
+#include "../ClassDefines.h"
+#include "../Logging.h"
 
 using boost::asio::ip::tcp;
 

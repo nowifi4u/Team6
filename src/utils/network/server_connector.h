@@ -8,9 +8,10 @@ using nlohmann::json;
 #include <boost/endian/conversion.hpp>
 
 #include "tcp_connector.h"
-#include "Types.h"
-#include "bincharstream.h"
-#include "binstream.h"
+#include "../../Types.h"
+
+#include "../bincharstream.h"
+#include "../binstream.h"
 
 class game_connector : protected tcp_connector
 {

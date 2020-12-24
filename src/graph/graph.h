@@ -8,13 +8,13 @@
 #include <vector>
 #include <map>
 
-#include "ClassDefines.h"
-#include "Types.h"
+#include "../utils/ClassDefines.h"
+#include "../Types.h"
 
 #include <nlohmann/json.hpp>
 using nlohmann::json;
 
-#include "Logging.h"
+#include "../utils/Logging.h"
 
 struct GraphIdx
 {

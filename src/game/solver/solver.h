@@ -1,7 +1,7 @@
 #pragma once
 
-#include "game_data.h"
-#include "game_connector.h"
+#include "../data.h"
+#include "../../network/server_connector.h"
 
 struct game_solver_config
 {
