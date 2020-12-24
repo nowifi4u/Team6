@@ -7,8 +7,8 @@ using nlohmann::json;
 
 #include <boost/endian/conversion.hpp>
 
-#include "tcp_connector.h"
-#include "Types.h"
+#include "../network/tcp_connector.h"
+#include "../Types.h"
 
 #include "../utils/bincharstream.h"
 #include "../utils/binstream.h"
