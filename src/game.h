@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include "../network/server_connector.h"
-#include "drawer.h"
+#include "network/server_connector.h"
+#include "game/drawer.h"
 
 
 class Game
