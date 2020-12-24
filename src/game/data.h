@@ -10,8 +10,8 @@
 #include "../utils/ClassDefines.h"
 #include "../Types.h"
 
-#include "../utils/graph/graph.h"
-#include "../utils/graph/KKSCoordsCalculator.h"
+#include "../graph/graph.h"
+#include "../graph/KKSCoordsCalculator.h"
 
 #include "../utils/Logging.h"
 
