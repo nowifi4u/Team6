@@ -1,20 +1,492 @@
 #pragma once
 
 #include <boost/ptr_container/ptr_map.hpp>
+#include <boost/ptr_container/ptr_vector.hpp>
 
 #include <vector>
 #include <memory>
+#include <map>
+
+#include "../utils/ClassDefines.h"
+#include "../Types.h"
 
 #include "../graph/graph.h"
 #include "../graph/KKSCoordsCalculator.h"
 
-#include "data/event.h"
-#include "data/train.h"
-#include "data/player.h"
-#include "data/post.h"
+#include "../utils/Logging.h"
 
 
 
+//------------------------------ EVENTS ------------------------------//
+
+namespace Events {
+
+	enum EventType : uint8_t
+	{
+		TRAIN_COLLISION = 1,
+		HIJACKERS_ASSAULT = 2,
+		PARASITES_ASSAULT = 3,
+		REFUGEES_ARRIVAL = 4,
+		RESOURCE_OVERFLOW = 5,
+		RESOURCE_LACK = 6,
+		GAME_OVER = 100
+	};
+
+	struct Event
+	{
+		virtual EventType type() const = 0;
+	};
+
+	struct Event_TrainCrash : public Event
+	{
+		Types::train_idx_t train;
+		Types::tick_t tick;
+
+		EventType type() const { return EventType::TRAIN_COLLISION; }
+
+		[[nodiscard]]
+		static Event_TrainCrash* readJSON_L1(const json& j)
+		{
+			Event_TrainCrash* event = new Event_TrainCrash;
+
+			j["trains"].get_to(event->train);
+			j["tick"].get_to(event->tick);
+
+			return event;
+		}
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_TrainCrash);
+	};
+
+	struct Event_Parasites : public Event
+	{
+		uint8_t parasite_power;
+		Types::tick_t tick;
+
+		EventType type() const { return EventType::PARASITES_ASSAULT; }
+
+		[[nodiscard]]
+		static Event_Parasites* readJSON_L1(const json& j)
+		{
+			Event_Parasites* event = new Event_Parasites;
+
+			j["parasites_power"].get_to(event->parasite_power);
+			j["tick"].get_to(event->tick);
+
+			return event;
+		}
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_Parasites);
+	};
+
+	struct Event_Bandits : public Event
+	{
+		uint8_t hijacker_power;
+		Types::tick_t tick;
+
+		EventType type() const { return EventType::HIJACKERS_ASSAULT; }
+
+		[[nodiscard]]
+		static Event_Bandits* readJSON_L1(const json& j)
+		{
+			Event_Bandits* event = new Event_Bandits;
+
+			j["hijackers_power"].get_to(event->hijacker_power);
+			j["tick"].get_to(event->tick);
+
+			return event;
+		}
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_Bandits);
+	};
+
+	struct Event_Refugees : public Event
+	{
+		uint8_t refugees_number;
+		Types::tick_t tick;
+
+		EventType type() const { return EventType::REFUGEES_ARRIVAL; }
+
+		[[nodiscard]]
+		static Event_Refugees* readJSON_L1(const json& j)
+		{
+			Event_Refugees* event = new Event_Refugees;
+
+			j["refugees_number"].get_to(event->refugees_number);
+			j["tick"].get_to(event->tick);
+
+			return event;
+		}
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_Refugees);
+	};
+
+	struct Event_ResourceOverflow : public Event
+	{
+		EventType type() const { return EventType::RESOURCE_OVERFLOW; }
+
+		[[nodiscard]]
+		static Event_ResourceOverflow* readJSON_L1(const json& j)
+		{
+			Event_ResourceOverflow* event = new Event_ResourceOverflow;
+
+			return event;
+		}
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_ResourceOverflow);
+	};
+
+	struct Event_ResourceLack : public Event
+	{
+		EventType type() const { return EventType::RESOURCE_LACK; }
+
+		[[nodiscard]]
+		static Event_ResourceLack* readJSON_L1(const json& j)
+		{
+			Event_ResourceLack* event = new Event_ResourceLack;
+
+			return event;
+		}
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_ResourceLack);
+	};
+
+	struct Event_GameOver : public Event
+	{
+		EventType type() const { return EventType::GAME_OVER; }
+
+		[[nodiscard]]
+		static Event_GameOver* readJSON_L1(const json& j)
+		{
+			Event_GameOver* event = new Event_GameOver;
+
+			return event;
+		}
+
+		CLASS_VIRTUAL_DESTRUCTOR(Event_GameOver);
+	};
+
+	[[nodiscard]]
+	inline Event* make_Event(const json& j)
+	{
+		EventType event_type = (EventType)j["type"].get<int>();
+
+		LOG_1("game_data::make_Event: " << j);
+
+		switch (event_type)
+		{
+		case EventType::TRAIN_COLLISION:	return dynamic_cast<Event*>(Event_TrainCrash::readJSON_L1(j));
+		case EventType::PARASITES_ASSAULT:	return dynamic_cast<Event*>(Event_Parasites::readJSON_L1(j));
+		case EventType::HIJACKERS_ASSAULT:	return dynamic_cast<Event*>(Event_Bandits::readJSON_L1(j));
+		case EventType::REFUGEES_ARRIVAL:	return dynamic_cast<Event*>(Event_Refugees::readJSON_L1(j));
+		case EventType::RESOURCE_OVERFLOW:	return dynamic_cast<Event*>(Event_ResourceOverflow::readJSON_L1(j));
+		case EventType::RESOURCE_LACK:		return dynamic_cast<Event*>(Event_ResourceLack::readJSON_L1(j));
+		case EventType::GAME_OVER:			return dynamic_cast<Event*>(Event_GameOver::readJSON_L1(j));
+		default:							return nullptr;
+		}
+	}
+
+	inline void make_Event_vector(boost::ptr_vector<Event>& vec, const json& j)
+	{
+		vec.clear();
+		vec.reserve(j["events"].size());
+		for (const json& ji : j["events"])
+		{
+			vec.push_back(make_Event(ji));
+		}
+	}
+
+} // namespace Events
+
+
+
+//------------------------------ TRAINS ------------------------------//
+
+namespace Trains {
+
+
+
+	struct Train_Tier
+	{
+		const uint32_t goods_capacity;
+		const uint32_t fuel_capacity;
+		const uint64_t next_level_price;
+	};
+
+	const Train_Tier TrainTiers[3]
+	{
+		{40,400,40},
+		{80,800,80},
+		{160,1600,UINT32_MAX}
+	};
+
+	enum GoodsType : uint8_t
+	{
+		None = 0,
+		Product = 1,
+		Armor = 2
+	};
+
+	struct Train
+	{
+		Types::train_idx_t idx;
+		uint8_t level;
+		Types::tick_t cooldown;
+		//DISABLED uint32_t fuel;
+		uint32_t goods;
+		GoodsType goods_type;
+		Types::edge_idx_t line_idx;
+		Types::player_uid_t player_idx;
+		Types::edge_length_t position;
+		int8_t speed;
+
+		boost::ptr_vector<Events::Event> events;
+
+		static void readJSON_L1(Train& val, const json& j)
+		{
+			j["idx"].get_to(val.idx);
+			j["level"].get_to(val.level);
+			j["cooldown"].get_to(val.cooldown);
+			//DISABLED j["fuel"].get_to(val.fuel);
+			j["goods"].get_to(val.goods);
+			val.goods_type = j["goods_type"].is_null() ? GoodsType::None : j["goods_type"].get<GoodsType>();
+			j["line_idx"].get_to(val.line_idx);
+			j["player_idx"].get_to(val.player_idx);
+			j["position"].get_to(val.position);
+			j["speed"].get_to(val.speed);
+
+			Events::make_Event_vector(val.events, j);
+		}
+
+		static void updateJSON_L1(Train& val, const json& j)
+		{
+			//j["idx"].get_to(val.idx);
+			j["level"].get_to(val.level);
+			j["cooldown"].get_to(val.cooldown);
+			//DISABLED j["fuel"].get_to(val.fuel);
+			j["goods"].get_to(val.goods);
+			val.goods_type = j["goods_type"].is_null() ? GoodsType::None : j["goods_type"].get<GoodsType>();
+			j["line_idx"].get_to(val.line_idx);
+			//j["player_idx"].get_to(val.player_idx);
+			j["position"].get_to(val.position);
+			j["speed"].get_to(val.speed);
+
+			Events::make_Event_vector(val.events, j);
+		}
+	};
+
+
+
+} // namespace Trains
+
+
+
+//------------------------------ POSTS ------------------------------//
+
+namespace Posts {
+
+
+
+	enum PostType : uint8_t
+	{
+		TOWN = 1,
+		MARKET = 2,
+		STORAGE = 3
+	};
+
+	struct Post
+	{
+		Types::vertex_idx_t idx;
+		std::string name;
+		Types::vertex_idx_t point_idx;
+
+		boost::ptr_vector<Events::Event> events;
+
+		virtual PostType type() const = 0;
+
+		CLASS_VIRTUAL_DESTRUCTOR(Post);
+	};
+
+	struct Storage : public Post
+	{
+		uint32_t armor;
+		uint32_t armor_capacity;
+		uint32_t replenishment;
+
+		PostType type() const { return PostType::STORAGE; }
+
+		[[nodiscard]]
+		static Storage* readJSON_L1(const json& j)
+		{
+			Storage* ptr = new Storage;
+
+			j["armor"].get_to(ptr->armor);
+			j["armor_capacity"].get_to(ptr->armor_capacity);
+			j["replenishment"].get_to(ptr->replenishment);
+
+			return ptr;
+		}
+
+		static void updateJSON_L1(Storage* ptr, const json& j)
+		{
+			j["armor"].get_to(ptr->armor);
+			//j["armor_capacity"].get_to(ptr->armor_capacity);
+			//j["replenishment"].get_to(ptr->replenishment);
+		}
+
+		CLASS_VIRTUAL_DESTRUCTOR(Storage);
+	};
+
+	struct Market : public Post
+	{
+		uint32_t product;
+		uint32_t product_capacity;
+		uint32_t replenishment;
+
+		PostType type() const { return PostType::MARKET; }
+
+		[[nodiscard]]
+		static Market* readJSON_L1(const json& j)
+		{
+			Market* ptr = new Market;
+
+			j["product"].get_to(ptr->product);
+			j["product_capacity"].get_to(ptr->product_capacity);
+			j["replenishment"].get_to(ptr->replenishment);
+
+			return ptr;
+		}
+
+		static void updateJSON_L1(Market* ptr, const json& j)
+		{
+			j["product"].get_to(ptr->product);
+			//j["product_capacity"].get_to(ptr->product_capacity);
+			//j["replenishment"].get_to(ptr->replenishment);
+		}
+
+		CLASS_VIRTUAL_DESTRUCTOR(Market);
+	};
+
+	struct Town_Tier
+	{
+		const uint32_t population_capacity;
+		const uint32_t product_capacity;
+		const uint32_t armor_capacity;
+		const Types::tick_t cooldown_after_crash;
+		const uint64_t next_level_price;
+	};
+
+	struct Town : public Post
+	{
+		uint32_t armor;
+		uint8_t level;
+		Types::player_uid_t player_idx;
+		uint32_t population;
+		uint32_t product;
+		Types::tick_t train_cooldown;
+
+		PostType type() const { return PostType::TOWN; }
+
+		[[nodiscard]]
+		static Town* readJSON_L1(const json& j)
+		{
+			Town* ptr = new Town;
+
+			j["armor"].get_to(ptr->armor);
+			j["level"].get_to(ptr->level);
+			ptr->player_idx = j["player_idx"].is_null() ? "" : j["player_idx"].get<Types::player_uid_t>();
+			j["population"].get_to(ptr->population);
+			j["product"].get_to(ptr->product);
+			j["train_cooldown"].get_to(ptr->train_cooldown);
+
+			return ptr;
+		}
+
+		static void updateJSON_L1(Town* ptr, const json& j)
+		{
+			j["armor"].get_to(ptr->armor);
+			j["level"].get_to(ptr->level);
+			//j["player_idx"].get_to(ptr->player_idx);
+			j["population"].get_to(ptr->population);
+			j["product"].get_to(ptr->product);
+			j["train_cooldown"].get_to(ptr->train_cooldown);
+		}
+
+		CLASS_VIRTUAL_DESTRUCTOR(Town);
+	};
+
+	[[nodiscard]]
+	inline Post* make_Post(const json& j)
+	{
+		PostType post_type = (PostType)j["type"].get<uint8_t>();
+
+		Post* ptr;
+
+		switch (post_type)
+		{
+		case PostType::TOWN:	ptr = reinterpret_cast<Post*>(Town::readJSON_L1(j)); break;
+		case PostType::MARKET:	ptr = reinterpret_cast<Post*>(Market::readJSON_L1(j)); break;
+		case PostType::STORAGE:	ptr = reinterpret_cast<Post*>(Storage::readJSON_L1(j)); break;
+		default:				return nullptr;
+		}
+
+		j["idx"].get_to(ptr->idx);
+		j["name"].get_to(ptr->name);
+		j["point_idx"].get_to(ptr->point_idx);
+
+		Events::make_Event_vector(ptr->events, j);
+
+		return ptr;
+	}
+
+	inline void updateJSON_L1(Post* ptr, const json& j)
+	{
+		PostType post_type = ptr->type();
+
+		switch (post_type)
+		{
+		case PostType::TOWN:	Town::updateJSON_L1(dynamic_cast<Town*>(ptr), j); break;
+		case PostType::MARKET:	Market::updateJSON_L1(dynamic_cast<Market*>(ptr), j); break;
+		case PostType::STORAGE:	Storage::updateJSON_L1(dynamic_cast<Storage*>(ptr), j); break;
+		}
+
+		Events::make_Event_vector(ptr->events, j);
+	}
+
+} // namespace Posts
+
+
+
+//------------------------------ PLAYER ------------------------------//
+
+struct Player
+{
+	Types::player_uid_t idx;
+	std::string name;
+	int32_t rating;
+
+	std::map<Types::train_idx_t, Trains::Train> trains;
+
+	static void readJSON_L1(Player& val, const json& j)
+	{
+		j["idx"].get_to(val.idx);
+		j["name"].get_to(val.name);
+		j["rating"].get_to(val.rating);
+	}
+
+	static void updateJSON_L1(Player& val, const json& j)
+	{
+		//j["idx"].get_to(val.idx);
+		//j["name"].get_to(val.name);
+		j["rating"].get_to(val.rating);
+	}
+
+	CLASS_VIRTUAL_DESTRUCTOR(Player);
+};
+
+
+
+//------------------------------ GAMEDATA ------------------------------//
 
 struct GameData
 {

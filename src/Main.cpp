@@ -1,6 +1,4 @@
-#define LOG_LEVEL_1
-
-#include <sdkddkver.h>
+#define LOG_LEVEL_3
 
 #include <iostream>
 
@@ -12,20 +10,21 @@
 int main()
 {
 	boost::asio::io_service io;
-	game_connector connector(io);
+	server_connector connector(io);
+
+	connector.connect("wgforge-srv.wargaming.net", "443");
+
+	Game game(connector);
+	game.init({ "test3", "test3", "Game of Thrones", -1, 1 });
+
+	global_Drawer.start(&game.gamedrawer, { 800, 800 }, "Kek");
+	game.drawer_set_state(GameDrawer::Status::READY);
+
+	global_Drawer.window_join();
 
 	try
 	{
-
-		Game game(io);
-
-		game.start("wgforge-srv.wargaming.net", "443", { "test3", "test3", "Game of Thrones", -1, 1 });
-
-		game.drawer_join();
-	}
-	catch (const nlohmann::detail::type_error& err)
-	{
-		std::cout << "ERROR! " << err.what() << std::endl;
+		
 	}
 	catch (const std::runtime_error& err)
 	{

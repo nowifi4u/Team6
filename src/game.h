@@ -2,27 +2,25 @@
 
 
 #include "utils/network/server_connector.h"
-#include "render/drawer.h"
+#include "render/drawer/GameDrawer.h"
+#include "render/DrawerController.h"
+
+#include "globals/drawer.h"
 
 
 class Game
 {
 protected:
 
-	boost::thread* drawer_thread = nullptr;
-	game_drawer::status drawer_status = game_drawer::READY;
-
-	game_connector connector;
+	server_connector& connector;
 
 public:
 
 	GameData gamedata;
+	GameDrawer gamedrawer;
 
-	sf::RenderWindow* drawer_window = nullptr;
-	game_drawer_config drawer_config;
-
-	Game(boost::asio::io_service& io)
-		: connector(io)
+	Game(server_connector& connector)
+		: connector(connector), gamedrawer(gamedata)
 	{
 		
 	}
@@ -37,9 +35,9 @@ public:
 		connector.connect(addr, port);
 	}
 
-	void init(const game_connector::Login& lobby)
+	void init(const server_connector::Login& lobby)
 	{
-		this->drawer_set_state(game_drawer::UPDATING);
+		this->drawer_set_state(GameDrawer::Status::UPDATING);
 
 		{
 			LOG_2("Game::init: Sending Login request...");
@@ -76,13 +74,15 @@ public:
 
 			GameData::readJSON_L1(gamedata, json::parse(response.second));
 		}
+
+		gamedrawer.init();
 	}
 
 	void update()
 	{
-		this->drawer_set_state(game_drawer::UPDATING);
-		this->drawer_window->setTitle("Update game data...");
-
+		this->drawer_set_state(GameDrawer::Status::UPDATING);
+		global_Drawer.get_window()->setTitle("Update game data...");
+		
 		{
 			LOG("Updating game data...");
 			connector.send_Map({ 1 });
@@ -98,11 +98,10 @@ public:
 		LOG_2("Game::reset");
 
 		connector.disconnect();
-		this->drawer_stop();
 		gamedata.clear();
 	}
 
-	void drawer_set_state(game_drawer::status s)
+	void drawer_set_state(GameDrawer::Status s)
 	{
 		if (drawer_thread == nullptr)
 		{
@@ -111,61 +110,22 @@ public:
 		}
 
 		LOG_2("Game::drawer_set_state: Setting state [" << (uint32_t)s << "]...");
-		drawer_status = s;
-		drawer_thread->interrupt();
+		gamedrawer.status_ = s;
+		global_Drawer.interrupt();
 	}
 
 	void drawer_start()
 	{
-		if (drawer_thread != nullptr)
-		{
-			LOG_2("Game::drawer_start: Render thread already running!");
-			return;
-		}
+		global_Drawer.get_window()->setView(sf::View(sf::Vector2f(gamedata.map_graph_width / 2, gamedata.map_graph_height / 2), sf::Vector2f(gamedata.map_graph_width, gamedata.map_graph_height)));
 
-		drawer_config.window_videomode = sf::VideoMode(gamedata.map_graph_width + 20, gamedata.map_graph_height + 20);
-
-		LOG_2("Game::drawer_start: Starting game_drawer thread...");
-		drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
-	}
-
-	void drawer_stop()
-	{
-		if (drawer_thread == nullptr)
-		{
-			LOG_2("Game::drawer_stop: Render thread not started yet");
-			return;
-		}
-
-		LOG_2("Game::drawer_stop: Stopping game_drawer thread...");
-		delete drawer_thread;
-		drawer_thread = nullptr;
-		drawer_window = nullptr;
-	}
-
-	void drawer_window_wait() const
-	{
-		LOG_2("Game::drawer_window_wait: Waiting for drawer_window...");
-		while (drawer_window == nullptr);
-		LOG_2("Game::drawer_window_wait: drawer_window ready!");
-	}
-
-	void drawer_join()
-	{
-		if (drawer_thread == nullptr)
-		{
-			LOG_2("Game::drawer_join: Render thread not started yet");
-			return;
-		}
-
-		LOG_2("Game::drawer_join: Joining game_drawer thread...");
-		drawer_thread->join();
+		LOG_2("Game::drawer_start: Starting GameDrawer thread...");
+		global_Drawer.interrupt(&gamedrawer);
 	}
 
 	void await_run()
 	{
-		this->drawer_set_state(game_drawer::AWAIT_PLAYERS);
-		this->drawer_window->setTitle("Awaiting players...");
+		this->drawer_set_state(GameDrawer::Status::AWAIT_PLAYERS);
+		global_Drawer.get_window()->setTitle("Awaiting players...");
 
 		this->connector.send_Turn();
 		this->connector.read_packet();
@@ -175,13 +135,13 @@ public:
 	{
 		throw "TODO";
 
-		//this->drawer_set_state(game_drawer::CALCULATING);
+		//this->drawer_set_state(GameDrawer::CALCULATING);
 	}
 
 	void await_move()
 	{
-		this->drawer_set_state(game_drawer::READY);
-		this->drawer_window->setTitle("Awaiting next tick...");
+		this->drawer_set_state(GameDrawer::Status::READY);
+		global_Drawer.get_window()->setTitle("Awaiting next tick...");
 
 		this->connector.send_Turn();
 		this->connector.read_packet();
@@ -189,10 +149,9 @@ public:
 		//Sleep(1000);
 	}
 
-	void start(const std::string& addr, const std::string& port, const game_connector::Login& lobby)
+	void start(const std::string& addr, const std::string& port, const server_connector::Login& lobby)
 	{
 		this->drawer_start();
-		this->drawer_window_wait();
 
 		this->await_run();
 		this->update();
