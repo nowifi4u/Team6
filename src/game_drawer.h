@@ -20,9 +20,6 @@ struct game_drawer_config
 
 	float vertex_radius = 5;
 	sf::Color vertex_color_empty = sf::Color::White;
-	sf::Color vertex_color_storage = sf::Color::Yellow;
-	sf::Color vertex_color_market = sf::Color::Red;
-	sf::Color vertex_color_town = sf::Color::Green;
 	
 	sf::Color edge_color = sf::Color::White;
 	sf::Color edge_length_color = sf::Color::Magenta;
@@ -65,20 +62,7 @@ namespace game_drawer_layer {
 
 				sf::CircleShape& dot = cached_vertecies[vprops.idx];
 				dot.setRadius(config.vertex_radius);
-
-				if (vprops.post_idx == UINT32_MAX)
-				{
-					dot.setFillColor(config.vertex_color_empty);
-				}
-				else
-				{
-					switch (gamedata.posts.at(vprops.post_idx)->type())
-					{
-					case Posts::TOWN: dot.setFillColor(config.vertex_color_town); break;
-					case Posts::STORAGE: dot.setFillColor(config.vertex_color_storage); break;
-					case Posts::MARKET: dot.setFillColor(config.vertex_color_market); break;
-					}
-				}
+				dot.setFillColor(config.vertex_color_empty);
 
 				const CoordsHolder::point_type& vcoords = gamedata.map_graph_coords->get_map()[v];
 
