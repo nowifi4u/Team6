@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "connector.h"
+#include "../network/server_connector.h"
 #include "drawer.h"
 
 
