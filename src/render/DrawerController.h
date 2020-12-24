@@ -107,7 +107,7 @@ public:
 		}
 	}
 
-	DrawerController(InterfaceDrawer* drawable)
+	DrawerController(InterfaceDrawer* drawable = nullptr)
 		: drawable_(drawable)
 	{
 	}
