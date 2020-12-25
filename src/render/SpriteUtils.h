@@ -25,14 +25,27 @@ namespace SpriteUtils {
 		sprite.setScale(size.x / act_size.x, size.y / act_size.y);
 	}
 
+	inline void centerOrigin(sf::Transformable& obj, const sf::Vector2u& size)
+	{
+		obj.setOrigin(
+			size.x / 2.f,
+			size.y / 2.f
+		);
+	}
+
+	inline void centerOrigin(sf::Transformable& obj, const sf::Vector2f& size)
+	{
+		obj.setOrigin(
+			size.x / 2.f,
+			size.y / 2.f
+		);
+	}
+
 	inline void centerOrigin(sf::Sprite& sprite)
 	{
 		const auto act_size = getSize(sprite);
 
-		sprite.setOrigin(
-			act_size.x / 2.f,
-			act_size.y / 2.f
-		);
+		centerOrigin(sprite, act_size);
 	}
 
 } // SpriteUtils
