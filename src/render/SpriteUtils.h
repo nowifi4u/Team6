@@ -2,11 +2,20 @@
 
 #include <SFML/Graphics.hpp>
 
+namespace TextureUtils {
+
+	inline sf::Vector2f getSize(const sf::Texture& texture)
+	{
+		return sf::Vector2f(texture.getSize().x, texture.getSize().y);
+	}
+
+} // TextureUtils
+
 namespace SpriteUtils {
 
 	inline sf::Vector2f getSize(const sf::Sprite& sprite)
 	{
-		return sf::Vector2f(sprite.getTexture()->getSize().x, sprite.getTexture()->getSize().y);
+		return TextureUtils::getSize(*sprite.getTexture());
 	}
 
 	inline void setSize(sf::Sprite& sprite, const sf::Vector2f& size)
