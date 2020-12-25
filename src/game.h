@@ -143,7 +143,9 @@ public:
 			return;
 		}
 
-		drawer_config.textures = new TextureManager("src/render/textures.cfg");
+		drawer_config.edge_length_font = Utils::GetWorkingDirectory() + "res/arial.ttf";
+
+		drawer_config.textures = new TextureManager(Utils::GetWorkingDirectory() + "res/Game/textures.cfg");
 
 		LOG_2("Game::drawer_start: Starting game_drawer thread...");
 		drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
