@@ -1,5 +1,8 @@
 #pragma once
+
 #include "../data.h"
+#include "graph.h"
+
 class TrainSolver
 {
 public:
