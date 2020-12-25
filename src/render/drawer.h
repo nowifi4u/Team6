@@ -9,7 +9,12 @@
 #include <map>
 
 #include "../game/data.h"
-#include "../render/TextureManager.h"
+#include "TextureManager.h"
+#include "SpriteUtils.h"
+
+#include "../utils/value_map.h"
+#include "../utils/Math.h"
+#include "../utils/MinMax.h"
 
 
 struct game_drawer_config
@@ -18,16 +23,14 @@ struct game_drawer_config
 	sf::VideoMode window_videomode;
 	std::string window_name;
 
-	std::string edge_length_font = "res/arial.ttf";
+	std::string edge_length_font;
 
-	sf::Uint8 delta = 20;
-
-	float vertex_scale_koeff = 0.1;
-	uint8_t field_scale_koeff = 4;
+	ValueMap<float> padding_width = ValueMap<float>(0, 1, 0, 1);
+	ValueMap<float> padding_height = ValueMap<float>(0, 1, 0, 1);
 
 	float frame_time = 1.0f / 10.0f;
 
-	bool to_draw_edge_length = true;
+	TextureManager* textures = nullptr;
 };
 
 
@@ -39,9 +42,8 @@ namespace game_drawer_layer {
 	{
 	public:
 
-		layer_base(TextureManager& tm) : textureManager_(tm){}
+		layer_base() {}
 
-		TextureManager& textureManager_;
 		virtual void init(const GameData& gamedata, const game_drawer_config& config) = 0;
 		virtual void reset() = 0;
 		virtual void draw(sf::RenderWindow& window, const GameData& gamedata) = 0;
@@ -54,13 +56,11 @@ namespace game_drawer_layer {
 
 		std::map<GraphIdx::vertex_descriptor, sf::Sprite> nodes_g;
 
-		vertecies(TextureManager& tm) : layer_base(tm) {}
+		vertecies() : layer_base() {}
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
 			LOG_3("game_drawer_layer::vertecies::init");
-
-			auto koeff = config.field_scale_koeff;
 
 			gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
 
@@ -71,39 +71,36 @@ namespace game_drawer_layer {
 				if (gamedata.map_graph.graph[v].post_idx != GraphIdx::uint32_max) {
 					switch (getPostType(v, gamedata)) {
 					case Posts::PostType::MARKET:
-						b = textureManager_.RequireResource("market");
-						s = sf::Sprite(*textureManager_.GetResource("market"));
+						b = config.textures->RequireResource("market");
+						s = sf::Sprite(*config.textures->GetResource("market"));
 						break;
 					case  Posts::PostType::TOWN:
-						b = textureManager_.RequireResource("castle");
-						s = sf::Sprite(*textureManager_.GetResource("castle"));
+						b = config.textures->RequireResource("castle");
+						s = sf::Sprite(*config.textures->GetResource("castle"));
 						break;
 					case  Posts::PostType::STORAGE:
-						b = textureManager_.RequireResource("storage");
-						s = sf::Sprite(*textureManager_.GetResource("storage"));
+						b = config.textures->RequireResource("storage");
+						s = sf::Sprite(*config.textures->GetResource("storage"));
 						break;
 					default:
 						break;
 					}
+
+					SpriteUtils::setSize(s, { 40, 40 });
 				}
 				else {
-					b = textureManager_.RequireResource("circle");
-					s = sf::Sprite(*textureManager_.GetResource("circle"));
+					b = config.textures->RequireResource("cs");
+					s = sf::Sprite(*config.textures->GetResource("cs"));
+
+					SpriteUtils::setSize(s, { 25, 25 });
 				}
 
-				
-				
-
-				s.setScale(config.vertex_scale_koeff, config.vertex_scale_koeff);
-				s.setOrigin(
-					s.getTexture()->getSize().x / 2.f,
-					s.getTexture()->getSize().y / 2.f
-				);
+				SpriteUtils::centerOrigin(s);
 
 				const CoordsHolder::point_type& vcoords = gamedata.map_graph_coords->get_map()[v];
 				s.setPosition(sf::Vector2f{
-					   (float)vcoords[0]*koeff + config.delta,
-					   (float)vcoords[1]*koeff + config.delta
+						config.padding_width.map(vcoords[0]),
+						config.padding_height.map(vcoords[1])
 					});
 				}
 			);
@@ -117,7 +114,7 @@ namespace game_drawer_layer {
 			{
 			case Posts::TOWN: return Posts::TOWN;
 			case Posts::STORAGE: return Posts::STORAGE;
-			default: return Posts::MARKET;
+			case Posts::MARKET: return Posts::MARKET;
 			}
 		}
 
@@ -142,21 +139,20 @@ namespace game_drawer_layer {
 	class edges : public layer_base
 	{
 		std::map<GraphIdx::edge_descriptor, sf::Sprite> edges_g;
-		vertecies& vert;
 
 	public:
-		edges(TextureManager& tm, vertecies& vert_) : layer_base(tm), vert(vert_) {}
+		edges() : layer_base() {}
 
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
 			LOG_3("game_drawer_layer::edges::init");
 
-			uint8_t koeff = config.field_scale_koeff;
-
 			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
 
-				textureManager_.RequireResource("railway");
+				sf::Sprite& edge = edges_g[e];
+
+				config.textures->RequireResource("railway");
 
 				auto u = boost::source(e, gamedata.map_graph.graph);
 				auto v = boost::target(e, gamedata.map_graph.graph);
@@ -165,50 +161,38 @@ namespace game_drawer_layer {
 				if (coords[u][0] >= coords[v][0])
 					std::swap(u, v);
 
-				sf::Texture* temp = textureManager_.GetResource("railway");
-				auto temp_x = temp->getSize().x;
-				auto temp_y = temp->getSize().y;
+				sf::Texture* main_texture = config.textures->GetResource("railway");
+				auto main_size = TextureUtils::getSize(*main_texture);
 
-				auto vertex_size = vert.nodes_g[v].getTexture()->getSize().x * config.vertex_scale_koeff;
-				auto edge_optimal_x_size = vertex_size / 2.0;
-				auto edge_scale_koeff = edge_optimal_x_size / temp_x;
-
-				double vertecies_distance = sqrt((coords[u][0] * koeff - coords[v][0] * koeff) * (coords[u][0] * koeff - coords[v][0] * koeff) +
-					(coords[u][1] * koeff - coords[v][1] * koeff) * (coords[u][1] * koeff - coords[v][1] * koeff)
+				double vertecies_distance = sqrt(
+					Math::sqr(config.padding_width.map(coords[u][0]) - config.padding_width.map(coords[v][0])) +
+					Math::sqr(config.padding_height.map(coords[u][1]) - config.padding_height.map(coords[v][1]))
 				);
-				sf::Texture* main_texture = textureManager_.GetResource("railway");
 
-				/*sf::Image i = main_texture->copyToImage();
-				sf::Color c = i.getPixel(0, 0);
-				i.createMaskFromColor(c);
-
-				sf::Color c2 = i.getPixel(97, 10);
-				i.createMaskFromColor(c2);
-				i.saveToFile("temp.png");*/
+				const float edge_length_coeff = 0.1;
 
 				main_texture->setRepeated(true);
-				edges_g[e] = sf::Sprite(*main_texture,
-					sf::IntRect(0, 0, temp_x, round(vertecies_distance / edge_scale_koeff)));
-
-				edges_g[e].scale(edge_scale_koeff, edge_scale_koeff);
-				edges_g[e].setOrigin(sf::Vector2f{ edges_g[e].getTexture()->getSize().x / 2.f, 0.f });
-				edges_g[e].setPosition(
-					vert.nodes_g[v].getPosition().x,
-					vert.nodes_g[v].getPosition().y/* + vertex_size / 2.f*/
+				edge = sf::Sprite(*main_texture,
+					sf::IntRect(0, 0, main_size.x, round(vertecies_distance / edge_length_coeff)));
+				edge.setOrigin(sf::Vector2f{ main_size.x / 2.f, 0.f });
+				edge.setPosition(
+					config.padding_width.map(coords[v][0]),
+					config.padding_height.map(coords[v][1])
 				);
+				edge.setScale(0.1, edge_length_coeff);
 				
 
 				double tan_alpha;
 				if (coords[u][1] > coords[v][1]) {
 					tan_alpha = (coords[v][0] - coords[u][0]) / (coords[u][1] - coords[v][1]);
-					edges_g[e].setRotation((float)(atan(tan_alpha) * 180.0 / 3.14159265));
+					edge.setRotation((float)(atan(tan_alpha) * 180.0 / 3.14159265));
 				}
 				else if (coords[u][1] < coords[v][1]) {
 					tan_alpha = (-coords[u][1] + coords[v][1]) / (coords[v][0] - coords[u][0]);
-					edges_g[e].setRotation((float)(90 + atan(tan_alpha) * 180.0 / 3.14159265));
+					edge.setRotation((float)(90 + atan(tan_alpha) * 180.0 / 3.14159265));
 				}
 				else {
-					edges_g[e].setRotation(90);
+					edge.setRotation(90);
 				}
 				});
 		}
@@ -325,19 +309,16 @@ namespace game_drawer_layer {
 
 	public:
 
-		background(TextureManager& tm) : layer_base(tm) {}
+		background() : layer_base() {}
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
 			LOG_3("game_drawer_layer::background::init");
 
-			textureManager_.RequireResource("bg");
-			sf::Texture* bg_texture = textureManager_.GetResource("bg");
-			float kw = 0.999f* config.window_videomode.width / bg_texture->getSize().x;
-			float kh = 0.999f*config.window_videomode.height / bg_texture->getSize().y;
-
+			config.textures->RequireResource("bg");
+			sf::Texture* bg_texture = config.textures->GetResource("bg");
 			bg.setTexture(*bg_texture);
-			bg.scale(kw, kh);
+			SpriteUtils::setSize(bg, sf::Vector2f( config.window_videomode.width, config.window_videomode.height ));
 		}
 
 		void reset()
@@ -378,28 +359,22 @@ protected:
 	sf::Clock clock_;
 	sf::Time elapsed_;
 
-	TextureManager textureManager_;
-
-	game_drawer_layer::vertecies vert; // for edges init
-
 	boost::ptr_vector<game_drawer_layer::layer_base> layers;
 	
 public:
 
-	game_drawer(const GameData& gamedata, const game_drawer_config& config = {})
-		: config(config), clock_(), textureManager_(), vert(textureManager_)
+	game_drawer(const GameData& gamedata, const game_drawer_config& config)
+		: config(config), clock_()
 	{
-		layers.push_back(new game_drawer_layer::background(textureManager_));
-		layers.push_back(new game_drawer_layer::edges(textureManager_, vert));
-		layers.push_back(&vert);
+		layers.push_back(new game_drawer_layer::background());
+		layers.push_back(new game_drawer_layer::edges());
+		layers.push_back(new game_drawer_layer::vertecies());
 		//layers.push_back(new game_drawer_layer::edges_length(textureManager_));
-		
 	}
 
-	void init(const GameData& gamedata, sf::RenderWindow& window)
+	void init(const GameData& gamedata)
 	{
 		LOG_2("game_drawer::init");
-
 
 		layers[0].init(gamedata, config);
 		layers[2].init(gamedata, config);
@@ -455,7 +430,7 @@ public:
 	{
 		LOG_2("game_drawer: start");
 
-		init(gamedata, window);
+		init(gamedata);
 
 		while (window.isOpen())
 		{

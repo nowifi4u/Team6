@@ -4,6 +4,8 @@
 #include "utils/network/server_connector.h"
 #include "render/drawer.h"
 
+#include "utils/MinMax.h"
+
 
 class Game
 {
@@ -76,6 +78,24 @@ public:
 
 			GameData::readJSON_L1(gamedata, json::parse(response.second));
 		}
+
+		{
+			MinMaxReducer<float> minmax_x;
+			MinMaxReducer<float> minmax_y;
+
+			gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+				const CoordsHolder::point_type& vcoords = gamedata.map_graph_coords->get_map()[v];
+
+				minmax_x.consume(vcoords[0]);
+				minmax_y.consume(vcoords[1]);
+				});
+
+			drawer_config.padding_width.set_output(100, 700);
+			drawer_config.padding_height.set_output(100, 700);
+
+			drawer_config.padding_width.set_input(minmax_x.min(), minmax_x.max());
+			drawer_config.padding_height.set_input(minmax_y.min(), minmax_y.max());
+		}
 	}
 
 	void update()
@@ -123,13 +143,15 @@ public:
 			return;
 		}
 
-		drawer_config.window_videomode = sf::VideoMode(
-			gamedata.map_graph_width * drawer_config.field_scale_koeff + 2 * drawer_config.delta,
-			gamedata.map_graph_height * drawer_config.field_scale_koeff + 2 * drawer_config.delta
-		);
+		drawer_config.window_videomode = sf::VideoMode({ 800, 800 });
+
+		drawer_config.edge_length_font = Utils::GetWorkingDirectory() + "res\\arial.ttf";
+
+		drawer_config.textures = new TextureManager("res\\Game\\textures.cfg");
 
 		LOG_2("Game::drawer_start: Starting game_drawer thread...");
-		drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
+		game_drawer_thread(gamedata, drawer_config, drawer_status, drawer_window);
+		//drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
 	}
 
 	void drawer_stop()
@@ -144,6 +166,9 @@ public:
 		delete drawer_thread;
 		drawer_thread = nullptr;
 		drawer_window = nullptr;
+
+		delete drawer_config.textures;
+		drawer_config.textures = nullptr;
 	}
 
 	void drawer_window_wait() const
