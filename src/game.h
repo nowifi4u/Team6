@@ -147,7 +147,7 @@ public:
 
 		drawer_config.edge_length_font = Utils::GetWorkingDirectory() + "res\\arial.ttf";
 
-		drawer_config.textures = new TextureManager(Utils::GetWorkingDirectory() + "res\\Game\\textures.cfg");
+		drawer_config.textures = new TextureManager("res\\Game\\textures.cfg");
 
 		LOG_2("Game::drawer_start: Starting game_drawer thread...");
 		game_drawer_thread(gamedata, drawer_config, drawer_status, drawer_window);
