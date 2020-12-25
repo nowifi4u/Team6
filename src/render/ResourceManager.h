@@ -5,7 +5,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <utility>
-#include "Utilities.h"
+#include "../utils/GetWorkingDirectory.h"
 
 template<typename Derived, typename T>
 class ResourceManager {
@@ -76,7 +76,7 @@ private:
 
 	void LoadPaths(const std::string& l_pathFile) {
 		std::ifstream paths;
-		//std::cout << Utils::GetWorkingDirectory() + l_pathFile<<std::endl;
+		//std::cout << /*Utils::GetWorkingDirectory() +*/ l_pathFile<<std::endl;
 		paths.open(/*Utils::GetWorkingDirectory() +*/ l_pathFile);
 		if (paths.is_open()) {
 			std::string line;
@@ -91,9 +91,11 @@ private:
 			paths.close();
 			return;
 		}
-		std::cerr <<
-			"! Failed loading the path file: "
-			<< l_pathFile << std::endl;
+		else {
+			std::cerr <<
+				"! Failed loading the path file: "
+				<< l_pathFile << std::endl;
+		}
 	}
 	/*the first - template parameter of a resource
 	      second - counter for how many places are currently using this particular resource*/
