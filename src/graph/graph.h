@@ -14,8 +14,6 @@
 #include <nlohmann/json.hpp>
 using nlohmann::json;
 
-#include "utils/Logging.h"
-
 struct GraphIdx
 {
 public:
