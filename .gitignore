@@ -54,3 +54,12 @@
 **/*.cbp
 **/CMakeScripts
 **/compile_commands.json
+
+*.tlog
+*.recipe
+*.lastbuildstate
+*.cmake
+*.pc
+*.tcl
+*.exp
+*.log
