@@ -23,8 +23,6 @@ set(boost_LIB_DIR ${boost_INSTALL}/lib)
 message(STATUS "Boost source dir: " ${boost_SOURCE_DIR})
 message(STATUS "Boost install dir: " ${boost_INSTALL})
 
-message(WARN ${WIN32})
-
 if(WIN32)
     set(boost_BOOTSTRAP ./bootstrap.bat)
     message(STATUS "Using WIN32 specific boost compilation")
@@ -79,4 +77,5 @@ add_executable(Team6
         src/Main.cpp
         src/Types.h)
 
+add_dependencies(Team6 boost)
 target_link_libraries(Team6 sfml-graphics nlohmann_json ${Boost_LIBRARIES})
