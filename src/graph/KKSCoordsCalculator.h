@@ -50,17 +50,16 @@ public:
 
 	KKSCoordsCalculator() : CoordsCalculator() {}
 
-	KKSCoordsCalculator(GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length) : 
-		KKSCoordsCalculator()
+	KKSCoordsCalculator(const GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length) : KKSCoordsCalculator()
 	{
 		calculate(g, topology_width, topology_height, unit_edge_length);
 	}
 
 	virtual ~KKSCoordsCalculator() = default;
 
-	void calculate(GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length)
+	void calculate(const GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length)
 	{
-		CoordsHolder::init(g);
+		init(g);
 
 		boost::minstd_rand gen;
 		topology_type topo(gen, 0, 0, topology_width, topology_width);
