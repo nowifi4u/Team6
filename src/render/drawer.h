@@ -151,6 +151,8 @@ namespace game_drawer_layer {
 
 			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
 
+				sf::Sprite& edge = edges_g[e];
+
 				config.textures->RequireResource("railway");
 
 				auto u = boost::source(e, gamedata.map_graph.graph);
@@ -160,18 +162,16 @@ namespace game_drawer_layer {
 				if (coords[u][0] >= coords[v][0])
 					std::swap(u, v);
 
-				sf::Texture* temp = config.textures->GetResource("railway");
-				auto temp_x = temp->getSize().x;
-				auto temp_y = temp->getSize().y;
+				sf::Texture* main_texture = config.textures->GetResource("railway");
+				auto main_size = TextureUtils::getSize(*main_texture);
 
-				auto vertex_size =  config.padding_width.map( vert.nodes_g[v].getTexture()->getSize().x ) / 2.f;
-				auto edge_scale_koeff = vertex_size / temp_x;
+				auto vertex_size = SpriteUtils::getSize(vert.nodes_g[v]).x / 2.f;
+				auto edge_scale_koeff = vertex_size / main_size.x;
 
 				double vertecies_distance = sqrt(
-					Math::sqr(coords[u][0] - coords[v][0]) * Math::sqr(config.padding_width.get_scale()) +
-					Math::sqr(coords[u][1] - coords[v][1]) * Math::sqr(config.padding_height.get_scale())
+					Math::sqr(config.padding_width.map(coords[u][0]) - config.padding_width.map(coords[v][0])) +
+					Math::sqr(config.padding_height.map(coords[u][1]) - config.padding_height.map(coords[v][1]))
 				);
-				sf::Texture* main_texture = config.textures->GetResource("railway");
 
 				/*sf::Image i = main_texture->copyToImage();
 				sf::Color c = i.getPixel(0, 0);
@@ -182,26 +182,26 @@ namespace game_drawer_layer {
 				i.saveToFile("temp.png");*/
 
 				main_texture->setRepeated(true);
-				edges_g[e] = sf::Sprite(*main_texture,
-					sf::IntRect(0, 0, temp_x, round(vertecies_distance / edge_scale_koeff)));
-				edges_g[e].setOrigin(sf::Vector2f{ (float)vertex_size / 2.f, 0.f });
-				edges_g[e].setPosition(
-					vert.nodes_g[v].getPosition().x,
-					vert.nodes_g[v].getPosition().y
+				edge = sf::Sprite(*main_texture,
+					sf::IntRect(0, 0, main_size.x, round(vertecies_distance / edge_scale_koeff)));
+				edge.setOrigin(sf::Vector2f{ (float)vertex_size / 2.f, 0.f });
+				edge.setPosition(
+					config.padding_width.map(vert.nodes_g[v].getPosition().x),
+					config.padding_height.map(vert.nodes_g[v].getPosition().y)
 				);
 				
 
 				double tan_alpha;
 				if (coords[u][1] > coords[v][1]) {
 					tan_alpha = (coords[v][0] - coords[u][0]) / (coords[u][1] - coords[v][1]);
-					edges_g[e].setRotation((float)(atan(tan_alpha) * 180.0 / 3.14159265));
+					edge.setRotation((float)(atan(tan_alpha) * 180.0 / 3.14159265));
 				}
 				else if (coords[u][1] < coords[v][1]) {
 					tan_alpha = (-coords[u][1] + coords[v][1]) / (coords[v][0] - coords[u][0]);
-					edges_g[e].setRotation((float)(90 + atan(tan_alpha) * 180.0 / 3.14159265));
+					edge.setRotation((float)(90 + atan(tan_alpha) * 180.0 / 3.14159265));
 				}
 				else {
-					edges_g[e].setRotation(90);
+					edge.setRotation(90);
 				}
 				});
 		}
