@@ -1,5 +1,6 @@
 #pragma once
 
+#include <spdlog/spdlog.h>
 
 #include "utils/network/server_connector.h"
 #include "render/game_drawer.h"
@@ -26,55 +27,62 @@ public:
 	Game(boost::asio::io_service& io)
 		: connector(io)
 	{
-
+	    SPDLOG_DEBUG("constructing from io.");
 	}
 
 	~Game()
 	{
+        SPDLOG_DEBUG("destructing.");
 		this->reset();
 	}
 
 	void connect(const std::string& addr, const std::string& port)
 	{
+	    SPDLOG_INFO("Connecting to {}:{}", addr, port);
 		connector.connect(addr, port);
 	}
 
 	void init(const server_connector::Login& lobby)
 	{
-		this->drawer_set_state(status::UPDATING);
+	    SPDLOG_DEBUG("initiating game started.");
+		this->drawer_set_state(game_drawer::UPDATING);
 
 		{
-			LOG_2("Game::init: Sending Login request...");
+			SPDLOG_TRACE("sending Login request...");
 			connector.send_Login(lobby);
 
 			const auto response = connector.read_packet();
+			SPDLOG_TRACE("received response code: {}", response.first);
 
 			GameData::readJSON_Login(gamedata, json::parse(response.second));
 		}
 
 		{
-			LOG_2("Game::init: Sending L0 request...");
+			SPDLOG_TRACE("sending L0 request...");
 			connector.send_Map({ 0 });
 
 			const auto response = connector.read_packet();
+            SPDLOG_TRACE("received response code: {}", response.first);
 
 			GameData::readJSON_L0(gamedata, json::parse(response.second));
 		}
 
 		{
-			LOG_2("Game::init: Sending L10 request...");
+			SPDLOG_TRACE("sending L10 request...");
 			connector.send_Map({ 10 });
 
 			const auto response = connector.read_packet();
+            SPDLOG_TRACE("received response code: {}", response.first);
 
 			GameData::readJSON_L10(gamedata, json::parse(response.second));
 		}
 
 		{
-			LOG_2("Game::init: Sending L1 request...");
+			SPDLOG_TRACE("sending L1 request...");
 			connector.send_Map({ 1 });
 
 			const auto response = connector.read_packet();
+            SPDLOG_TRACE("received response code: {}", response.first);
 
 			GameData::readJSON_L1(gamedata, json::parse(response.second));
 		}
@@ -101,10 +109,11 @@ public:
 		this->drawer_window->setTitle("Update game data...");
 
 		{
-			LOG("Updating game data...");
+			SPDLOG_DEBUG("updating game data...");
 			connector.send_Map({ 1 });
 
 			const auto response = connector.read_packet();
+            SPDLOG_TRACE("received response code: {}", response.first);
 
 			GameData::readJSON_L1(gamedata, json::parse(response.second));
 		}
@@ -112,22 +121,23 @@ public:
 
 	void reset()
 	{
-		LOG_2("Game::reset");
+		SPDLOG_DEBUG("resetting game.");
 
 		connector.disconnect();
 		this->drawer_stop();
 		gamedata.clear();
+        SPDLOG_DEBUG("resetting game end.");
 	}
 
 	void drawer_set_state(status s)
 	{
 		if (drawer_thread == nullptr)
 		{
-			LOG_2("Game::drawer_set_state: Render thread not started yet");
+			SPDLOG_WARN("render thread not started yet.");
 			return;
 		}
 
-		LOG_2("Game::drawer_set_state: Setting state [" << (uint32_t)s << "]...");
+        SPDLOG_DEBUG("changing drawer state from {} to {}", drawer_status, s);
 		drawer_status = s;
 		drawer_thread->interrupt();
 	}
@@ -136,7 +146,7 @@ public:
 	{
 		if (drawer_thread != nullptr)
 		{
-			LOG_2("Game::drawer_start: Render thread already running!");
+            SPDLOG_WARN("render thread already started.");
 			return;
 		}
 
@@ -149,7 +159,7 @@ public:
 
 		drawer_config.textures = new TextureManager("res/Game/textures.cfg");
 
-		LOG_2("Game::drawer_start: Starting game_drawer thread...");
+		SPDLOG_INFO("starting game_drawer thread...");
 		drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
 	}
 
@@ -157,11 +167,11 @@ public:
 	{
 		if (drawer_thread == nullptr)
 		{
-			LOG_2("Game::drawer_stop: Render thread not started yet");
+			SPDLOG_WARN("render thread not started yet");
 			return;
 		}
 
-		LOG_2("Game::drawer_stop: Stopping game_drawer thread...");
+		SPDLOG_DEBUG("stopping game_drawer thread...");
 		delete drawer_thread;
 		drawer_thread = nullptr;
 		drawer_window = nullptr;
@@ -170,30 +180,35 @@ public:
 		drawer_config.textures = nullptr;
 	}
 
+	// normalii net?
 	void drawer_window_wait() const
 	{
-		LOG_2("Game::drawer_window_wait: Waiting for drawer_window...");
+	    // TODO Rework to wait/notify
+		SPDLOG_DEBUG("waiting for drawer_window...");
 		while (drawer_window == nullptr);
-		LOG_2("Game::drawer_window_wait: drawer_window ready!");
+		SPDLOG_DEBUG("drawer_window was created.");
 	}
 
 	void drawer_join()
 	{
 		if (drawer_thread == nullptr)
 		{
-			LOG_2("Game::drawer_join: Render thread not started yet");
+			SPDLOG_WARN("render thread not started yet.");
 			return;
 		}
 
-		LOG_2("Game::drawer_join: Joining game_drawer thread...");
+		SPDLOG_DEBUG("joining game_drawer thread...");
 		drawer_thread->join();
 	}
 
+	// what it actually for?
 	void await_run()
 	{
-		this->drawer_set_state(AWAIT_PLAYERS);
+        SPDLOG_DEBUG("waiting for run...");
+		this->drawer_set_state(game_drawer::AWAIT_PLAYERS);
 		this->drawer_window->setTitle("Awaiting players...");
 
+        SPDLOG_DEBUG("sending turn package...");
 		this->connector.send_Turn();
 		this->connector.read_packet();
 	}
@@ -207,9 +222,11 @@ public:
 
 	void await_move()
 	{
-		this->drawer_set_state(status::READY);
+        SPDLOG_DEBUG("waiting for move...");
+		this->drawer_set_state(game_drawer::READY);
 		this->drawer_window->setTitle("Awaiting next tick...");
 
+        SPDLOG_DEBUG("sending turn package...");
 		this->connector.send_Turn();
 		this->connector.read_packet();
 
@@ -218,21 +235,26 @@ public:
 
 	void start(const std::string& addr, const std::string& port, const server_connector::Login& lobby)
 	{
+	    SPDLOG_INFO("starting game on {}:{}", addr, port);
+
 		this->drawer_start();
 		this->drawer_window_wait();
 
 		this->await_run();
 		this->update();
 
+		SPDLOG_INFO("about to start game cycle.");
 		while (true /*gamedata.game_state == GameData::GameState::RUN*/)
 		{
+            SPDLOG_TRACE("game iteration start.");
 			//this->calculate_move();
 
 			this->await_move();
 
 			this->update();
+            SPDLOG_TRACE("game iteration end.");
 		}
 
-		LOG("Game::start: Game ended.");
+		SPDLOG_INFO("game ended.");
 	}
 };
