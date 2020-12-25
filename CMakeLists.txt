@@ -30,9 +30,11 @@ message(STATUS "Boost install dir: " ${boost_INSTALL})
 
 if(WIN32)
     set(boost_BOOTSTRAP ./bootstrap.bat)
+    set(LIB_EXTENSION .lib)
     message(STATUS "Using WIN32 specific boost compilation")
 elseif(UNIX)
     set(boost_BOOTSTRAP ./bootstrap.sh)
+    set(LIB_EXTENSION .a)
     message(STATUS "Using UNIX specific boost compilation")
 elseif(TRUE)
     message(FATAL_ERROR "At this moment, support only WIN32 & UNIX boost compilation")
@@ -55,8 +57,8 @@ ExternalProject_Add( boost
 include_directories(${boost_INCLUDE_DIR})
 
 set(Boost_LIBRARIES
-        ${boost_LIB_DIR}/libboost_graph.a
-        ${boost_LIB_DIR}/libboost_thread.a )
+        ${boost_LIB_DIR}/libboost_graph${LIB_EXTENSION}
+        ${boost_LIB_DIR}/libboost_thread${LIB_EXTENSION} )
 
 message( STATUS "Boost static libs: " ${Boost_LIBRARIES} )
 
