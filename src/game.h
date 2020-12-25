@@ -10,7 +10,7 @@ class Game
 protected:
 
 	boost::thread* drawer_thread = nullptr;
-	game_drawer::status drawer_status = game_drawer::READY;
+	status drawer_status = status::READY;
 
 	game_connector connector;
 
@@ -24,7 +24,7 @@ public:
 	Game(boost::asio::io_service& io)
 		: connector(io)
 	{
-		
+
 	}
 
 	~Game()
@@ -39,7 +39,7 @@ public:
 
 	void init(const game_connector::Login& lobby)
 	{
-		this->drawer_set_state(game_drawer::UPDATING);
+		this->drawer_set_state(status::UPDATING);
 
 		{
 			LOG_2("Game::init: Sending Login request...");
@@ -80,7 +80,7 @@ public:
 
 	void update()
 	{
-		this->drawer_set_state(game_drawer::UPDATING);
+		this->drawer_set_state(status::UPDATING);
 		this->drawer_window->setTitle("Update game data...");
 
 		{
@@ -102,7 +102,7 @@ public:
 		gamedata.clear();
 	}
 
-	void drawer_set_state(game_drawer::status s)
+	void drawer_set_state(status s)
 	{
 		if (drawer_thread == nullptr)
 		{
@@ -164,7 +164,7 @@ public:
 
 	void await_run()
 	{
-		this->drawer_set_state(game_drawer::AWAIT_PLAYERS);
+		this->drawer_set_state(AWAIT_PLAYERS);
 		this->drawer_window->setTitle("Awaiting players...");
 
 		this->connector.send_Turn();
@@ -180,7 +180,7 @@ public:
 
 	void await_move()
 	{
-		this->drawer_set_state(game_drawer::READY);
+		this->drawer_set_state(status::READY);
 		this->drawer_window->setTitle("Awaiting next tick...");
 
 		this->connector.send_Turn();
@@ -200,8 +200,6 @@ public:
 		while (true /*gamedata.game_state == GameData::GameState::RUN*/)
 		{
 			//this->calculate_move();
-
-			
 
 			this->await_move();
 

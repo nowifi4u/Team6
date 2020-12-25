@@ -1,12 +1,12 @@
 #pragma once
-#include "ResourceManager.h"
+#include "../render/ResourceManager.h"
 #include "SFML/Graphics.hpp"
 
 class TextureManager :
 	public ResourceManager<TextureManager, sf::Texture>
 {
 public:
-	TextureManager() : ResourceManager("textures.cfg") {}
+	TextureManager() : ResourceManager("src/render/textures.cfg") {}
 	sf::Texture* Load(const std::string& l_path) {
 		sf::Texture* texture = new sf::Texture();
 		if (!texture->loadFromFile(
