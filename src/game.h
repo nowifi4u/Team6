@@ -3,6 +3,7 @@
 
 #include "utils/network/server_connector.h"
 #include "render/game_drawer.h"
+#include "game/solver.h"
 
 #include "utils/MinMax.h"
 
