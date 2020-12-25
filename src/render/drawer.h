@@ -11,7 +11,6 @@
 #include "../game/data.h"
 #include "../render/TextureManager.h"
 
-constexpr float vertex_scale_koeff = 0.1;
 
 struct game_drawer_config
 {
@@ -23,25 +22,31 @@ struct game_drawer_config
 
 	sf::Uint8 delta = 20;
 
+	float vertex_scale_koeff = 0.05;
+	uint8_t field_scale_koeff = 4;
+
+	float frame_time = 1.0f / 10.0f;
+
 	bool to_draw_edge_length = true;
 };
 
-namespace game_drawer_layer {
 
+
+namespace game_drawer_layer {
 
 
 	class layer_base
 	{
 	public:
 
-		layer_base(TextureManager& tm) : textureManager_(tm) {}
+		layer_base(TextureManager& tm, uint8_t  koeff) : textureManager_(tm), koeff(koeff){}
 
+		uint8_t  koeff;
 		TextureManager& textureManager_;
 		virtual void init(const GameData& gamedata, const game_drawer_config& config) = 0;
 		virtual void reset() = 0;
 		virtual void draw(sf::RenderWindow& window, const GameData& gamedata) = 0;
 	};
-
 
 
 	class vertecies : public layer_base
@@ -50,7 +55,7 @@ namespace game_drawer_layer {
 
 		std::map<GraphIdx::vertex_descriptor, sf::Sprite> nodes_g;
 
-		vertecies(TextureManager& tm) : layer_base(tm) {}
+		vertecies(TextureManager& tm, uint8_t  koeff) : layer_base(tm, koeff) {}
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
@@ -84,16 +89,16 @@ namespace game_drawer_layer {
 				}
 
 
-				s.setScale(vertex_scale_koeff, vertex_scale_koeff);
+				s.setScale(config.vertex_scale_koeff, config.vertex_scale_koeff);
 				s.setOrigin(
-					s.getTexture()->getSize().x * s.getScale().x / 2.f,
-					s.getTexture()->getSize().y * s.getScale().y / 2.f
+					s.getTexture()->getSize().x / 2.f,
+					s.getTexture()->getSize().y / 2.f
 				);
 
 				const CoordsHolder::point_type& vcoords = gamedata.map_graph_coords->get_map()[v];
 				s.setPosition(sf::Vector2f{
-					   (float)vcoords[0] + config.delta,
-					   (float)vcoords[1] + config.delta
+					   (float)vcoords[0]*koeff + config.delta,
+					   (float)vcoords[1]*koeff + config.delta
 					});
 				}
 			);
@@ -135,12 +140,14 @@ namespace game_drawer_layer {
 		vertecies& vert;
 
 	public:
-		edges(TextureManager& tm, vertecies& vert_) : layer_base(tm), vert(vert_) {}
+		edges(TextureManager& tm, vertecies& vert_, uint8_t  koeff) : layer_base(tm, koeff), vert(vert_) {}
 
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
 			LOG_3("game_drawer_layer::edges::init");
+
+			uint8_t koeff = config.field_scale_koeff;
 
 			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
 
@@ -157,12 +164,12 @@ namespace game_drawer_layer {
 				auto temp_x = temp->getSize().x;
 				auto temp_y = temp->getSize().y;
 
-				auto vertex_size = vert.nodes_g[v].getTexture()->getSize().x * vertex_scale_koeff;
+				auto vertex_size = vert.nodes_g[v].getTexture()->getSize().x * config.vertex_scale_koeff;
 				auto edge_optimal_x_size = vertex_size / 2.0;
 				auto edge_scale_koeff = edge_optimal_x_size / temp_x;
 
-				double vertecies_distance = sqrt((coords[u][0] - coords[v][0]) * (coords[u][0] - coords[v][0]) +
-					(coords[u][1] - coords[v][1]) * (coords[u][1] - coords[v][1])
+				double vertecies_distance = sqrt((coords[u][0] * koeff - coords[v][0] * koeff) * (coords[u][0] * koeff - coords[v][0] * koeff) +
+					(coords[u][1] * koeff - coords[v][1] * koeff) * (coords[u][1] * koeff - coords[v][1] * koeff)
 				);
 				sf::Texture* main_texture = textureManager_.GetResource("railway");
 
@@ -172,7 +179,7 @@ namespace game_drawer_layer {
 				edges_g[e].setOrigin(sf::Vector2f{ (float)edge_optimal_x_size / 2.f, 0.f });
 				edges_g[e].setPosition(
 					vert.nodes_g[v].getPosition().x,
-					vert.nodes_g[v].getPosition().y + vertex_size / 2.f
+					vert.nodes_g[v].getPosition().y/* + vertex_size / 2.f*/
 				);
 				edges_g[e].scale(edge_scale_koeff, edge_scale_koeff);
 
@@ -303,7 +310,7 @@ namespace game_drawer_layer {
 
 	public:
 
-		background(TextureManager& tm) : layer_base(tm) {}
+		background(TextureManager& tm, uint8_t  koeff) : layer_base(tm, koeff) {}
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
@@ -311,6 +318,7 @@ namespace game_drawer_layer {
 
 			textureManager_.RequireResource("bg");
 			sf::Texture* bg_texture = textureManager_.GetResource("bg");
+			bg_texture->setRepeated(true);
 			bg.setTexture(*bg_texture);
 		}
 
@@ -361,11 +369,11 @@ protected:
 public:
 
 	game_drawer(const GameData& gamedata, const game_drawer_config& config = {})
-		: config(config), clock_(), textureManager_(), vert(textureManager_)
+		: config(config), clock_(), textureManager_(), vert(textureManager_, config.field_scale_koeff)
 	{
-		layers.push_back(new game_drawer_layer::background(textureManager_));
+		layers.push_back(new game_drawer_layer::background(textureManager_, config.field_scale_koeff));
+		layers.push_back(new game_drawer_layer::edges(textureManager_, vert, config.field_scale_koeff));
 		layers.push_back(&vert);
-		layers.push_back(new game_drawer_layer::edges(textureManager_, vert));
 		//layers.push_back(new game_drawer_layer::edges_length(textureManager_));
 		
 	}
@@ -374,23 +382,19 @@ public:
 	{
 		LOG_2("game_drawer::init");
 
-		for (game_drawer_layer::layer_base& layer : layers)
-		{
-			layer.init(gamedata, config);
-		}
+
+		layers[0].init(gamedata, config);
+		layers[2].init(gamedata, config);
+		layers[1].init(gamedata, config);
 	}
 
 	void restart_clock() {
 		elapsed_ += clock_.restart();
 	}
 
-	void handle_input(sf::RenderWindow& window, sf::Event event, const GameData& gamedata, const status& s) {
+	void handle_input(sf::RenderWindow& window, const GameData& gamedata, const status& s) {
 
-		if (event.type == sf::Event::Closed)
-		{
-			window.close();
-			exit(0);
-		}
+	
 	}
 
 	void reset()
@@ -437,15 +441,11 @@ public:
 
 		while (window.isOpen())
 		{
-			try {
-				sf::Event event;
-				while (window.pollEvent(event))
-				{
-					this->handle_input(window, event, gamedata, s);
-					this->update(window, gamedata, s);
-					this->render(window, gamedata, s);
-					this->restart_clock();
-				}
+			try {	
+				this->handle_input(window, gamedata, s);
+				this->update(window, gamedata, s);
+				this->render(window, gamedata, s);
+				this->restart_clock();
 			}
 			catch (boost::thread_interrupted&)
 			{
@@ -455,7 +455,21 @@ public:
 	}
 
 	void update(sf::RenderWindow& window, const GameData& gamedata,const status& s) {
-		//update infos
+		
+		if (elapsed_.asSeconds() >= config.frame_time)
+		{
+			sf::Event event;
+			while (window.pollEvent(event))
+			{
+				if (event.type == sf::Event::Closed)
+				{
+					window.close();
+					exit(0);
+				}
+			}
+			
+			elapsed_ -= sf::seconds(config.frame_time);
+		}
 	}
 };
 
