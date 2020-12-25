@@ -66,6 +66,8 @@ namespace game_drawer_layer {
 
 				sf::Sprite& s = nodes_g[v];
 				bool b = false;
+
+				
 				if (gamedata.map_graph.graph[v].post_idx != GraphIdx::uint32_max) {
 					switch (getPostType(v, gamedata)) {
 					case Posts::PostType::MARKET:
@@ -89,6 +91,8 @@ namespace game_drawer_layer {
 					s = sf::Sprite(*textureManager_.GetResource("cs"));
 				}
 
+				
+				
 
 				s.setScale(config.vertex_scale_koeff, config.vertex_scale_koeff);
 				s.setOrigin(
@@ -173,6 +177,14 @@ namespace game_drawer_layer {
 					(coords[u][1] * koeff - coords[v][1] * koeff) * (coords[u][1] * koeff - coords[v][1] * koeff)
 				);
 				sf::Texture* main_texture = textureManager_.GetResource("railway");
+
+				/*sf::Image i = main_texture->copyToImage();
+				sf::Color c = i.getPixel(0, 0);
+				i.createMaskFromColor(c);
+
+				sf::Color c2 = i.getPixel(97, 10);
+				i.createMaskFromColor(c2);
+				i.saveToFile("temp.png");*/
 
 				main_texture->setRepeated(true);
 				edges_g[e] = sf::Sprite(*main_texture,
@@ -460,7 +472,8 @@ public:
 		}
 	}
 
-	void update(sf::RenderWindow& window, const GameData& gamedata,const status& s) {
+	void update(sf::RenderWindow& window, const GameData& gamedata, const status& s) {
+
 		
 		if (elapsed_.asSeconds() >= config.frame_time)
 		{
@@ -473,7 +486,7 @@ public:
 					exit(0);
 				}
 			}
-			
+
 			elapsed_ -= sf::seconds(config.frame_time);
 		}
 	}
