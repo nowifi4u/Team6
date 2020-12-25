@@ -60,7 +60,7 @@ public:
 
 	void send(const std::string& data)
 	{
-		SPDLOG_TRACE("sending packet...");
+		SPDLOG_TRACE("sending packet with data: \n{}", data);
 
 		m_socket.send(boost::asio::buffer(data));
 	}
