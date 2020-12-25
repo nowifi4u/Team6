@@ -16,8 +16,10 @@ public:
 		RETURN
 	};
 
-	TrainSolver(const GameData& gamedata, Types::train_idx_t train_idx)
-		: gamedata(gamedata), train_idx(train_idx), gamedata_train(gamedata.players.at(gamedata.player_idx).trains.at(train_idx)) {}
+	TrainSolver(const GameData& gamedata, const GraphDijkstra& graphsolver, Types::train_idx_t train_idx)
+		: gamedata(gamedata), 
+		graphsolver(graphsolver),
+		train_idx(train_idx), gamedata_train(gamedata.players.at(gamedata.player_idx).trains.at(train_idx)) {}
 
 
 	Types::vertex_idx_t choose_target_NORMAL_FOOD() const
@@ -58,6 +60,8 @@ private:
 public:
 	const GameData& gamedata;
 	const Trains::Train& gamedata_train;
+
+	const GraphDijkstra& graphsolver;
 
 	TrainSolver::State state;
 };
