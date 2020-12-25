@@ -47,6 +47,8 @@ ExternalProject_Add( boost
         INSTALL_COMMAND ""
         INSTALL_DIR ${boost_INSTALL} )
 
+include_directories(${boost_INCLUDE_DIR})
+
 set(Boost_LIBRARIES
         ${boost_LIB_DIR}/libboost_graph.a
         ${boost_LIB_DIR}/libboost_thread.a )
