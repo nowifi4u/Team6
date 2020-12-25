@@ -2,16 +2,17 @@
 
 #include <optional>
 
+#include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
-using nlohmann::json;
-
 #include <boost/endian/conversion.hpp>
 
 #include "tcp_connector.h"
-#include "../../Types.h"
+#include "Types.h"
 
-#include "../bincharstream.h"
-#include "../binstream.h"
+#include "utils/bincharstream.h"
+#include "utils/binstream.h"
+
+using nlohmann::json;
 
 class server_connector : protected tcp_connector
 {
@@ -32,16 +33,22 @@ public:
 
 	void connect(const std::string& addr, const std::string& port)
 	{
+        SPDLOG_DEBUG("connecting to {}:{}", addr, port);
 		return tcp_connector::connect(addr, port);
 	}
 
     void disconnect()
     {
+        SPDLOG_DEBUG("disconnecting...");
         return tcp_connector::disconnect();
     }
 
-	server_connector(boost::asio::io_service& m_io, const std::string& addr, const std::string& port)
-		: tcp_connector(m_io, addr, port) {}
+	game_connector(boost::asio::io_service& m_io, const std::string& addr, const std::string& port)
+		: tcp_connector(m_io, addr, port)
+    {
+	    SPDLOG_INFO("constructing");
+
+    }
 
 	void wait_read()
 	{
@@ -64,7 +71,7 @@ protected:
 
 	static std::string _encodeAction(Action action, const std::string& data = "")
 	{
-		LOG_2("_encodeAction: {Action:" << action << ",data:" << data << "}");
+		SPDLOG_TRACE("encoding Action: {}, data: {}", action, data);
 
 		uint32_t _action = boost::endian::native_to_little((uint32_t)action);
 		uint32_t _length = boost::endian::native_to_little(data.length());
@@ -72,6 +79,8 @@ protected:
 		writeStreamBinary(out, _action);
 		writeStreamBinary(out, _length);
 		out << data;
+
+        SPDLOG_TRACE("encoding end.");
 		return out.str();
 	}
 
@@ -102,16 +111,13 @@ public:
 
     std::pair<Result, std::string> read_packet()
     {
-        LOG_2("server_connector::read_packet: Reading packet...");
+        SPDLOG_TRACE("reading packet...");
 
         const auto header = _read_header();
 
         const std::string data = tcp_connector::read_until_size(header.second);
 
-        LOG_3("------------------------- BEGIN -------------------------");
-        LOG_3("Action:" << header.first << " Size:" << header.second);
-        LOG_3(data);
-        LOG_3("-------------------------  END  -------------------------");
+        SPDLOG_TRACE("Action: {}, size: {}, data: \n {}", header.first, header.second, data);
 
         if (header.first != Result::OKEY) throw header.first;
 
