@@ -3,6 +3,8 @@
 #include "../../graph/graph.h"
 #include "../../graph/readable_only_pmap.h"
 
+#include "../../graph/GraphVertexMap.h"
+
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 
 #include <vector>
@@ -32,7 +34,7 @@ public:
 			graph_.graph,
 			v,
 			boost::predecessor_map(boost::make_iterator_property_map(predecessors.begin(), indexmap))
-			.distance_map(boost::make_iterator_property_map(distances.begin(), indexmap))
+			.distance_map(distances.get_map())
 			.weight_map(weightmap)
 			);
 	}
@@ -47,6 +49,7 @@ public:
 	const weight_map_t weightmap;
 
 	std::vector<GraphIdx::vertex_descriptor> predecessors;
-	std::vector<Types::edge_length_t> distances;
+	
+	GraphVertexMap<Types::edge_length_t> distances;
 
 };
