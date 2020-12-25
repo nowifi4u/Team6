@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 namespace Math {
 
 	template <class Ty>
@@ -9,15 +11,9 @@ namespace Math {
 	}
 
 	template <class Ty>
-	inline constexpr Ty min(const Ty& a, const Ty& b)
+	inline constexpr Ty distance(const Ty& a, const Ty& b)
 	{
-		return (a < b) ? a : b;
-	}
-
-	template <class Ty>
-	inline constexpr Ty max(const Ty& a, const Ty& b)
-	{
-		return (a > b) ? a : b;
+		std::sqrt(a * a + b * b);
 	}
 
 } // namespace Math
