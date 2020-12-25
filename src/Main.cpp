@@ -1,7 +1,5 @@
 #define LOG_LEVEL_3
 
-#include <sdkddkver.h>
-
 #include <iostream>
 
 #include <SFML/Graphics.hpp>
