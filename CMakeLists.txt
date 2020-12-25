@@ -16,6 +16,7 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(libs/json)
 
 add_subdirectory(libs/SFML)
+add_subdirectory(libs/spdlog)
 
 # adding boost
 include( ExternalProject )
@@ -85,4 +86,4 @@ add_executable(Team6
         src/Types.h)
 
 add_dependencies(Team6 boost)
-target_link_libraries(Team6 sfml-graphics nlohmann_json ${Boost_LIBRARIES})
+target_link_libraries(Team6 sfml-graphics nlohmann_json spdlog::spdlog ${Boost_LIBRARIES})
