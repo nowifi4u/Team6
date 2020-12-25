@@ -143,12 +143,15 @@ public:
 			return;
 		}
 
-		drawer_config.edge_length_font = Utils::GetWorkingDirectory() + "res/arial.ttf";
+		drawer_config.window_videomode = sf::VideoMode({ 800, 800 });
 
-		drawer_config.textures = new TextureManager(Utils::GetWorkingDirectory() + "res/Game/textures.cfg");
+		drawer_config.edge_length_font = Utils::GetWorkingDirectory() + "res\\arial.ttf";
+
+		drawer_config.textures = new TextureManager(Utils::GetWorkingDirectory() + "res\\Game\\textures.cfg");
 
 		LOG_2("Game::drawer_start: Starting game_drawer thread...");
-		drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
+		game_drawer_thread(gamedata, drawer_config, drawer_status, drawer_window);
+		//drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
 	}
 
 	void drawer_stop()
