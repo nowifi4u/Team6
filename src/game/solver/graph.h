@@ -22,8 +22,8 @@ public:
 		: graph_(graph), 
 		weightmap(boost::get(&GraphIdx::EdgeProperties::length, graph.graph)),
 		predecessors(boost::num_vertices(graph.graph)),
-		distances(boost::num_vertices(graph.graph)),
-		indexmap(boost::get(boost::vertex_index, graph.graph))
+		indexmap(boost::get(boost::vertex_index, graph.graph)),
+		distances(graph.graph)
 	{
 		
 	}
