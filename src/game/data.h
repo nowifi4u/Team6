@@ -5,8 +5,8 @@
 #include <vector>
 #include <memory>
 
-#include "../graph/graph.h"
-#include "../graph/KKSCoordsCalculator.h"
+#include "graph/graph.h"
+#include "graph/KKSCoordsCalculator.h"
 
 #include "data/event.h"
 #include "data/train.h"
