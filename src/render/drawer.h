@@ -177,12 +177,14 @@ namespace game_drawer_layer {
 				main_texture->setRepeated(true);
 				edges_g[e] = sf::Sprite(*main_texture,
 					sf::IntRect(0, 0, temp_x, round(vertecies_distance / edge_scale_koeff)));
-				edges_g[e].setOrigin(sf::Vector2f{ (float)edge_optimal_x_size / 2.f, 0.f });
+
+				edges_g[e].scale(edge_scale_koeff, edge_scale_koeff);
+				edges_g[e].setOrigin(sf::Vector2f{ edges_g[e].getTexture()->getSize().x / 2.f, 0.f });
 				edges_g[e].setPosition(
 					vert.nodes_g[v].getPosition().x,
 					vert.nodes_g[v].getPosition().y/* + vertex_size / 2.f*/
 				);
-				edges_g[e].scale(edge_scale_koeff, edge_scale_koeff);
+				
 
 				double tan_alpha;
 				if (coords[u][1] > coords[v][1]) {
