@@ -166,29 +166,23 @@ namespace game_drawer_layer {
 				auto main_size = TextureUtils::getSize(*main_texture);
 
 				auto vertex_size = SpriteUtils::getSize(vert.nodes_g[v]).x / 2.f;
-				auto edge_scale_koeff = vertex_size / main_size.x;
 
 				double vertecies_distance = sqrt(
 					Math::sqr(config.padding_width.map(coords[u][0]) - config.padding_width.map(coords[v][0])) +
 					Math::sqr(config.padding_height.map(coords[u][1]) - config.padding_height.map(coords[v][1]))
 				);
 
-				/*sf::Image i = main_texture->copyToImage();
-				sf::Color c = i.getPixel(0, 0);
-				i.createMaskFromColor(c);
-
-				sf::Color c2 = i.getPixel(97, 10);
-				i.createMaskFromColor(c2);
-				i.saveToFile("temp.png");*/
+				const float edge_length_coeff = 0.1;
 
 				main_texture->setRepeated(true);
 				edge = sf::Sprite(*main_texture,
-					sf::IntRect(0, 0, main_size.x, round(vertecies_distance / edge_scale_koeff)));
-				edge.setOrigin(sf::Vector2f{ (float)vertex_size / 2.f, 0.f });
+					sf::IntRect(0, 0, main_size.x, round(vertecies_distance / edge_length_coeff)));
+				edge.setOrigin(sf::Vector2f{ main_size.x / 2.f, 0.f });
 				edge.setPosition(
-					config.padding_width.map(vert.nodes_g[v].getPosition().x),
-					config.padding_height.map(vert.nodes_g[v].getPosition().y)
+					vert.nodes_g[v].getPosition().x,
+					vert.nodes_g[v].getPosition().y
 				);
+				edge.setScale(0.1, edge_length_coeff);
 				
 
 				double tan_alpha;
