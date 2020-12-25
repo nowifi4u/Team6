@@ -254,54 +254,55 @@ namespace game_drawer_layer {
 
 
 
-	//class edges_length : public layer_base
-	//{
-	//	sf::Font cached_font;
-	//	std::map<Types::edge_idx_t, sf::Text> cached_edges_length;
+	class edges_length : public layer_base
+	{
+		sf::Font cached_font;
+		std::map<Types::edge_idx_t, sf::Text> cached_edges_length;
 
-	//public:
+	public:
 
-	//	edges_length(TextureManager& tm) : layer_base(tm) {}
+		edges_length() : layer_base() {}
 
-	//	void init(const GameData& gamedata, const game_drawer_config& config)
-	//	{
-	//		LOG_3("game_drawer_layer::edges_length::init");
+		void init(const GameData& gamedata, const game_drawer_config& config)
+		{
+			LOG_3("game_drawer_layer::edges_length::init");
 
-	//		cached_font.loadFromFile(config.edge_length_font);
+			cached_font.loadFromFile(config.edge_length_font);
 
-	//		gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
-	//			const CoordsHolder::point_type& es = gamedata.map_graph_coords->get_map()[boost::source(e, gamedata.map_graph.graph)];
-	//			const CoordsHolder::point_type& et = gamedata.map_graph_coords->get_map()[boost::target(e, gamedata.map_graph.graph)];
-	//			const GraphIdx::EdgeProperties& eprops = gamedata.map_graph.graph[e];
+			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
+				const CoordsHolder::point_type& es = gamedata.map_graph_coords->get_map()[boost::source(e, gamedata.map_graph.graph)];
+				const CoordsHolder::point_type& et = gamedata.map_graph_coords->get_map()[boost::target(e, gamedata.map_graph.graph)];
+				const GraphIdx::EdgeProperties& eprops = gamedata.map_graph.graph[e];
 
-	//			sf::Text& line_length = cached_edges_length[eprops.idx];
-	//			line_length.setString(std::to_string(eprops.length));
-	//			line_length.setPosition(sf::Vector2f(
-	//				(es[0] + et[0]) / 2 + config.edge_length_offset_x,
-	//				(es[1] + et[1]) / 2 + config.edge_length_offset_y
-	//			));
+				sf::Text& line_length = cached_edges_length[eprops.idx];
+				line_length.setString(std::to_string(eprops.length));
+				line_length.setPosition(sf::Vector2f(
+					config.padding_width.map((es[0] + et[0]) / 2),
+					config.padding_height.map((es[1] + et[1]) / 2)
+				));
 
-	//			line_length.setFont(cached_font);
-	//			line_length.setCharacterSize(config.edge_length_size);
-	//			line_length.setFillColor(config.edge_length_color);
-	//			});
-	//	}
+				SpriteUtils::centerOrigin(line_length, sf::Vector2f(12, line_length.getCharacterSize() / 2.0f));
+				line_length.setFont(cached_font);
+				line_length.setCharacterSize(24);
+				line_length.setFillColor(sf::Color::Red);
+				});
+		}
 
-	//	void reset()
-	//	{
-	//		LOG_3("game_drawer_layer::edges_length::reset");
+		void reset()
+		{
+			LOG_3("game_drawer_layer::edges_length::reset");
 
-	//		cached_edges_length.clear();
-	//	}
+			cached_edges_length.clear();
+		}
 
-	//	void draw(sf::RenderWindow& window, const GameData& gamedata)
-	//	{
-	//		for (const auto& edge : cached_edges_length)
-	//		{
-	//			window.draw(edge.second);
-	//		}
-	//	}
-	//};
+		void draw(sf::RenderWindow& window, const GameData& gamedata)
+		{
+			for (const auto& edge : cached_edges_length)
+			{
+				window.draw(edge.second);
+			}
+		}
+	};
 
 	class background : public layer_base
 	{
@@ -369,16 +370,17 @@ public:
 		layers.push_back(new game_drawer_layer::background());
 		layers.push_back(new game_drawer_layer::edges());
 		layers.push_back(new game_drawer_layer::vertecies());
-		//layers.push_back(new game_drawer_layer::edges_length(textureManager_));
+		layers.push_back(new game_drawer_layer::edges_length());
 	}
 
 	void init(const GameData& gamedata)
 	{
 		LOG_2("game_drawer::init");
 
-		layers[0].init(gamedata, config);
-		layers[2].init(gamedata, config);
-		layers[1].init(gamedata, config);
+		for (game_drawer_layer::layer_base& layer : layers)
+		{
+			layer.init(gamedata, config);
+		}
 	}
 
 	void restart_clock() {
