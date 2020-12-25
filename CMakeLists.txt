@@ -23,12 +23,22 @@ set(boost_LIB_DIR ${boost_INSTALL}/lib)
 message(STATUS "Boost source dir: " ${boost_SOURCE_DIR})
 message(STATUS "Boost install dir: " ${boost_INSTALL})
 
+message(WARN ${WIN32})
+
+if(WIN32)
+    set(boost_BOOTSTRAP ./bootstrap.bat)
+    message(STATUS "Using WIN32 specific boost compilation")
+elseif(UNIX)
+    set(boost_BOOTSTRAP ./bootstrap.sh)
+    message(STATUS "Using UNIX specific boost compilation")
+endif()
+
 ExternalProject_Add( boost
         PREFIX boost
         SOURCE_DIR ${boost_SOURCE_DIR}
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND
-        ./bootstrap.sh
+        ${boost_BOOTSTRAP}
         --with-libraries=graph
         --with-libraries=thread
         --prefix=<INSTALL_DIR>
