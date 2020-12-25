@@ -4,16 +4,16 @@
 
 namespace TextureUtils {
 
-	inline sf::Vector2f getSize(const sf::Texture& texture)
+	inline sf::Vector2u getSize(const sf::Texture& texture)
 	{
-		return sf::Vector2f(texture.getSize().x, texture.getSize().y);
+		return sf::Vector2u(texture.getSize().x, texture.getSize().y);
 	}
 
 } // TextureUtils
 
 namespace SpriteUtils {
 
-	inline sf::Vector2f getSize(const sf::Sprite& sprite)
+	inline sf::Vector2u getSize(const sf::Sprite& sprite)
 	{
 		return TextureUtils::getSize(*sprite.getTexture());
 	}
