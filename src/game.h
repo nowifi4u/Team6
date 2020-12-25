@@ -90,9 +90,6 @@ public:
 				minmax_y.consume(vcoords[1]);
 				});
 
-			drawer_config.padding_width.set_output(100, 700);
-			drawer_config.padding_height.set_output(100, 700);
-
 			drawer_config.padding_width.set_input(minmax_x.min(), minmax_x.max());
 			drawer_config.padding_height.set_input(minmax_y.min(), minmax_y.max());
 		}
@@ -144,6 +141,9 @@ public:
 		}
 
 		drawer_config.window_videomode = sf::VideoMode({ 800, 800 });
+
+		drawer_config.padding_width.set_output(100, 700);
+		drawer_config.padding_height.set_output(100, 700);
 
 		drawer_config.edge_length_font = Utils::GetWorkingDirectory() + "res\\arial.ttf";
 
