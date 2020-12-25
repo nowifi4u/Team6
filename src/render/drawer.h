@@ -62,8 +62,6 @@ namespace game_drawer_layer {
 		{
 			LOG_3("game_drawer_layer::vertecies::init");
 
-			auto koeff = config.field_scale_koeff;
-
 			gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
 
 				sf::Sprite& s = nodes_g[v];
@@ -71,8 +69,6 @@ namespace game_drawer_layer {
 
 				
 				if (gamedata.map_graph.graph[v].post_idx != GraphIdx::uint32_max) {
-					setSize(s, { 30, 30 });
-
 					switch (getPostType(v, gamedata)) {
 					case Posts::PostType::MARKET:
 						b = config.textures->RequireResource("market");
@@ -89,18 +85,17 @@ namespace game_drawer_layer {
 					default:
 						break;
 					}
+
+					SpriteUtils::setSize(s, { 30, 30 });
 				}
 				else {
-					setSize(s, { 15,15 });
-
 					b = config.textures->RequireResource("cs");
 					s = sf::Sprite(*config.textures->GetResource("cs"));
+
+					SpriteUtils::setSize(s, { 15,15 });
 				}
 
-				s.setOrigin(
-					s.getTexture()->getSize().x / 2.f,
-					s.getTexture()->getSize().y / 2.f
-				);
+				SpriteUtils::centerOrigin(s);
 
 				const CoordsHolder::point_type& vcoords = gamedata.map_graph_coords->get_map()[v];
 				s.setPosition(sf::Vector2f{
