@@ -22,7 +22,7 @@ struct game_drawer_config
 
 	sf::Uint8 delta = 20;
 
-	float vertex_scale_koeff = 0.05;
+	float vertex_scale_koeff = 0.1;
 	uint8_t field_scale_koeff = 4;
 
 	float frame_time = 1.0f / 10.0f;
@@ -39,9 +39,8 @@ namespace game_drawer_layer {
 	{
 	public:
 
-		layer_base(TextureManager& tm, uint8_t  koeff) : textureManager_(tm), koeff(koeff){}
+		layer_base(TextureManager& tm) : textureManager_(tm){}
 
-		uint8_t  koeff;
 		TextureManager& textureManager_;
 		virtual void init(const GameData& gamedata, const game_drawer_config& config) = 0;
 		virtual void reset() = 0;
@@ -55,11 +54,13 @@ namespace game_drawer_layer {
 
 		std::map<GraphIdx::vertex_descriptor, sf::Sprite> nodes_g;
 
-		vertecies(TextureManager& tm, uint8_t  koeff) : layer_base(tm, koeff) {}
+		vertecies(TextureManager& tm) : layer_base(tm) {}
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
 			LOG_3("game_drawer_layer::vertecies::init");
+
+			auto koeff = config.field_scale_koeff;
 
 			gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
 
@@ -140,7 +141,7 @@ namespace game_drawer_layer {
 		vertecies& vert;
 
 	public:
-		edges(TextureManager& tm, vertecies& vert_, uint8_t  koeff) : layer_base(tm, koeff), vert(vert_) {}
+		edges(TextureManager& tm, vertecies& vert_) : layer_base(tm), vert(vert_) {}
 
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
@@ -310,7 +311,7 @@ namespace game_drawer_layer {
 
 	public:
 
-		background(TextureManager& tm, uint8_t  koeff) : layer_base(tm, koeff) {}
+		background(TextureManager& tm) : layer_base(tm) {}
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
@@ -369,10 +370,10 @@ protected:
 public:
 
 	game_drawer(const GameData& gamedata, const game_drawer_config& config = {})
-		: config(config), clock_(), textureManager_(), vert(textureManager_, config.field_scale_koeff)
+		: config(config), clock_(), textureManager_(), vert(textureManager_)
 	{
-		layers.push_back(new game_drawer_layer::background(textureManager_, config.field_scale_koeff));
-		layers.push_back(new game_drawer_layer::edges(textureManager_, vert, config.field_scale_koeff));
+		layers.push_back(new game_drawer_layer::background(textureManager_));
+		layers.push_back(new game_drawer_layer::edges(textureManager_, vert));
 		layers.push_back(&vert);
 		//layers.push_back(new game_drawer_layer::edges_length(textureManager_));
 		
