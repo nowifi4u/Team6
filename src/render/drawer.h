@@ -377,10 +377,9 @@ public:
 		layers.push_back(new game_drawer_layer::edges(vert));
 		layers.push_back(&vert);
 		//layers.push_back(new game_drawer_layer::edges_length(textureManager_));
-		
 	}
 
-	void init(const GameData& gamedata, sf::RenderWindow& window)
+	void init(const GameData& gamedata)
 	{
 		LOG_2("game_drawer::init");
 
@@ -438,7 +437,7 @@ public:
 	{
 		LOG_2("game_drawer: start");
 
-		init(gamedata, window);
+		init(gamedata);
 
 		while (window.isOpen())
 		{
