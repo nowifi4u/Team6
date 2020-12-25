@@ -22,28 +22,32 @@ public:
 		graphsolver(graphsolver),
 		train_idx(train_idx), gamedata_train(gamedata.players.at(gamedata.player_idx).trains.at(train_idx)) {}
 
+	std::pair<GraphIdx::vertex_descriptor, Types::edge_length_t> get_edge_source() const
+	{
 
-	Types::vertex_idx_t choose_target_NORMAL_FOOD() const
+	}
+
+	GraphIdx::vertex_descriptor choose_target_NORMAL_FOOD() const
 	{
 		
 	}
 
-	Types::vertex_idx_t choose_target_NORMAL_ARMOR() const
+	GraphIdx::vertex_descriptor choose_target_NORMAL_ARMOR() const
 	{
 		
 	}
 
-	Types::vertex_idx_t choose_target_EMERGENCY_FOOD() const
+	GraphIdx::vertex_descriptor choose_target_EMERGENCY_FOOD() const
 	{
 		
 	}
 
-	Types::vertex_idx_t choose_target_EMERGENCY_ARMOR() const
+	GraphIdx::vertex_descriptor choose_target_EMERGENCY_ARMOR() const
 	{
 		
 	}
 
-	Types::vertex_idx_t choose_target() const
+	GraphIdx::vertex_descriptor choose_target() const
 	{
 		switch (state)
 		{
