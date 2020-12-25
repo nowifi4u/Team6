@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Types.h"
-#include "utils/Logging.h"
 
 #include <nlohmann/json.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
