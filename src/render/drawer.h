@@ -320,10 +320,8 @@ namespace game_drawer_layer {
 
 			config.textures->RequireResource("bg");
 			sf::Texture* bg_texture = config.textures->GetResource("bg");
-			float kw = (float) config.window_videomode.width / bg_texture->getSize().x;
-			float kh = (float)config.window_videomode.height / bg_texture->getSize().y;
 			bg.setTexture(*bg_texture);
-			bg.scale(kw, kh);
+			SpriteUtils::setSize(bg, sf::Vector2f( config.window_videomode.width, config.window_videomode.height ));
 		}
 
 		void reset()
