@@ -69,6 +69,8 @@ namespace game_drawer_layer {
 
 				
 				if (gamedata.map_graph.graph[v].post_idx != GraphIdx::uint32_max) {
+					setSize(s, { 30, 30 });
+
 					switch (getPostType(v, gamedata)) {
 					case Posts::PostType::MARKET:
 						b = config.textures->RequireResource("market");
@@ -172,14 +174,6 @@ namespace game_drawer_layer {
 					Math::sqr(coords[u][1] - coords[v][1]) * Math::sqr(config.padding_height.get_scale())
 				);
 				sf::Texture* main_texture = config.textures->GetResource("railway");
-
-				/*sf::Image i = main_texture->copyToImage();
-				sf::Color c = i.getPixel(0, 0);
-				i.createMaskFromColor(c);
-
-				sf::Color c2 = i.getPixel(97, 10);
-				i.createMaskFromColor(c2);
-				i.saveToFile("temp.png");*/
 
 				main_texture->setRepeated(true);
 				edges_g[e] = sf::Sprite(*main_texture,
