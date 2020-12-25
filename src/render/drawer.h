@@ -187,10 +187,12 @@ namespace game_drawer_layer {
 				if (coords[u][1] > coords[v][1]) {
 					tan_alpha = (config.padding_width.map(coords[v][0]) - config.padding_width.map(coords[u][0])) /
 						(config.padding_height.map(coords[u][1]) - config.padding_height.map(coords[v][1]));
+					edge.setRotation((float)(atan(tan_alpha) * 180.0 / 3.14159265));
 				}
 				else if (coords[u][1] < coords[v][1]) {
 					tan_alpha = (config.padding_height.map(coords[v][1]) - config.padding_height.map(coords[u][1])) /
 						(config.padding_width.map(coords[v][0]) - config.padding_width.map(coords[u][0]));
+					edge.setRotation((float)(90 + atan(tan_alpha) * 180.0 / 3.14159265));
 				}
 				else {
 					edge.setRotation(90);
