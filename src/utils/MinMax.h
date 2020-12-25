@@ -1,6 +1,7 @@
 #pragma once
 
 #include <limits>
+#include <algorithm>
 
 #include "Math.h"
 
@@ -23,7 +24,7 @@ public:
 
     void consume(const Ty& value)
     {
-        _min = Math::min(_min, value);
+        _min = std::min(_min, value);
     }
 
     Ty min() const
@@ -51,7 +52,7 @@ public:
 
     void consume(const Ty& value)
     {
-        _max = Math::max(_max, value);
+        _max = std::max(_max, value);
     }
 
     Ty max() const
