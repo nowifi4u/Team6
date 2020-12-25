@@ -13,7 +13,8 @@ public:
 		EMERGENCY_ARMOR,
 		NORMAL_FOOD,
 		NORMAL_ARMOR,
-		RETURN
+		RETURN,
+		STANDBY
 	};
 
 	TrainSolver(const GameData& gamedata, const GraphDijkstra& graphsolver, Types::train_idx_t train_idx)
@@ -51,6 +52,7 @@ public:
 		case State::EMERGENCY_FOOD: return choose_target_EMERGENCY_FOOD();
 		case State::EMERGENCY_ARMOR: return choose_target_EMERGENCY_ARMOR();
 		case State::RETURN: return gamedata.home_idx;
+		case State::STANDBY: return UINT32_MAX;
 		}
 	}
 
