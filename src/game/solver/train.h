@@ -17,7 +17,7 @@ public:
 		STANDBY
 	};
 
-	TrainSolver(const GameData& gamedata, const GraphDijkstra& graphsolver, Types::train_idx_t train_idx)
+	TrainSolver(const GameData& gamedata, GraphDijkstra& graphsolver, Types::train_idx_t train_idx)
 		: gamedata(gamedata), 
 		graphsolver(graphsolver),
 		train_idx(train_idx), gamedata_train(gamedata.players.at(gamedata.player_idx).trains.at(train_idx)) {}
