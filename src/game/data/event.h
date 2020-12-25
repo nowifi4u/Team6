@@ -1,11 +1,10 @@
 #pragma once
 
-
 #include <src/Types.h>
-#include <src/utils/Logging.h>
 
 #include <nlohmann/json.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <spdlog/spdlog.h>
 
 
 namespace Events {
@@ -160,7 +159,7 @@ namespace Events {
 	{
 		EventType event_type = (EventType)j["type"].get<int>();
 
-		LOG_1("game_data::make_Event: " << j);
+		SPDLOG_DEBUG("game_data::make_Event: {} ", j);
 
 		switch (event_type)
 		{
