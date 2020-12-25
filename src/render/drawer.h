@@ -9,93 +9,125 @@
 #include <map>
 
 #include "../game/data.h"
+#include "TextureManager.h"
+#include "SpriteUtils.h"
+
+#include "../utils/value_map.h"
+#include "../utils/Math.h"
+#include "../utils/MinMax.h"
 
 
 struct game_drawer_config
 {
 	sf::Color clear_color = sf::Color::Black;
-	uint32_t window_framerate_limit = 60;
 	sf::VideoMode window_videomode;
 	std::string window_name;
 
-	float vertex_radius = 5;
-	sf::Color vertex_color_empty = sf::Color::White;
-	sf::Color vertex_color_storage = sf::Color::Yellow;
-	sf::Color vertex_color_market = sf::Color::Red;
-	sf::Color vertex_color_town = sf::Color::Green;
-	
-	sf::Color edge_color = sf::Color::White;
-	sf::Color edge_length_color = sf::Color::Magenta;
-	std::string edge_length_font = "../res/arial.ttf";
-	float edge_length_size = 15;
-	float edge_length_offset_x = -7;
-	float edge_length_offset_y = -7;
+	std::string edge_length_font;
 
-	bool to_draw_edge_length = true;
+	ValueMap<float> padding_width = ValueMap<float>(0, 1, 0, 1);
+	ValueMap<float> padding_height = ValueMap<float>(0, 1, 0, 1);
+
+	float frame_time = 1.0f / 10.0f;
+
+	TextureManager* textures = nullptr;
 };
+
+
 
 namespace game_drawer_layer {
 
 
-
-	class _interface
+	class layer_base
 	{
 	public:
 
+		layer_base() {}
+
 		virtual void init(const GameData& gamedata, const game_drawer_config& config) = 0;
 		virtual void reset() = 0;
-
 		virtual void draw(sf::RenderWindow& window, const GameData& gamedata) = 0;
 	};
 
 
-
-	class vertecies : public _interface
+	class vertecies : public layer_base
 	{
-		std::map<Types::vertex_idx_t, sf::CircleShape> cached_vertecies;
-
 	public:
+
+		std::map<GraphIdx::vertex_descriptor, sf::Sprite> nodes_g;
+
+		vertecies() : layer_base() {}
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
 			LOG_3("game_drawer_layer::vertecies::init");
 
 			gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
-				const GraphIdx::VertexProperties& vprops = gamedata.map_graph.graph[v];
 
-				sf::CircleShape& dot = cached_vertecies[vprops.idx];
-				dot.setRadius(config.vertex_radius);
+				sf::Sprite& s = nodes_g[v];
+				bool b = false;
 
-				if (vprops.post_idx == UINT32_MAX)
-				{
-					dot.setFillColor(config.vertex_color_empty);
-				}
-				else
-				{
-					switch (gamedata.posts.at(vprops.post_idx)->type())
-					{
-					case Posts::TOWN: dot.setFillColor(config.vertex_color_town); break;
-					case Posts::STORAGE: dot.setFillColor(config.vertex_color_storage); break;
-					case Posts::MARKET: dot.setFillColor(config.vertex_color_market); break;
+				
+				if (gamedata.map_graph.graph[v].post_idx != GraphIdx::uint32_max) {
+					switch (getPostType(v, gamedata)) {
+					case Posts::PostType::MARKET:
+						b = config.textures->RequireResource("market");
+						s = sf::Sprite(*config.textures->GetResource("market"));
+						break;
+					case  Posts::PostType::TOWN:
+						b = config.textures->RequireResource("castle");
+						s = sf::Sprite(*config.textures->GetResource("castle"));
+						break;
+					case  Posts::PostType::STORAGE:
+						b = config.textures->RequireResource("storage");
+						s = sf::Sprite(*config.textures->GetResource("storage"));
+						break;
+					default:
+						break;
 					}
+
+					SpriteUtils::setSize(s, { 40, 40 });
 				}
+				else {
+					b = config.textures->RequireResource("cs");
+					s = sf::Sprite(*config.textures->GetResource("cs"));
+
+					SpriteUtils::setSize(s, { 25, 25 });
+				}
+
+				SpriteUtils::centerOrigin(s);
 
 				const CoordsHolder::point_type& vcoords = gamedata.map_graph_coords->get_map()[v];
+				s.setPosition(sf::Vector2f{
+						config.padding_width.map(vcoords[0]),
+						config.padding_height.map(vcoords[1])
+					});
+				}
+			);
+		}
 
-				dot.setPosition(vcoords[0] - config.vertex_radius, vcoords[1] - config.vertex_radius);
-				});
+		Posts::PostType getPostType(GraphIdx::vertex_descriptor v, const GameData& gamedata) {
+
+			const GraphIdx::VertexProperties& vprops = gamedata.map_graph.graph[v];
+
+			switch (gamedata.posts.at(vprops.post_idx)->type())
+			{
+			case Posts::TOWN: return Posts::TOWN;
+			case Posts::STORAGE: return Posts::STORAGE;
+			case Posts::MARKET: return Posts::MARKET;
+			}
 		}
 
 		void reset()
 		{
 			LOG_3("game_drawer_layer::vertecies::reset");
 
-			cached_vertecies.clear();
+			nodes_g.clear();
 		}
 
 		void draw(sf::RenderWindow& window, const GameData& gamedata)
 		{
-			for (const auto& vertex : cached_vertecies)
+			for (const auto& vertex : nodes_g)
 			{
 				window.draw(vertex.second);
 			}
@@ -104,51 +136,132 @@ namespace game_drawer_layer {
 
 
 
-	class edges : public _interface
+	class edges : public layer_base
 	{
-		std::map<Types::edge_idx_t, sf::Vertex[2]> cached_edges;
+		std::map<GraphIdx::edge_descriptor, sf::Sprite> edges_g;
 
 	public:
+		edges() : layer_base() {}
+
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
 			LOG_3("game_drawer_layer::edges::init");
 
 			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
-				const CoordsHolder::point_type& es = gamedata.map_graph_coords->get_map()[boost::source(e, gamedata.map_graph.graph)];
-				const CoordsHolder::point_type& et = gamedata.map_graph_coords->get_map()[boost::target(e, gamedata.map_graph.graph)];
-				const GraphIdx::EdgeProperties& eprops = gamedata.map_graph.graph[e];
 
-				sf::Vertex* line = cached_edges[eprops.idx];
-				line[0] = sf::Vertex(sf::Vector2f(es[0], es[1]), config.edge_color);
-				line[1] = sf::Vertex(sf::Vector2f(et[0], et[1]), config.edge_color);
+				sf::Sprite& edge = edges_g[e];
+
+				config.textures->RequireResource("railway");
+
+				auto u = boost::source(e, gamedata.map_graph.graph);
+				auto v = boost::target(e, gamedata.map_graph.graph);
+
+				const auto& coords = gamedata.map_graph_coords->get_map();
+				if (coords[u][0] >= coords[v][0])
+					std::swap(u, v);
+
+				sf::Texture* main_texture = config.textures->GetResource("railway");
+				auto main_size = TextureUtils::getSize(*main_texture);
+
+				double vertecies_distance = sqrt(
+					Math::sqr(config.padding_width.map(coords[u][0]) - config.padding_width.map(coords[v][0])) +
+					Math::sqr(config.padding_height.map(coords[u][1]) - config.padding_height.map(coords[v][1]))
+				);
+
+				const float edge_length_coeff = 0.1;
+
+				main_texture->setRepeated(true);
+				edge = sf::Sprite(*main_texture,
+					sf::IntRect(0, 0, main_size.x, round(vertecies_distance / edge_length_coeff)));
+				edge.setOrigin(sf::Vector2f{ main_size.x / 2.f, 0.f });
+				edge.setPosition(
+					config.padding_width.map(coords[v][0]),
+					config.padding_height.map(coords[v][1])
+				);
+				edge.setScale(0.1, edge_length_coeff);
+				
+
+				double tan_alpha;
+				if (coords[u][1] > coords[v][1]) {
+					tan_alpha = (coords[v][0] - coords[u][0]) / (coords[u][1] - coords[v][1]);
+					edge.setRotation((float)(atan(tan_alpha) * 180.0 / 3.14159265));
+				}
+				else if (coords[u][1] < coords[v][1]) {
+					tan_alpha = (-coords[u][1] + coords[v][1]) / (coords[v][0] - coords[u][0]);
+					edge.setRotation((float)(90 + atan(tan_alpha) * 180.0 / 3.14159265));
+				}
+				else {
+					edge.setRotation(90);
+				}
 				});
 		}
 
 		void reset()
 		{
 			LOG_3("game_drawer_layer::edges::reset");
-
-			cached_edges.clear();
+			edges_g.clear();
 		}
 
 		void draw(sf::RenderWindow& window, const GameData& gamedata)
 		{
-			for (const auto& edge : cached_edges)
+			for (const auto& edge : edges_g)
 			{
-				window.draw(edge.second, 2, sf::Lines);
+				window.draw(edge.second);
 			}
 		}
 	};
 
 
+	//class trains : public layer_base
+	//{
+	//	std::map<Types::edge_idx_t, sf::Vertex[2]> cached_edges;
 
-	class edges_length : public _interface
+	//public:
+
+	//	trains(TextureManager& tm): layer_base(tm) {}
+
+	//	void init(const GameData& gamedata, const game_drawer_config& config)
+	//	{
+	//		LOG_3("game_drawer_layer::edges::init");
+
+	//		gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
+	//			const CoordsHolder::point_type& es = gamedata.map_graph_coords->get_map()[boost::source(e, gamedata.map_graph.graph)];
+	//			const CoordsHolder::point_type& et = gamedata.map_graph_coords->get_map()[boost::target(e, gamedata.map_graph.graph)];
+	//			const GraphIdx::EdgeProperties& eprops = gamedata.map_graph.graph[e];
+
+	//			sf::Vertex* line = cached_edges[eprops.idx];
+	//			line[0] = sf::Vertex(sf::Vector2f(es[0], es[1]), config.edge_color);
+	//			line[1] = sf::Vertex(sf::Vector2f(et[0], et[1]), config.edge_color);
+	//			});
+	//	}
+
+	//	void reset()
+	//	{
+	//		LOG_3("game_drawer_layer::edges::reset");
+
+	//		cached_edges.clear();
+	//	}
+
+	//	void draw(sf::RenderWindow& window, const GameData& gamedata)
+	//	{
+	//		for (const auto& edge : cached_edges)
+	//		{
+	//			window.draw(edge.second, 2, sf::Lines);
+	//		}
+	//	}
+	//};
+
+
+
+	class edges_length : public layer_base
 	{
 		sf::Font cached_font;
 		std::map<Types::edge_idx_t, sf::Text> cached_edges_length;
 
 	public:
+
+		edges_length() : layer_base() {}
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
@@ -164,20 +277,21 @@ namespace game_drawer_layer {
 				sf::Text& line_length = cached_edges_length[eprops.idx];
 				line_length.setString(std::to_string(eprops.length));
 				line_length.setPosition(sf::Vector2f(
-					(es[0] + et[0]) / 2 + config.edge_length_offset_x,
-					(es[1] + et[1]) / 2 + config.edge_length_offset_y
+					config.padding_width.map((es[0] + et[0]) / 2),
+					config.padding_height.map((es[1] + et[1]) / 2)
 				));
 
+				SpriteUtils::centerOrigin(line_length, sf::Vector2f(12, line_length.getCharacterSize() / 2.0f));
 				line_length.setFont(cached_font);
-				line_length.setCharacterSize(config.edge_length_size);
-				line_length.setFillColor(config.edge_length_color);
+				line_length.setCharacterSize(24);
+				line_length.setFillColor(sf::Color::Red);
 				});
 		}
 
 		void reset()
 		{
 			LOG_3("game_drawer_layer::edges_length::reset");
-			
+
 			cached_edges_length.clear();
 		}
 
@@ -190,106 +304,143 @@ namespace game_drawer_layer {
 		}
 	};
 
+	class background : public layer_base
+	{
+		sf::Sprite bg;
+
+	public:
+
+		background() : layer_base() {}
+
+		void init(const GameData& gamedata, const game_drawer_config& config)
+		{
+			LOG_3("game_drawer_layer::background::init");
+
+			config.textures->RequireResource("bg");
+			sf::Texture* bg_texture = config.textures->GetResource("bg");
+			bg.setTexture(*bg_texture);
+			SpriteUtils::setSize(bg, sf::Vector2f( config.window_videomode.width, config.window_videomode.height ));
+		}
+
+		void reset()
+		{
+			LOG_3("game_drawer_layer::background::reset");
+			//nothing
+		}
+
+		void draw(sf::RenderWindow& window, const GameData& gamedata)
+		{
+			window.draw(bg);
+		}
+	};
+
 } // namespace game_drawer_layer
 
+
+enum status : uint8_t
+{
+	AWAIT_PLAYERS = 0,
+	READY = 1,
+	UPDATING = 2,
+	CALCULATING = 3,
+};
 
 class game_drawer
 {
 protected:
 
+	/*
+		WARNING!!!
+			DO NOT CHANGE FIELDS ORDER!!!
+		!!!
+	*/
+
 	const game_drawer_config& config;
 
-	boost::ptr_vector<game_drawer_layer::_interface> layers;
+	sf::Clock clock_;
+	sf::Time elapsed_;
+
+	boost::ptr_vector<game_drawer_layer::layer_base> layers;
 	
 public:
+
+	game_drawer(const GameData& gamedata, const game_drawer_config& config)
+		: config(config), clock_()
+	{
+		layers.push_back(new game_drawer_layer::background());
+		layers.push_back(new game_drawer_layer::edges());
+		layers.push_back(new game_drawer_layer::vertecies());
+		layers.push_back(new game_drawer_layer::edges_length());
+	}
 
 	void init(const GameData& gamedata)
 	{
 		LOG_2("game_drawer::init");
 
-		for (game_drawer_layer::_interface& layer : layers)
+		for (game_drawer_layer::layer_base& layer : layers)
 		{
 			layer.init(gamedata, config);
 		}
+	}
+
+	void restart_clock() {
+		elapsed_ += clock_.restart();
+	}
+
+	void handle_input(sf::RenderWindow& window, const GameData& gamedata, const status& s) {
+
+	
 	}
 
 	void reset()
 	{
 		LOG_2("game_drawer::reset");
 
-		for (game_drawer_layer::_interface& layer : layers)
+		for (game_drawer_layer::layer_base& layer : layers)
 		{
 			layer.reset();
 		}
 	}
 
-	game_drawer(const GameData& gamedata, const game_drawer_config& config = {})
-		: config(config)
-	{
-		layers.reserve(3);
-		layers.push_back(new game_drawer_layer::edges);
-		layers.push_back(new game_drawer_layer::vertecies);
-		layers.push_back(new game_drawer_layer::edges_length);
+	
 
-		init(gamedata);
-	}
-
-	enum status : uint8_t
+	void draw(sf::RenderWindow& window, const GameData& gamedata)
 	{
-		AWAIT_PLAYERS = 0,
-		READY = 1,
-		UPDATING = 2,
-		CALCULATING = 3,
-	};
-
-	void _draw(sf::RenderWindow& window, const GameData& gamedata)
-	{
-		for (game_drawer_layer::_interface& layer : layers)
+		for (game_drawer_layer::layer_base& layer : layers)
 		{
 			layer.draw(window, gamedata);
 		}
 	}
 
-	void draw(sf::RenderWindow& window, const GameData& gamedata, status s)
+	void render(sf::RenderWindow& window, const GameData& gamedata, const status& s)
 	{
 		switch (s)
 		{
 			case status::AWAIT_PLAYERS:  window.clear(sf::Color::Blue);  break;
 			case status::UPDATING:  window.clear(sf::Color::Red);  break;
 			case status::CALCULATING:  window.clear(sf::Color::Yellow);   break;
-			case status::READY:
-			{
-				window.clear(config.clear_color);
-
-				_draw(window, gamedata);
-
-			} break;
+			case status::READY:  window.clear(config.clear_color); break;
 		}
+
+		if(s == status::READY)
+			draw(window, gamedata);
+
+		window.display();
 	}
 
 	void start(sf::RenderWindow& window, const GameData& gamedata, const status& s)
 	{
 		LOG_2("game_drawer: start");
 
+		init(gamedata);
+
 		while (window.isOpen())
 		{
-			try {
-
-				sf::Event event;
-				while (window.pollEvent(event))
-				{
-					// Request for closing the window
-					if (event.type == sf::Event::Closed)
-					{
-						window.close();
-						exit(0);
-					}
-
-				}
-
-				this->draw(window, gamedata, s);
-				window.display();
-
+			try {	
+				this->handle_input(window, gamedata, s);
+				this->update(window, gamedata, s);
+				this->render(window, gamedata, s);
+				this->restart_clock();
 			}
 			catch (boost::thread_interrupted&)
 			{
@@ -297,9 +448,28 @@ public:
 			}
 		}
 	}
+
+	void update(sf::RenderWindow& window, const GameData& gamedata, const status& s) {
+
+		
+		if (elapsed_.asSeconds() >= config.frame_time)
+		{
+			sf::Event event;
+			while (window.pollEvent(event))
+			{
+				if (event.type == sf::Event::Closed)
+				{
+					window.close();
+					exit(0);
+				}
+			}
+
+			elapsed_ -= sf::seconds(config.frame_time);
+		}
+	}
 };
 
-void game_drawer_thread(const GameData& gamedata, const game_drawer_config& config, const game_drawer::status& s, sf::RenderWindow*& callback)
+void game_drawer_thread(const GameData& gamedata, const game_drawer_config& config, const status& s, sf::RenderWindow*& callback)
 {
 	LOG_2("game_drawer_thread: Creating RenderWindow...");
 	sf::RenderWindow window(config.window_videomode, config.window_name);
