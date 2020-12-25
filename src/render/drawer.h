@@ -69,8 +69,6 @@ namespace game_drawer_layer {
 
 				
 				if (gamedata.map_graph.graph[v].post_idx != GraphIdx::uint32_max) {
-					SpriteUtils::setSize(s, { 30, 30 });
-
 					switch (getPostType(v, gamedata)) {
 					case Posts::PostType::MARKET:
 						b = config.textures->RequireResource("market");
