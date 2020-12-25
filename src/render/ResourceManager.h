@@ -77,7 +77,7 @@ private:
 	void LoadPaths(const std::string& l_pathFile) {
 		std::ifstream paths;
 		//std::cout << /*Utils::GetWorkingDirectory() +*/ l_pathFile<<std::endl;
-		paths.open(/*Utils::GetWorkingDirectory() +*/ l_pathFile);
+		paths.open(Utils::GetWorkingDirectory() + l_pathFile);
 		if (paths.is_open()) {
 			std::string line;
 			while (std::getline(paths, line)) {
@@ -86,7 +86,7 @@ private:
 				std::string path;
 				keystream >> pathName;
 				keystream >> path;
-				m_paths.emplace(pathName, path);
+				m_paths.emplace(pathName, Utils::GetWorkingDirectory() + path);
 			}
 			paths.close();
 			return;
