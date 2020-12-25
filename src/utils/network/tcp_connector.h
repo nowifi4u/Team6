@@ -4,10 +4,11 @@
 #include <vector>
 #include <functional>
 #include <boost/asio.hpp>
+#include <spdlog/spdlog.h>
 
 
 #include <src/utils/ClassDefines.h>
-#include <src/utils/Logging.h>
+
 
 using boost::asio::ip::tcp;
 
@@ -32,16 +33,22 @@ public:
 	}
 
 	tcp_connector(boost::asio::io_service& m_io)
-		: m_io(m_io), m_work(m_io), m_socket(m_io) {}
+		: m_io(m_io), m_work(m_io), m_socket(m_io)
+    {
+	    SPDLOG_DEBUG("constructing");
+
+    }
 
 	void connect(const std::string& addr, const std::string& port)
 	{
+	    SPDLOG_DEBUG("connecting to {}:{}", addr, port);
 		m_endpoint = tcp::resolver(m_io).resolve({ addr, port });
 		boost::asio::connect(m_socket, m_endpoint);
 	}
 
 	void disconnect()
 	{
+	    SPDLOG_DEBUG("disconnecting...");
 		m_socket.close();
 	}
 
@@ -53,7 +60,7 @@ public:
 
 	void send(const std::string& data)
 	{
-		LOG_2("tcp_connector: sending packet...");
+		SPDLOG_TRACE("sending packet...");
 
 		m_socket.send(boost::asio::buffer(data));
 	}
@@ -62,13 +69,14 @@ public:
 	{
 		if (ec.failed())
 		{
+            SPDLOG_ERROR("*smth* failed, message: {}", std::string(ec.message()));
 			throw ec;
 		}
 	}
 
 	void async_send(const std::string& data)
 	{
-		LOG_2("tcp_connector: sending anync packet...");
+		SPDLOG_TRACE("sending async packet...");
 
 		m_socket.async_send(boost::asio::buffer(data), async_default_handler);
 	}
@@ -76,16 +84,17 @@ public:
 	template <class AsyncHandler>
 	void async_send(const std::string& data, AsyncHandler handler)
 	{
-		LOG_2("tcp_connector: sending anync packet with callback...");
+		SPDLOG_TRACE("sending async packet with callback...");
 
 		m_socket.async_send(boost::asio::buffer(data), handler);
 	}
 
 	void wait_read()
 	{
-		LOG_2("tcp_connector: Waiting for answer...");
+		SPDLOG_TRACE("waiting for answer...");
 
 		m_socket.wait(boost::asio::socket_base::wait_type::wait_read);
+        SPDLOG_TRACE("answer received.");
 	}
 
 	std::string read_until_eof()
