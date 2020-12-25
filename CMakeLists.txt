@@ -86,7 +86,6 @@ add_executable(Team6
         src/utils/bincharstream.h
         src/utils/binstream.h
         src/utils/ClassDefines.h
-        src/utils/Logging.h
         src/game.h
         src/Main.cpp
         src/Types.h)

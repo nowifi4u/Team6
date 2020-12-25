@@ -1,7 +1,6 @@
 #pragma once
 
 #include <src/Types.h>
-#include <src/utils/Logging.h>
 
 #include <nlohmann/json.hpp>
 #include <map>
