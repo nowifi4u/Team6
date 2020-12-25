@@ -94,7 +94,7 @@ public:
 			drawer_config.padding_height.set_output(100, 700);
 
 			drawer_config.padding_width.set_input(minmax_x.min(), minmax_x.max());
-			drawer_config.padding_width.set_input(minmax_y.min(), minmax_y.max());
+			drawer_config.padding_height.set_input(minmax_y.min(), minmax_y.max());
 		}
 	}
 
