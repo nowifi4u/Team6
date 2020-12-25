@@ -322,6 +322,9 @@ namespace game_drawer_layer {
 			textureManager_.RequireResource("bg");
 			sf::Texture* bg_texture = textureManager_.GetResource("bg");
 			bg_texture->setRepeated(true);
+			bg = sf::Sprite(*bg_texture,
+				sf::IntRect(0, 0, config.window_videomode.width, config.window_videomode.height)
+			);
 			bg.setTexture(*bg_texture);
 		}
 
