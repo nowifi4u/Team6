@@ -150,8 +150,7 @@ public:
 		drawer_config.textures = new TextureManager("res\\Game\\textures.cfg");
 
 		LOG_2("Game::drawer_start: Starting game_drawer thread...");
-		game_drawer_thread(gamedata, drawer_config, drawer_status, drawer_window);
-		//drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
+		drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
 	}
 
 	void drawer_stop()
