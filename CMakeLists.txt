@@ -7,7 +7,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 # include all source code directory
 include_directories(src)
 
+set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(libs/json)
+
 add_subdirectory(libs/SFML)
 
 # adding boost
