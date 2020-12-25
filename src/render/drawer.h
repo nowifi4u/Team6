@@ -86,13 +86,13 @@ namespace game_drawer_layer {
 						break;
 					}
 
-					SpriteUtils::setSize(s, { 30, 30 });
+					SpriteUtils::setSize(s, { 40, 40 });
 				}
 				else {
 					b = config.textures->RequireResource("cs");
 					s = sf::Sprite(*config.textures->GetResource("cs"));
 
-					SpriteUtils::setSize(s, { 15,15 });
+					SpriteUtils::setSize(s, { 25, 25 });
 				}
 
 				SpriteUtils::centerOrigin(s);
@@ -139,10 +139,9 @@ namespace game_drawer_layer {
 	class edges : public layer_base
 	{
 		std::map<GraphIdx::edge_descriptor, sf::Sprite> edges_g;
-		vertecies& vert;
 
 	public:
-		edges(vertecies& vert_) : layer_base(), vert(vert_) {}
+		edges() : layer_base() {}
 
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
@@ -165,8 +164,6 @@ namespace game_drawer_layer {
 				sf::Texture* main_texture = config.textures->GetResource("railway");
 				auto main_size = TextureUtils::getSize(*main_texture);
 
-				auto vertex_size = SpriteUtils::getSize(vert.nodes_g[v]).x / 2.f;
-
 				double vertecies_distance = sqrt(
 					Math::sqr(config.padding_width.map(coords[u][0]) - config.padding_width.map(coords[v][0])) +
 					Math::sqr(config.padding_height.map(coords[u][1]) - config.padding_height.map(coords[v][1]))
@@ -179,8 +176,8 @@ namespace game_drawer_layer {
 					sf::IntRect(0, 0, main_size.x, round(vertecies_distance / edge_length_coeff)));
 				edge.setOrigin(sf::Vector2f{ main_size.x / 2.f, 0.f });
 				edge.setPosition(
-					vert.nodes_g[v].getPosition().x,
-					vert.nodes_g[v].getPosition().y
+					config.padding_width.map(coords[v][0]),
+					config.padding_height.map(coords[v][1])
 				);
 				edge.setScale(0.1, edge_length_coeff);
 				
@@ -362,18 +359,16 @@ protected:
 	sf::Clock clock_;
 	sf::Time elapsed_;
 
-	game_drawer_layer::vertecies vert; // for edges init
-
 	boost::ptr_vector<game_drawer_layer::layer_base> layers;
 	
 public:
 
 	game_drawer(const GameData& gamedata, const game_drawer_config& config)
-		: config(config), clock_(), vert()
+		: config(config), clock_()
 	{
 		layers.push_back(new game_drawer_layer::background());
-		layers.push_back(new game_drawer_layer::edges(vert));
-		layers.push_back(&vert);
+		layers.push_back(new game_drawer_layer::edges());
+		layers.push_back(new game_drawer_layer::vertecies());
 		//layers.push_back(new game_drawer_layer::edges_length(textureManager_));
 	}
 
