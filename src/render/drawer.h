@@ -23,7 +23,7 @@ struct game_drawer_config
 	sf::VideoMode window_videomode;
 	std::string window_name;
 
-	std::string edge_length_font = "res/arial.ttf";
+	std::string edge_length_font;
 
 	ValueMap<float> padding_width = ValueMap<float>(0, 1, 0, 1);
 	ValueMap<float> padding_height = ValueMap<float>(0, 1, 0, 1);
@@ -69,7 +69,7 @@ namespace game_drawer_layer {
 
 				
 				if (gamedata.map_graph.graph[v].post_idx != GraphIdx::uint32_max) {
-					setSize(s, { 30, 30 });
+					SpriteUtils::setSize(s, { 30, 30 });
 
 					switch (getPostType(v, gamedata)) {
 					case Posts::PostType::MARKET:
