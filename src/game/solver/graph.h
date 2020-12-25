@@ -39,6 +39,16 @@ public:
 			);
 	}
 
+	Types::edge_length_t& operator[](GraphIdx::vertex_descriptor v)
+	{
+		return distances[v];
+	}
+
+	const Types::edge_length_t& operator[](GraphIdx::vertex_descriptor v) const
+	{
+		return distances[v];
+	}
+
 protected:
 
 	const GraphIdx& graph_;
