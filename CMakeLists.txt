@@ -31,6 +31,8 @@ if(WIN32)
 elseif(UNIX)
     set(boost_BOOTSTRAP ./bootstrap.sh)
     message(STATUS "Using UNIX specific boost compilation")
+elseif(TRUE)
+    message(FATAL_ERROR "At this moment, support only WIN32 & UNIX boost compilation")
 endif()
 
 ExternalProject_Add( boost
