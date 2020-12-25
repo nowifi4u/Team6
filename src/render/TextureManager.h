@@ -6,7 +6,8 @@ class TextureManager :
 	public ResourceManager<TextureManager, sf::Texture>
 {
 public:
-	TextureManager() : ResourceManager("src/render/textures.cfg") {}
+	TextureManager(const std::string& path) : ResourceManager(path) {}
+
 	sf::Texture* Load(const std::string& l_path) {
 		sf::Texture* texture = new sf::Texture();
 		if (!texture->loadFromFile(
