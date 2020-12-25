@@ -87,8 +87,8 @@ namespace game_drawer_layer {
 					}
 				}
 				else {
-					b = textureManager_.RequireResource("cs");
-					s = sf::Sprite(*textureManager_.GetResource("cs"));
+					b = textureManager_.RequireResource("circle");
+					s = sf::Sprite(*textureManager_.GetResource("circle"));
 				}
 
 				
@@ -333,11 +333,11 @@ namespace game_drawer_layer {
 
 			textureManager_.RequireResource("bg");
 			sf::Texture* bg_texture = textureManager_.GetResource("bg");
-			bg_texture->setRepeated(true);
-			bg = sf::Sprite(*bg_texture,
-				sf::IntRect(0, 0, config.window_videomode.width, config.window_videomode.height)
-			);
+			float kw = 0.999f* config.window_videomode.width / bg_texture->getSize().x;
+			float kh = 0.999f*config.window_videomode.height / bg_texture->getSize().y;
+
 			bg.setTexture(*bg_texture);
+			bg.scale(kw, kh);
 		}
 
 		void reset()
