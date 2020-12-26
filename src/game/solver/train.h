@@ -22,13 +22,14 @@ public:
 		STANDBY
 	};
 
-	TrainSolver(const GameData& gamedata, GraphEdgeDijkstra& graphsolver, Types::train_idx_t train_idx, GraphVertexMap<double>& deltas_market, GraphVertexMap<double>& deltas_storage)
+	TrainSolver(const GameData& gamedata, GraphEdgeDijkstra& graphsolver, Types::train_idx_t train_idx, GraphVertexMap<double>& deltas_market, GraphVertexMap<double>& deltas_storage, State state = State::STANDBY)
 		: gamedata(gamedata),
 		graphsolver(graphsolver),
 		train_idx(train_idx), gamedata_train(gamedata.self_data().trains.at(train_idx)),
 		train_data(gamedata.self_data().trains.at(train_idx)),
 		deltas_market(deltas_market),
-		deltas_storage(deltas_storage)
+		deltas_storage(deltas_storage),
+		state(state)
 	{
 	}
 
