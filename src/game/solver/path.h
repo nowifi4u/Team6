@@ -10,46 +10,58 @@ class PathSolver
 {
 public:
 
-	PathSolver(const GameData& gamedata, GraphEdgeDijkstra& graphsolver)
-		: gamedata(gamedata), graphsolver(graphsolver)
+	PathSolver(const GameData& gamedata)
+		: gamedata(gamedata), 
+		graphsolver(gamedata.graph())
 	{
-
 	}
 
-	void init(GraphIdx::edge_descriptor e, Types::edge_idx_t pos)
+	void init(GraphIdx::edge_descriptor epos, Types::edge_length_t pos)
 	{
-		graphsolver.calculate(e, pos);
+		graphsolver.calculate(epos, pos);
 	}
 
-	Types::edge_length_t distance_to(GraphIdx::vertex_descriptor target)
+	void init(Types::train_idx_t train_idx)
+	{
+		const Trains::Train& train_data = gamedata.self_data().trains.at(train_idx);
+		GraphIdx::edge_descriptor epos = gamedata.map_graph.emap.at(train_data.line_idx);
+		Types::edge_length_t pos = train_data.position;
+
+		init(epos, pos);
+	}
+
+	Types::edge_length_t distance_to(GraphIdx::vertex_descriptor target) const
 	{
 		return graphsolver[target].first;
 	}
 
-	std::optional<server_connector::Move> calculate_Move(GraphIdx::edge_descriptor epos, Types::edge_idx_t pos, Types::train_idx_t train_idx, GraphIdx::vertex_descriptor target)
+	std::optional<server_connector::Move> calculate_Move(Types::train_idx_t train_idx, GraphIdx::vertex_descriptor target)
 	{
 		if (target == gamedata.graph().null_vertex()) return std::nullopt;
 
-		const auto solver = graphsolver.get_obj(target);
-		GraphDijkstra::path_t path = graphsolver.get_path(target);
+		bool solver_is_source = graphsolver.get_is_source(target);
+		GraphDijkstra::path_edges_t solver_path_edges = graphsolver.get_path_edges(target);
+		GraphDijkstra::path_t solver_path = graphsolver.get_path(target);
 
 		const Trains::Train& train_data = gamedata.self_data().trains.at(train_idx);
+		GraphIdx::edge_descriptor epos = gamedata.map_graph.emap.at(train_data.line_idx);
+		Types::edge_length_t pos = train_data.position;
 
-		if (solver.second == false)
+		if (solver_is_source == false)
 		{
 			GraphIdx::vertex_descriptor v = boost::source(epos, gamedata.graph());
 
 			if (train_data.position == 0)
 			{
-				if (path.size() == 0) return std::nullopt;
+				if (solver_path.size() == 0) return std::nullopt;
 
-				if (Graph::isSource(gamedata.graph(), v, path.front()))
+				if (Graph::isSource(gamedata.graph(), v, solver_path.front()))
 				{
-					return server_connector::Move{ Graph::get_edge_props(gamedata.graph(), v, path.front())->idx, 1, train_idx };
+					return server_connector::Move{ Graph::get_edge_props(gamedata.graph(), v, solver_path.front())->idx, 1, train_idx };
 				}
 				else
 				{
-					return server_connector::Move{ Graph::get_edge_props(gamedata.graph(), v, path.front())->idx, -1, train_idx };
+					return server_connector::Move{ Graph::get_edge_props(gamedata.graph(), v, solver_path.front())->idx, -1, train_idx };
 				}
 			}
 			else
@@ -64,15 +76,15 @@ public:
 
 			if (train_data.position == gamedata.graph()[epos].length)
 			{
-				if (path.size() == 0) return std::nullopt;
+				if (solver_path.size() == 0) return std::nullopt;
 
-				if (Graph::isSource(gamedata.graph(), v, path.front()))
+				if (Graph::isSource(gamedata.graph(), v, solver_path.front()))
 				{
-					return server_connector::Move{ Graph::get_edge_props(gamedata.graph(), v, path.front())->idx, 1, train_idx };
+					return server_connector::Move{ Graph::get_edge_props(gamedata.graph(), v, solver_path.front())->idx, 1, train_idx };
 				}
 				else
 				{
-					return server_connector::Move{ Graph::get_edge_props(gamedata.graph(), v, path.front())->idx, -1, train_idx };
+					return server_connector::Move{ Graph::get_edge_props(gamedata.graph(), v, solver_path.front())->idx, -1, train_idx };
 				}
 			}
 			else
@@ -82,8 +94,13 @@ public:
 		}
 	}
 
+	bool is_train_nearby()
+	{
+
+	}
+
 protected:
 
 	const GameData& gamedata;
-	GraphEdgeDijkstra& graphsolver;
+	GraphEdgeDijkstra graphsolver;
 };
