@@ -312,11 +312,27 @@ public:
 	}
 };
 
-inline bool isSource(const GraphIdx::Graph& g, GraphIdx::vertex_descriptor v, GraphIdx::vertex_descriptor ve)
-{
-	if (boost::edge(v, ve, g).second)
+namespace Graph {
+
+	inline bool isSource(const GraphIdx::Graph& g, GraphIdx::vertex_descriptor v, GraphIdx::vertex_descriptor ve)
 	{
-		return v == boost::source(boost::edge(v, ve, g).first, g);
+		if (boost::edge(v, ve, g).second)
+		{
+			return v == boost::source(boost::edge(v, ve, g).first, g);
+		}
+		else return false;
 	}
-	else return false;
+
+	inline GraphIdx::EdgeProperties* get_edge(GraphIdx::Graph& g, GraphIdx::vertex_descriptor v, GraphIdx::vertex_descriptor ve)
+	{
+		if (boost::edge(v, ve, g).second == false) return nullptr;
+		else return &g[boost::edge(v, ve, g).first];
+	}
+
+	inline const GraphIdx::EdgeProperties* get_edge(const GraphIdx::Graph& g, GraphIdx::vertex_descriptor v, GraphIdx::vertex_descriptor ve)
+	{
+		if (boost::edge(v, ve, g).second == false) return nullptr;
+		else return &g[boost::edge(v, ve, g).first];
+	}
+
 }
