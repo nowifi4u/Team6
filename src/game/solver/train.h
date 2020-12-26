@@ -3,6 +3,7 @@
 #include "../data.h"
 #include "graph_edge.h"
 #include "../../utils/network/server_connector.h"
+#include "../../graph/GraphVertexMap.h"
 
 #include <optional>
 #include <algorithm>
@@ -21,11 +22,13 @@ public:
 		STANDBY
 	};
 
-	TrainSolver(const GameData& gamedata, GraphEdgeDijkstra& graphsolver, Types::train_idx_t train_idx)
+	TrainSolver(const GameData& gamedata, GraphEdgeDijkstra& graphsolver, Types::train_idx_t train_idx, GraphVertexMap<double>& deltas_market, GraphVertexMap<double>& deltas_storage)
 		: gamedata(gamedata),
 		graphsolver(graphsolver),
-		train_idx(train_idx), gamedata_train(gamedata.players.at(gamedata.player_idx).trains.at(train_idx)),
-		train_data(gamedata.players.at(gamedata.player_idx).trains.at(train_idx))
+		train_idx(train_idx), gamedata_train(gamedata.self_data().trains.at(train_idx)),
+		train_data(gamedata.self_data().trains.at(train_idx)),
+		deltas_market(deltas_market),
+		deltas_storage(deltas_storage)
 	{
 	}
 
@@ -52,12 +55,15 @@ public:
 				{
 					const Posts::Market* market = (const Posts::Market*) gamedata.posts.at(gamedata.graph()[v].post_idx);
 
-					double value = std::min<double>(Trains::TrainTiers[train_data.level].goods_capacity,
-						std::min<double>(market->product_capacity,
-							market->product + market->replenishment * graphsolver[v].first
-						));
+					double value = std::min<double>({ 
+						(double)Trains::TrainTiers[train_data.level].goods_capacity - train_data.goods,
+						(double)market->product_capacity,
+						(double)market->product + market->replenishment * graphsolver[v].first
+						});
 				}
 			});
+
+		return target;
 	}
 
 	GraphIdx::vertex_descriptor choose_target_NORMAL_ARMOR() const
@@ -73,13 +79,16 @@ public:
 				{
 					const Posts::Storage* storage = (const Posts::Storage*)gamedata.posts.at(gamedata.graph()[v].post_idx);
 
-					double value = std::min<double>(Trains::TrainTiers[train_data.level].goods_capacity,
-						std::min<double>(storage->armor_capacity, 
-							storage->armor + storage->replenishment * graphsolver[v].first
-						));
+					double value = std::min<double>({ 
+						(double)Trains::TrainTiers[train_data.level].goods_capacity - train_data.goods,
+						(double)storage->armor_capacity,
+						(double)storage->armor + storage->replenishment * graphsolver[v].first
+						});
 				}
 			
 			});
+
+		return target;
 	}
 
 	GraphIdx::vertex_descriptor choose_target_EMERGENCY_FOOD() const
@@ -98,6 +107,8 @@ public:
 						target_dist = graphsolver[v].first;
 					}
 			});
+
+		return target;
 	}
 
 	GraphIdx::vertex_descriptor choose_target_EMERGENCY_ARMOR() const
@@ -116,6 +127,8 @@ public:
 						target_dist = graphsolver[v].first;
 					}
 			});
+
+		return target;
 	}
 
 	GraphIdx::vertex_descriptor choose_target() const
@@ -196,6 +209,9 @@ private:
 	const Types::train_idx_t train_idx;
 	
 	const Trains::Train& train_data;
+
+	GraphVertexMap<double>& deltas_market;
+	GraphVertexMap<double>& deltas_storage;
 
 public:
 	const GameData& gamedata;
