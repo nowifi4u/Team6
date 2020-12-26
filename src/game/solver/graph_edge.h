@@ -32,21 +32,32 @@ public:
 		}
 	}
 
-	std::pair<Types::edge_length_t, bool> operator[](GraphIdx::vertex_descriptor v)
+	bool get_is_source(GraphIdx::vertex_descriptor vend) const
 	{
-		if (s[v] < t[v]) return std::make_pair(s[v], false);
-		else return std::make_pair(t[v], true);
+		return (s[vend] < t[vend]);
 	}
 
-	std::pair<const GraphDijkstra&, bool> get_obj(GraphIdx::vertex_descriptor v)
+	Types::edge_length_t get_distance(GraphIdx::vertex_descriptor vend) const
 	{
-		if (s[v] < t[v]) return std::make_pair(s, false);
-		else return std::make_pair(t, true);
+		if (get_is_source(vend)) return s[vend];
+		else return t[vend];
 	}
 
-	GraphDijkstra::path_t get_path(GraphIdx::vertex_descriptor vend)
+	const GraphDijkstra& get_obj(GraphIdx::vertex_descriptor vend) const
 	{
-		if (s[vend] < t[vend]) return s.calculate_path(vend);
+		if (get_is_source(vend)) return s;
+		else return t;
+	}
+
+	GraphDijkstra::path_t get_path(GraphIdx::vertex_descriptor vend) const
+	{
+		if (get_is_source(vend)) return s.calculate_path(vend);
 		else return t.calculate_path(vend);
+	}
+
+	GraphDijkstra::path_edges_t get_path_edges(GraphIdx::vertex_descriptor vend) const
+	{
+		if (get_is_source(vend)) return s.calculate_path_edges(vend);
+		else return t.calculate_path_edges(vend);
 	}
 };
