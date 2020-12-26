@@ -48,6 +48,7 @@ ExternalProject_Add( boost
         ${boost_BOOTSTRAP}
         --with-libraries=graph
         --with-libraries=thread
+        --with-libraries=filesystem
         --prefix=<INSTALL_DIR>
         BUILD_COMMAND
         ./b2 install link=static variant=release threading=multi runtime-link=static
@@ -58,6 +59,7 @@ include_directories(${boost_INCLUDE_DIR})
 
 set(Boost_LIBRARIES
         ${boost_LIB_DIR}/libboost_graph${LIB_EXTENSION}
+        ${boost_LIB_DIR}/libboost_filesystem${LIB_EXTENSION}
         ${boost_LIB_DIR}/libboost_thread${LIB_EXTENSION} )
 
 message( STATUS "Boost static libs: " ${Boost_LIBRARIES} )
@@ -73,7 +75,10 @@ add_executable(Team6
         src/graph/CoordsHolder.h
         src/graph/graph.h
         src/graph/KKSCoordsCalculator.h
-        src/render/drawer.h
+        src/render/game_drawer.h
+        src/render/ResourceManager.h
+        src/render/SpriteUtils.h
+        src/render/TextureManager.h
         src/utils/network/server_connector.h
         src/utils/network/tcp_connector.h
         src/utils/bincharstream.h
@@ -85,4 +90,4 @@ add_executable(Team6
         src/Types.h)
 
 add_dependencies(Team6 boost)
-target_link_libraries(Team6 sfml-graphics nlohmann_json ${Boost_LIBRARIES})
+target_link_libraries(Team6 sfml-graphics nlohmann_json ${Boost_LIBRARIES} -ldl)
