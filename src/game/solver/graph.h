@@ -21,6 +21,8 @@ public:
 
 	using path_t = std::deque<GraphIdx::vertex_descriptor>;
 
+	using path_edges_t = std::deque<GraphIdx::edge_descriptor>;
+
 	GraphDijkstra(const GraphIdx::Graph& graph)
 		: graph_(graph), 
 		vbegin(graph.null_vertex()),
@@ -79,6 +81,18 @@ public:
 			cur = predecessors[cur];
 		}
 		return path;
+	}
+
+	path_edges_t calculate_path_edges(GraphIdx::vertex_descriptor vend) const
+	{
+		path_edges_t path;
+		for (GraphIdx::vertex_descriptor cur = vend;
+			cur != graph_.null_vertex()
+			&& predecessors[cur] != cur
+			&& cur != vbegin;)
+		{
+			path.push_front(Graph::get_edge(graph_, cur, predecessors[cur]));
+		}
 	}
 
 protected:
