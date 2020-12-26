@@ -87,13 +87,13 @@ namespace game_drawer_layer {
 						break;
 					}
 
-					SpriteUtils::setSize(s, { 40, 40 });
+					SpriteUtils::setSize(s, sf::Vector2f{ 40, 40 });
 				}
 				else {
 					b = config.textures->RequireResource("cs");
 					s = sf::Sprite(*config.textures->GetResource("cs"));
 
-					SpriteUtils::setSize(s, { 25, 25 });
+					SpriteUtils::setSize(s, sf::Vector2f{ 25, 25 });
 				}
 
 				SpriteUtils::centerOrigin(s);
@@ -237,7 +237,7 @@ namespace game_drawer_layer {
 
 					bool b = config.textures->RequireResource("train");
 					s = sf::Sprite(*config.textures->GetResource("train"));
-					SpriteUtils::setSize(s, { 25, 25 });
+					SpriteUtils::setSize(s, sf::Vector2f{ 25, 25 });
 					SpriteUtils::centerOrigin(s);
 				}
 			}
@@ -447,7 +447,7 @@ public:
 		window.display();
 	}
 
-	void start(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config, const status& s)
+	void start(sf::RenderWindow& window, const GameData& gamedata, game_drawer_config& config, const status& s)
 	{
         SPDLOG_DEBUG("starting game_drawer");
 
@@ -457,7 +457,7 @@ public:
 		{
 			try {	
 				this->handle_input(window, gamedata, s);
-				this->update(window, gamedata, s);
+				this->update(window, gamedata, config, s);
 				this->render(window, gamedata, config, s);
 				this->restart_clock();
 			}
@@ -468,7 +468,7 @@ public:
 		}
 	}
 
-	void update(sf::RenderWindow& window, const GameData& gamedata, const status& s) {
+	void update(sf::RenderWindow& window, const GameData& gamedata, game_drawer_config& config, const status& s) {
 
 		
 		if (elapsed_.asSeconds() >= config.frame_time)
@@ -476,11 +476,25 @@ public:
 			sf::Event event;
 			while (window.pollEvent(event))
 			{
-				if (event.type == sf::Event::Closed)
+				switch(event.type)
+				{
+				case sf::Event::Closed:
 				{
 					window.close();
 					exit(0);
 				}
+				case sf::Event::Resized:
+					const sf::Vector2u size = window.getSize();
+					config.padding_width.set_output(size.x / 10, size.x * 9 / 10);
+					config.padding_height.set_output(size.y / 10, size.y * 9 / 10);
+
+					config.window_videomode.width = size.x;
+					config.window_videomode.height = size.y;
+					window.setView(sf::View(sf::Vector2f(size.x / 2, size.y / 2), sf::Vector2f(size.x, size.y)));
+
+					init(gamedata);
+				}
+				
 			}
 
 			elapsed_ -= sf::seconds(config.frame_time);
@@ -488,7 +502,7 @@ public:
 	}
 };
 
-void game_drawer_thread(const GameData& gamedata, const game_drawer_config& config, const status& s, sf::RenderWindow*& callback)
+void game_drawer_thread(const GameData& gamedata, game_drawer_config& config, const status& s, sf::RenderWindow*& callback)
 {
 	SPDLOG_DEBUG("game_drawer_thread: Creating RenderWindow...");
 	sf::RenderWindow window(config.window_videomode, config.window_name);
