@@ -5,6 +5,7 @@
 #include "../../utils/network/server_connector.h"
 
 #include <optional>
+#include <algorithm>
 
 class TrainSolver
 {
@@ -35,27 +36,86 @@ public:
 
 	const GraphIdx::EdgeProperties& get_edge_props() const
 	{
-		return gamedata.map_graph.graph[get_edge()];
+		return gamedata.graph()[get_edge()];
 	}
 
 	GraphIdx::vertex_descriptor choose_target_NORMAL_FOOD() const
 	{
 		graphsolver.calculate(get_edge(), train_data.position);
+
+		GraphIdx::vertex_descriptor target = gamedata.graph().null_vertex();
+		double target_value = -INFINITY;
+
+		gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+			if (gamedata.graph()[v].post_idx != UINT32_MAX)
+				if (gamedata.posts.at(gamedata.graph()[v].post_idx)->type() == Posts::MARKET)
+				{
+					const Posts::Market* market = (const Posts::Market*) gamedata.posts.at(gamedata.graph()[v].post_idx);
+
+					double value = std::min<double>(Trains::TrainTiers[train_data.level].goods_capacity,
+						std::min<double>(market->product_capacity,
+							market->product + market->replenishment * graphsolver[v].first
+						));
+				}
+			});
 	}
 
 	GraphIdx::vertex_descriptor choose_target_NORMAL_ARMOR() const
 	{
 		graphsolver.calculate(get_edge(), train_data.position);
+
+		GraphIdx::vertex_descriptor target = gamedata.graph().null_vertex();
+		double target_value = -INFINITY;
+
+		gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+			if (gamedata.graph()[v].post_idx != UINT32_MAX)
+				if (gamedata.posts.at(gamedata.graph()[v].post_idx)->type() == Posts::STORAGE)
+				{
+					const Posts::Storage* storage = (const Posts::Storage*)gamedata.posts.at(gamedata.graph()[v].post_idx);
+
+					double value = std::min<double>(Trains::TrainTiers[train_data.level].goods_capacity,
+						std::min<double>(storage->armor_capacity, 
+							storage->armor + storage->replenishment * graphsolver[v].first
+						));
+				}
+			
+			});
 	}
 
 	GraphIdx::vertex_descriptor choose_target_EMERGENCY_FOOD() const
 	{
 		graphsolver.calculate(get_edge(), train_data.position);
+
+		GraphIdx::vertex_descriptor target = gamedata.graph().null_vertex();
+		Types::edge_length_t target_dist = UINT32_MAX;
+
+		gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+			if (gamedata.graph()[v].post_idx != UINT32_MAX)
+				if (gamedata.posts.at(gamedata.graph()[v].post_idx)->type() == Posts::MARKET)
+					if (graphsolver[v].first < target_dist)
+					{
+						target = v;
+						target_dist = graphsolver[v].first;
+					}
+			});
 	}
 
 	GraphIdx::vertex_descriptor choose_target_EMERGENCY_ARMOR() const
 	{
 		graphsolver.calculate(get_edge(), train_data.position);
+
+		GraphIdx::vertex_descriptor target = gamedata.graph().null_vertex();
+		Types::edge_length_t target_dist = UINT32_MAX;
+
+		gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+			if (gamedata.graph()[v].post_idx != UINT32_MAX)
+				if (gamedata.posts.at(gamedata.graph()[v].post_idx)->type() == Posts::STORAGE)
+					if (graphsolver[v].first < target_dist)
+					{
+						target = v;
+						target_dist = graphsolver[v].first;
+					}
+			});
 	}
 
 	GraphIdx::vertex_descriptor choose_target() const
@@ -67,7 +127,7 @@ public:
 		case State::EMERGENCY_FOOD: return choose_target_EMERGENCY_FOOD();
 		case State::EMERGENCY_ARMOR: return choose_target_EMERGENCY_ARMOR();
 		case State::RETURN: return gamedata.home_idx;
-		case State::STANDBY: return gamedata.map_graph.graph.null_vertex();
+		case State::STANDBY: return gamedata.graph().null_vertex();
 		}
 	}
 
@@ -76,7 +136,7 @@ public:
 	{
 		GraphIdx::vertex_descriptor target = choose_target();
 
-		if (target == gamedata.map_graph.graph.null_vertex()) return std::nullopt;
+		if (target == gamedata.graph().null_vertex()) return std::nullopt;
 
 		const auto solver = graphsolver.get_obj(target);
 		GraphDijkstra::path_t path = graphsolver.get_path(target);
@@ -85,19 +145,19 @@ public:
 
 		if (solver.second == false)
 		{
-			GraphIdx::vertex_descriptor v = boost::source(get_edge(), gamedata.map_graph.graph);
+			GraphIdx::vertex_descriptor v = boost::source(get_edge(), gamedata.graph());
 
 			if (train_data.position == 0)
 			{
 				if (path.size() == 0) return std::nullopt;
 				
-				if (Graph::isSource(gamedata.map_graph.graph, v, path.front()))
+				if (Graph::isSource(gamedata.graph(), v, path.front()))
 				{
-					return game_connector::Move{ Graph::get_edge(gamedata.map_graph.graph, v, path.front())->idx, 1, train_idx };
+					return game_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, 1, train_idx };
 				}
 				else
 				{
-					return game_connector::Move{ Graph::get_edge(gamedata.map_graph.graph, v, path.front())->idx, -1, train_idx };
+					return game_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, -1, train_idx };
 				}
 			}
 			else
@@ -107,20 +167,20 @@ public:
 		}
 		else
 		{
-			GraphIdx::vertex_descriptor v = boost::target(get_edge(), gamedata.map_graph.graph);
+			GraphIdx::vertex_descriptor v = boost::target(get_edge(), gamedata.graph());
 
 
-			if (train_data.position == gamedata.map_graph.graph[get_edge()].length)
+			if (train_data.position == gamedata.graph()[get_edge()].length)
 			{
 				if (path.size() == 0) return std::nullopt;
 
-				if (Graph::isSource(gamedata.map_graph.graph, v, path.front()))
+				if (Graph::isSource(gamedata.graph(), v, path.front()))
 				{
-					return game_connector::Move{ Graph::get_edge(gamedata.map_graph.graph, v, path.front())->idx, 1, train_idx };
+					return game_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, 1, train_idx };
 				}
 				else
 				{
-					return game_connector::Move{ Graph::get_edge(gamedata.map_graph.graph, v, path.front())->idx, -1, train_idx };
+					return game_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, -1, train_idx };
 				}
 			}
 			else
