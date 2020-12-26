@@ -303,7 +303,7 @@ namespace game_drawer_layer {
 				line_length.setString(std::to_string(eprops.length));
 				line_length.setPosition(sf::Vector2f(
 					(config.padding_width.map(es[0]) + config.padding_width.map(et[0])) / 2,
-					(config.padding_height.map(es[1]) + config.padding_width.map(et[1])) / 2
+					(config.padding_height.map(es[1]) + config.padding_height.map(et[1])) / 2
 				));
 
 				SpriteUtils::centerOrigin(line_length, sf::Vector2f(12, line_length.getCharacterSize() / 2.0f));
