@@ -108,6 +108,14 @@ public:
         this->connector.read_packet();
     }
 
+    void doTurn()
+    {
+        SPDLOG_DEBUG("calculating new turn.");
+        //TODO  turn logic
+
+        SPDLOG_DEBUG("new turn done.");
+    }
+
 
 };
 

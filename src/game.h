@@ -196,6 +196,7 @@ public:
 		{
             SPDLOG_TRACE("game iteration start.");
 			//this->calculate_move();
+			gameController.doTurn();
 
 			this->await_move();
 
