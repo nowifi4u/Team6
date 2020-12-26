@@ -12,7 +12,7 @@
 int main()
 {
 	boost::asio::io_service io;
-	game_connector connector(io);
+	server_connector connector(io);
 
 	try
 	{
