@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <map>
+#include <optional>
 
 #include <src/utils/ClassDefines.h>
 #include <src/Types.h>
@@ -323,16 +324,25 @@ namespace Graph {
 		else return false;
 	}
 
-	inline GraphIdx::EdgeProperties* get_edge(GraphIdx::Graph& g, GraphIdx::vertex_descriptor v, GraphIdx::vertex_descriptor ve)
+	inline std::optional<GraphIdx::edge_descriptor> get_edge(const GraphIdx::Graph& g, GraphIdx::vertex_descriptor v, GraphIdx::vertex_descriptor ve)
 	{
-		if (boost::edge(v, ve, g).second == false) return nullptr;
-		else return &g[boost::edge(v, ve, g).first];
+		if (boost::edge(v, ve, g).second == true) return boost::edge(v, ve, g).first;
+		else if (boost::edge(ve, v, g).second == true) return boost::edge(ve, v, g).first;
+		else return std::nullopt;
 	}
 
-	inline const GraphIdx::EdgeProperties* get_edge(const GraphIdx::Graph& g, GraphIdx::vertex_descriptor v, GraphIdx::vertex_descriptor ve)
+	inline GraphIdx::EdgeProperties* get_edge_props(GraphIdx::Graph& g, GraphIdx::vertex_descriptor v, GraphIdx::vertex_descriptor ve)
 	{
-		if (boost::edge(v, ve, g).second == false) return nullptr;
-		else return &g[boost::edge(v, ve, g).first];
+		const auto edge = get_edge(g, v, ve);
+		if (edge.has_value()) return &g[edge.value()];
+		else return nullptr;
+	}
+
+	inline const GraphIdx::EdgeProperties* get_edge_props(const GraphIdx::Graph& g, GraphIdx::vertex_descriptor v, GraphIdx::vertex_descriptor ve)
+	{
+		const auto edge = get_edge(g, v, ve);
+		if (edge.has_value()) return &g[edge.value()];
+		else return nullptr;
 	}
 
 }
