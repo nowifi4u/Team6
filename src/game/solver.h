@@ -27,6 +27,8 @@ public:
 
 	void calculate()
 	{
+		tick++;
+
 		reset_deltas();
 
 		for (auto& train_solver : trainsolvers)
