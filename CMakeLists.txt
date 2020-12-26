@@ -70,6 +70,7 @@ add_executable(Team6
         src/game/data/player.h
         src/game/data/post.h
         src/game/data/train.h
+        src/game/solver/RouteManager.h
         src/game/data.h
         src/game/solver.h
         src/game/controller.h
