@@ -33,6 +33,11 @@ public:
 		return gamedata.map_graph.emap.at(train_data.line_idx);
 	}
 
+	const GraphIdx::EdgeProperties& get_edge_props() const
+	{
+		return gamedata.map_graph.graph[get_edge()];
+	}
+
 	GraphIdx::vertex_descriptor choose_target_NORMAL_FOOD() const
 	{
 		graphsolver.calculate(get_edge(), train_data.position);
@@ -67,7 +72,7 @@ public:
 	}
 
 
-	std::optional<game_connector::Turn> calculate_Turn() const
+	std::optional<game_connector::Move> calculate_Turn() const
 	{
 		GraphIdx::vertex_descriptor target = choose_target();
 
@@ -76,17 +81,28 @@ public:
 		const auto solver = graphsolver.get_obj(target);
 		GraphDijkstra::path_t path = graphsolver.get_path(target);
 
+		if (path.size() == 0) return std::nullopt;
+
 		if (solver.second == false)
 		{
 			GraphIdx::vertex_descriptor v = boost::source(get_edge(), gamedata.map_graph.graph);
 
 			if (train_data.position == 0)
 			{
-
+				if (path.size() == 0) return std::nullopt;
+				
+				if (Graph::isSource(gamedata.map_graph.graph, v, path.front()))
+				{
+					return game_connector::Move{ Graph::get_edge(gamedata.map_graph.graph, v, path.front())->idx, 1, train_idx };
+				}
+				else
+				{
+					return game_connector::Move{ Graph::get_edge(gamedata.map_graph.graph, v, path.front())->idx, -1, train_idx };
+				}
 			}
 			else
 			{
-
+				return game_connector::Move{ get_edge_props().idx, -1, train_idx };
 			}
 		}
 		else
@@ -96,14 +112,25 @@ public:
 
 			if (train_data.position == gamedata.map_graph.graph[get_edge()].length)
 			{
+				if (path.size() == 0) return std::nullopt;
 
+				if (Graph::isSource(gamedata.map_graph.graph, v, path.front()))
+				{
+					return game_connector::Move{ Graph::get_edge(gamedata.map_graph.graph, v, path.front())->idx, 1, train_idx };
+				}
+				else
+				{
+					return game_connector::Move{ Graph::get_edge(gamedata.map_graph.graph, v, path.front())->idx, -1, train_idx };
+				}
 			}
 			else
 			{
-
+				return game_connector::Move{ get_edge_props().idx, 1, train_idx };
 			}
 		}
 	}
+
+
 
 private:
 	const Types::train_idx_t train_idx;
