@@ -14,19 +14,19 @@ class GraphDijkstra
 {
 public:
 
-	using weight_map_t = boost::property_map<GraphIdx::Graph, Types::edge_length_t GraphIdx::EdgeProperties::*>::const_type;
+	using weight_map_t = boost::property_map<Graph::Graph, Types::edge_length_t Graph::EdgeProperties::*>::const_type;
 	using ro_weight_map_t = boost::detail::readable_only_pmap<weight_map_t>;
 
-	using index_map_t = boost::property_map<GraphIdx::Graph, boost::vertex_index_t>::type;
+	using index_map_t = boost::property_map<Graph::Graph, boost::vertex_index_t>::type;
 
-	using path_t = std::deque<GraphIdx::vertex_descriptor>;
+	using path_t = std::deque<Graph::vertex_descriptor>;
 
-	using path_edges_t = std::deque<GraphIdx::edge_descriptor>;
+	using path_edges_t = std::deque<Graph::edge_descriptor>;
 
-	GraphDijkstra(const GraphIdx::Graph& graph)
+	GraphDijkstra(const Graph::Graph& graph)
 		: graph_(graph), 
 		vbegin(graph.null_vertex()),
-		weightmap(boost::get(&GraphIdx::EdgeProperties::length, graph)),
+		weightmap(boost::get(&Graph::EdgeProperties::length, graph)),
 		predecessors(boost::num_vertices(graph)),
 		indexmap(boost::get(boost::vertex_index, graph)),
 		distances(graph)
@@ -34,7 +34,7 @@ public:
 		
 	}
 
-	void calculate(GraphIdx::vertex_descriptor v)
+	void calculate(Graph::vertex_descriptor v)
 	{
 		vbegin = v;
 
@@ -47,12 +47,12 @@ public:
 			);
 	}
 
-	Types::edge_length_t& operator[](GraphIdx::vertex_descriptor v)
+	Types::edge_length_t& operator[](Graph::vertex_descriptor v)
 	{
 		return distances[v];
 	}
 
-	const Types::edge_length_t& operator[](GraphIdx::vertex_descriptor v) const
+	const Types::edge_length_t& operator[](Graph::vertex_descriptor v) const
 	{
 		return distances[v];
 	}
@@ -69,10 +69,10 @@ public:
 		distances.for_each(graph_, f);
 	}
 
-	path_t calculate_path(GraphIdx::vertex_descriptor vend) const
+	path_t calculate_path(Graph::vertex_descriptor vend) const
 	{
 		path_t path;
-		for (GraphIdx::vertex_descriptor cur = vend;
+		for (Graph::vertex_descriptor cur = vend;
 			cur != graph_.null_vertex() 
 			&& predecessors[cur] != cur 
 			&& cur != vbegin;)
@@ -83,10 +83,10 @@ public:
 		return path;
 	}
 
-	path_edges_t calculate_path_edges(GraphIdx::vertex_descriptor vend) const
+	path_edges_t calculate_path_edges(Graph::vertex_descriptor vend) const
 	{
 		path_edges_t path;
-		for (GraphIdx::vertex_descriptor cur = vend;
+		for (Graph::vertex_descriptor cur = vend;
 			cur != graph_.null_vertex()
 			&& cur != vbegin;)
 		{
@@ -101,14 +101,14 @@ protected:
 	
 
 public:
-	const GraphIdx::Graph& graph_;
-	GraphIdx::vertex_descriptor vbegin;
+	const Graph::Graph& graph_;
+	Graph::vertex_descriptor vbegin;
 
 	const index_map_t indexmap;
 
 	const weight_map_t weightmap;
 
-	std::vector<GraphIdx::vertex_descriptor> predecessors;
+	std::vector<Graph::vertex_descriptor> predecessors;
 	
 	GraphVertexMap<Types::edge_length_t> distances;
 

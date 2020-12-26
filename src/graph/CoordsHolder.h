@@ -23,7 +23,7 @@ public:
 
 	CoordsHolder() : GraphVertexMap() {}
 
-	CoordsHolder(const GraphIdx::Graph& g) : GraphVertexMap(g) {}
+	CoordsHolder(const Graph::Graph& g) : GraphVertexMap(g) {}
 
 	virtual ~CoordsHolder() = default;
 };

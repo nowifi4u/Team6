@@ -5,6 +5,7 @@
 #include "../../utils/network/server_connector.h"
 
 #include <optional>
+#include <cmath>
 
 class PathSolver
 {
@@ -16,7 +17,7 @@ public:
 	{
 	}
 
-	void init(GraphIdx::edge_descriptor epos, Types::edge_length_t pos)
+	void init(Graph::edge_descriptor epos, Types::edge_length_t pos)
 	{
 		graphsolver.calculate(epos, pos);
 	}
@@ -24,18 +25,18 @@ public:
 	void init(Types::train_idx_t train_idx)
 	{
 		const Trains::Train& train_data = gamedata.self_data().trains.at(train_idx);
-		GraphIdx::edge_descriptor epos = gamedata.map_graph.emap.at(train_data.line_idx);
+		Graph::edge_descriptor epos = gamedata.map_graph.emap.at(train_data.line_idx);
 		Types::edge_length_t pos = train_data.position;
 
 		init(epos, pos);
 	}
 
-	Types::edge_length_t distance_to(GraphIdx::vertex_descriptor target) const
+	Types::edge_length_t distance_to(Graph::vertex_descriptor target) const
 	{
-		return graphsolver[target].first;
+		return graphsolver.get_distance(target);
 	}
 
-	std::optional<server_connector::Move> calculate_Move(Types::train_idx_t train_idx, GraphIdx::vertex_descriptor target)
+	std::optional<server_connector::Move> calculate_Move(Types::train_idx_t train_idx, Graph::vertex_descriptor target) const
 	{
 		if (target == gamedata.graph().null_vertex()) return std::nullopt;
 
@@ -44,12 +45,12 @@ public:
 		GraphDijkstra::path_t solver_path = graphsolver.get_path(target);
 
 		const Trains::Train& train_data = gamedata.self_data().trains.at(train_idx);
-		GraphIdx::edge_descriptor epos = gamedata.map_graph.emap.at(train_data.line_idx);
+		Graph::edge_descriptor epos = gamedata.map_graph.emap.at(train_data.line_idx);
 		Types::edge_length_t pos = train_data.position;
 
 		if (solver_is_source == false)
 		{
-			GraphIdx::vertex_descriptor v = boost::source(epos, gamedata.graph());
+			Graph::vertex_descriptor v = boost::source(epos, gamedata.graph());
 
 			if (train_data.position == 0)
 			{
@@ -71,7 +72,7 @@ public:
 		}
 		else
 		{
-			GraphIdx::vertex_descriptor v = boost::target(epos, gamedata.graph());
+			Graph::vertex_descriptor v = boost::target(epos, gamedata.graph());
 
 
 			if (train_data.position == gamedata.graph()[epos].length)
@@ -94,9 +95,20 @@ public:
 		}
 	}
 
-	bool is_train_nearby()
+	bool is_train_nearby(Types::train_idx_t itrain_idx, Types::edge_length_t dist) const
 	{
+		const Trains::Train& itrain_data = gamedata.self_data().trains.at(itrain_idx);
 
+		for (const auto& [player_idx, player_data] : gamedata.players)
+		{
+			for (const auto& [train_idx, train_data] : player_data.trains)
+			{
+				if (train_idx != itrain_idx)
+				{
+					//if (train_data.)
+				}
+			}
+		}
 	}
 
 protected:

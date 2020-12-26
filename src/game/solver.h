@@ -13,13 +13,13 @@ public:
 	{
 		for (const auto& [train_idx, train_data] : gamedata.self_data().trains)
 		{
-			trainsolvers.emplace_back(gamedata, connector, train_idx, deltas_market, deltas_storage);
+			trainsolvers.emplace_back(gamedata, train_idx, deltas_market, deltas_storage);
 		}
 	}
 
 	void reset_deltas()
 	{
-		gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+		Graph::for_each_vertex_descriptor(gamedata.graph(), [&](Graph::vertex_descriptor v) {
 			deltas_market[v] = 0;
 			deltas_storage[v] = 0;
 			});

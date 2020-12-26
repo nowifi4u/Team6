@@ -84,7 +84,7 @@ public:
 			MinMaxReducer<float> minmax_x;
 			MinMaxReducer<float> minmax_y;
 
-			gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+			Graph::for_each_vertex_descriptor(gamedata.graph(), [&](Graph::vertex_descriptor v) {
 				const CoordsHolder::point_type& vcoords = gamedata.map_graph_coords->get_map()[v];
 
 				minmax_x.consume(vcoords[0]);

@@ -55,7 +55,7 @@ namespace game_drawer_layer {
 	{
 	public:
 
-		std::map<GraphIdx::vertex_descriptor, sf::Sprite> nodes_g;
+		std::map<Graph::vertex_descriptor, sf::Sprite> nodes_g;
 
 		vertecies() : layer_base() {}
 
@@ -63,13 +63,13 @@ namespace game_drawer_layer {
 		{
 			LOG_3("game_drawer_layer::vertecies::init");
 
-			gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+			Graph::for_each_vertex_descriptor(gamedata.graph(), [&](Graph::vertex_descriptor v) {
 
 				sf::Sprite& s = nodes_g[v];
 				bool b = false;
 
 				
-				if (gamedata.map_graph.graph[v].post_idx != GraphIdx::uint32_max) {
+				if (gamedata.map_graph.graph[v].post_idx != UINT32_MAX) {
 					switch (getPostType(v, gamedata)) {
 					case Posts::PostType::MARKET:
 						b = config.textures->RequireResource("market");
@@ -107,9 +107,9 @@ namespace game_drawer_layer {
 			);
 		}
 
-		Posts::PostType getPostType(GraphIdx::vertex_descriptor v, const GameData& gamedata) {
+		Posts::PostType getPostType(Graph::vertex_descriptor v, const GameData& gamedata) {
 
-			const GraphIdx::VertexProperties& vprops = gamedata.map_graph.graph[v];
+			const Graph::VertexProperties& vprops = gamedata.map_graph.graph[v];
 
 			switch (gamedata.posts.at(vprops.post_idx)->type())
 			{
@@ -139,7 +139,7 @@ namespace game_drawer_layer {
 
 	class edges : public layer_base
 	{
-		std::map<GraphIdx::edge_descriptor, sf::Sprite> edges_g;
+		std::map<Graph::edge_descriptor, sf::Sprite> edges_g;
 
 	public:
 		edges() : layer_base() {}
@@ -149,7 +149,7 @@ namespace game_drawer_layer {
 		{
 			LOG_3("game_drawer_layer::edges::init");
 
-			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
+			Graph::for_each_edge_descriptor(gamedata.graph(), [&](Graph::edge_descriptor e) {
 
 				sf::Sprite& edge = edges_g[e];
 
@@ -294,10 +294,10 @@ namespace game_drawer_layer {
 
 			cached_font.loadFromFile(config.edge_length_font);
 
-			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
+			Graph::for_each_edge_descriptor(gamedata.graph(), [&](Graph::edge_descriptor e) {
 				const CoordsHolder::point_type& es = gamedata.map_graph_coords->get_map()[boost::source(e, gamedata.map_graph.graph)];
 				const CoordsHolder::point_type& et = gamedata.map_graph_coords->get_map()[boost::target(e, gamedata.map_graph.graph)];
-				const GraphIdx::EdgeProperties& eprops = gamedata.map_graph.graph[e];
+				const Graph::EdgeProperties& eprops = gamedata.map_graph.graph[e];
 
 				sf::Text& line_length = cached_edges_length[eprops.idx];
 				line_length.setString(std::to_string(eprops.length));

@@ -10,10 +10,10 @@ class GraphEdgeDijkstra
 
 public:
 
-	GraphEdgeDijkstra(const GraphIdx::Graph& graph)
+	GraphEdgeDijkstra(const Graph::Graph& graph)
 		: s(graph), t(graph) {}
 
-	void calculate(GraphIdx::edge_descriptor e, Types::edge_idx_t pos)
+	void calculate(Graph::edge_descriptor e, Types::edge_idx_t pos)
 	{
 		{
 			s.calculate(boost::source(e, s.graph_));
@@ -32,30 +32,30 @@ public:
 		}
 	}
 
-	bool get_is_source(GraphIdx::vertex_descriptor vend) const
+	bool get_is_source(Graph::vertex_descriptor vend) const
 	{
 		return (s[vend] < t[vend]);
 	}
 
-	Types::edge_length_t get_distance(GraphIdx::vertex_descriptor vend) const
+	Types::edge_length_t get_distance(Graph::vertex_descriptor vend) const
 	{
 		if (get_is_source(vend)) return s[vend];
 		else return t[vend];
 	}
 
-	const GraphDijkstra& get_obj(GraphIdx::vertex_descriptor vend) const
+	const GraphDijkstra& get_obj(Graph::vertex_descriptor vend) const
 	{
 		if (get_is_source(vend)) return s;
 		else return t;
 	}
 
-	GraphDijkstra::path_t get_path(GraphIdx::vertex_descriptor vend) const
+	GraphDijkstra::path_t get_path(Graph::vertex_descriptor vend) const
 	{
 		if (get_is_source(vend)) return s.calculate_path(vend);
 		else return t.calculate_path(vend);
 	}
 
-	GraphDijkstra::path_edges_t get_path_edges(GraphIdx::vertex_descriptor vend) const
+	GraphDijkstra::path_edges_t get_path_edges(Graph::vertex_descriptor vend) const
 	{
 		if (get_is_source(vend)) return s.calculate_path_edges(vend);
 		else return t.calculate_path_edges(vend);

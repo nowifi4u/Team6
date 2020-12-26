@@ -40,12 +40,12 @@ struct GameData
 
 	ptr_container::map<Types::post_idx_t, Posts::Post> posts;
 
-	GraphIdx::Graph& graph()
+	Graph::Graph& graph()
 	{
 		return map_graph.graph;
 	}
 
-	const GraphIdx::Graph& graph() const
+	const Graph::Graph& graph() const
 	{
 		return map_graph.graph;
 	}
