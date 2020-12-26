@@ -15,7 +15,7 @@ public:
 	//------------------------------ TYPEDEFS ------------------------------//
 
 	using PositionVec = std::vector<Ty>;
-	using PositionMap = typename boost::iterator_property_map< typename PositionVec::iterator, boost::property_map<GraphIdx::Graph, boost::vertex_index_t>::type>;
+	using PositionMap = typename boost::iterator_property_map< typename PositionVec::iterator, boost::property_map<Graph::Graph, boost::vertex_index_t>::type>;
 
 	//------------------------------ IMPL ------------------------------//
 
@@ -28,12 +28,12 @@ public:
 
 	GraphVertexMap() = default;
 
-	GraphVertexMap(const GraphIdx::Graph& g)
+	GraphVertexMap(const Graph::Graph& g)
 	{
 		init(g);
 	}
 
-	void init(const GraphIdx::Graph& g)
+	void init(const Graph::Graph& g)
 	{
 		m_position_vec = PositionVec(num_vertices(g));
 		m_position = PositionMap(m_position_vec.begin(), get(boost::vertex_index, g));
@@ -51,20 +51,20 @@ public:
 		return m_position;
 	}
 
-	Ty& operator[](GraphIdx::vertex_descriptor v)
+	Ty& operator[](Graph::vertex_descriptor v)
 	{
 		return m_position[v];
 	}
 
-	const Ty& operator[](GraphIdx::vertex_descriptor v) const
+	const Ty& operator[](Graph::vertex_descriptor v) const
 	{
 		return m_position[v];
 	}
 
 	template <class Func>
-	void for_each(GraphIdx::Graph& g, Func f)
+	void for_each(Graph::Graph& g, Func f)
 	{
-		GraphIdx::vertex_iterator vi, vend;
+		Graph::vertex_iterator vi, vend;
 		for (boost::tie(vi, vend) = boost::vertices(g); vi != vend; ++vi)
 		{
 			f(m_position[*vi]);
@@ -72,9 +72,9 @@ public:
 	}
 
 	template <class Func>
-	void for_each(const GraphIdx::Graph& g, Func f) const
+	void for_each(const Graph::Graph& g, Func f) const
 	{
-		GraphIdx::vertex_iterator vi, vend;
+		Graph::vertex_iterator vi, vend;
 		for (boost::tie(vi, vend) = boost::vertices(g); vi != vend; ++vi)
 		{
 			f(m_position[*vi]);
