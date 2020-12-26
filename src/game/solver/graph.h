@@ -88,11 +88,12 @@ public:
 		path_edges_t path;
 		for (GraphIdx::vertex_descriptor cur = vend;
 			cur != graph_.null_vertex()
-			&& predecessors[cur] != cur
 			&& cur != vbegin;)
 		{
-			path.push_front(Graph::get_edge(graph_, cur, predecessors[cur]));
+			path.push_front(Graph::get_edge(graph_, cur, predecessors[cur]).value());
+			cur = predecessors[cur];
 		}
+		return path;
 	}
 
 protected:
