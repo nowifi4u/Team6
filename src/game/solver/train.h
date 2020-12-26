@@ -70,7 +70,7 @@ public:
 				}
 			});
 
-		deltas_market[target] -= target_value;
+		deltas_market[target] += target_value;
 		return target;
 	}
 
@@ -102,7 +102,7 @@ public:
 			
 			});
 
-		deltas_storage[target] -= target_value;
+		deltas_storage[target] += target_value;
 		return target;
 	}
 
