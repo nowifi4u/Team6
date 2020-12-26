@@ -145,7 +145,7 @@ public:
 		drawer_config.padding_width.set_output(100, 700);
 		drawer_config.padding_height.set_output(100, 700);
 
-		drawer_config.edge_length_font = Utils::GetWorkingDirectory() + "res/arial.ttf";
+		drawer_config.edge_length_font = WORKING_DIRECTORY + "res/arial.ttf";
 
 		drawer_config.textures = new TextureManager("res/Game/textures.cfg");
 
