@@ -49,6 +49,7 @@ ExternalProject_Add( boost
         ${boost_BOOTSTRAP}
         --with-libraries=graph
         --with-libraries=thread
+        --with-libraries=filesystem
         --prefix=<INSTALL_DIR>
         BUILD_COMMAND
         ./b2 install link=static variant=release threading=multi runtime-link=static
@@ -59,6 +60,7 @@ include_directories(${boost_INCLUDE_DIR})
 
 set(Boost_LIBRARIES
         ${boost_LIB_DIR}/libboost_graph${LIB_EXTENSION}
+        ${boost_LIB_DIR}/libboost_filesystem${LIB_EXTENSION}
         ${boost_LIB_DIR}/libboost_thread${LIB_EXTENSION} )
 
 message( STATUS "Boost static libs: " ${Boost_LIBRARIES} )
