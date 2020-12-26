@@ -4,13 +4,15 @@
 #include "utils/network/server_connector.h"
 #include "render/drawer.h"
 
+#include "utils/MinMax.h"
+
 
 class Game
 {
 protected:
 
 	boost::thread* drawer_thread = nullptr;
-	game_drawer::status drawer_status = game_drawer::READY;
+	status drawer_status = status::READY;
 
 	game_connector connector;
 
@@ -24,7 +26,7 @@ public:
 	Game(boost::asio::io_service& io)
 		: connector(io)
 	{
-		
+
 	}
 
 	~Game()
@@ -39,7 +41,7 @@ public:
 
 	void init(const game_connector::Login& lobby)
 	{
-		this->drawer_set_state(game_drawer::UPDATING);
+		this->drawer_set_state(status::UPDATING);
 
 		{
 			LOG_2("Game::init: Sending Login request...");
@@ -76,11 +78,26 @@ public:
 
 			GameData::readJSON_L1(gamedata, json::parse(response.second));
 		}
+
+		{
+			MinMaxReducer<float> minmax_x;
+			MinMaxReducer<float> minmax_y;
+
+			gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+				const CoordsHolder::point_type& vcoords = gamedata.map_graph_coords->get_map()[v];
+
+				minmax_x.consume(vcoords[0]);
+				minmax_y.consume(vcoords[1]);
+				});
+
+			drawer_config.padding_width.set_input(minmax_x.min(), minmax_x.max());
+			drawer_config.padding_height.set_input(minmax_y.min(), minmax_y.max());
+		}
 	}
 
 	void update()
 	{
-		this->drawer_set_state(game_drawer::UPDATING);
+		this->drawer_set_state(status::UPDATING);
 		this->drawer_window->setTitle("Update game data...");
 
 		{
@@ -102,7 +119,7 @@ public:
 		gamedata.clear();
 	}
 
-	void drawer_set_state(game_drawer::status s)
+	void drawer_set_state(status s)
 	{
 		if (drawer_thread == nullptr)
 		{
@@ -123,7 +140,14 @@ public:
 			return;
 		}
 
-		drawer_config.window_videomode = sf::VideoMode(gamedata.map_graph_width + 20, gamedata.map_graph_height + 20);
+		drawer_config.window_videomode = sf::VideoMode({ 800, 800 });
+
+		drawer_config.padding_width.set_output(100, 700);
+		drawer_config.padding_height.set_output(100, 700);
+
+		drawer_config.edge_length_font = Utils::GetWorkingDirectory() + "res\\arial.ttf";
+
+		drawer_config.textures = new TextureManager("res\\Game\\textures.cfg");
 
 		LOG_2("Game::drawer_start: Starting game_drawer thread...");
 		drawer_thread = new boost::thread(&game_drawer_thread, boost::ref(gamedata), boost::ref(drawer_config), boost::ref(drawer_status), boost::ref(drawer_window));
@@ -141,6 +165,9 @@ public:
 		delete drawer_thread;
 		drawer_thread = nullptr;
 		drawer_window = nullptr;
+
+		delete drawer_config.textures;
+		drawer_config.textures = nullptr;
 	}
 
 	void drawer_window_wait() const
@@ -164,7 +191,7 @@ public:
 
 	void await_run()
 	{
-		this->drawer_set_state(game_drawer::AWAIT_PLAYERS);
+		this->drawer_set_state(AWAIT_PLAYERS);
 		this->drawer_window->setTitle("Awaiting players...");
 
 		this->connector.send_Turn();
@@ -180,7 +207,7 @@ public:
 
 	void await_move()
 	{
-		this->drawer_set_state(game_drawer::READY);
+		this->drawer_set_state(status::READY);
 		this->drawer_window->setTitle("Awaiting next tick...");
 
 		this->connector.send_Turn();
@@ -200,8 +227,6 @@ public:
 		while (true /*gamedata.game_state == GameData::GameState::RUN*/)
 		{
 			//this->calculate_move();
-
-			
 
 			this->await_move();
 

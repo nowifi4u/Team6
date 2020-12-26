@@ -36,6 +36,7 @@ struct KamadaKawaiDone
 };
 
 struct to_double {
+	
 	double operator()(int i) const 
 	{ 
 		return i; 
@@ -49,7 +50,8 @@ public:
 
 	KKSCoordsCalculator() : CoordsCalculator() {}
 
-	KKSCoordsCalculator(GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length) : KKSCoordsCalculator()
+	KKSCoordsCalculator(GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length) : 
+		KKSCoordsCalculator()
 	{
 		calculate(g, topology_width, topology_height, unit_edge_length);
 	}

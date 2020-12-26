@@ -1,4 +1,4 @@
-#define LOG_LEVEL_1
+#define LOG_LEVEL_3
 
 #include <iostream>
 
@@ -17,7 +17,9 @@ int main()
 
 		Game game(io);
 
-		game.start("wgforge-srv.wargaming.net", "443", { "test3", "test3", "Game of Thrones", -1, 1 });
+		game.connect("wgforge-srv.wargaming.net", "443");
+		game.init({ "test3", "test3", "Game of Thrones", -1, 1 });
+		game.drawer_start();
 
 		game.drawer_join();
 	}
