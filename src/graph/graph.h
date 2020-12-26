@@ -311,3 +311,12 @@ public:
 		}
 	}
 };
+
+inline bool isSource(const GraphIdx::Graph& g, GraphIdx::vertex_descriptor v, GraphIdx::vertex_descriptor ve)
+{
+	if (boost::edge(v, ve, g).second)
+	{
+		return v == boost::source(boost::edge(v, ve, g).first, g);
+	}
+	else return false;
+}
