@@ -18,12 +18,12 @@ public:
 
 	using index_map_t = boost::property_map<GraphIdx::Graph, boost::vertex_index_t>::type;
 
-	GraphDijkstra(const GraphIdx& graph)
+	GraphDijkstra(const GraphIdx::Graph& graph)
 		: graph_(graph), 
-		weightmap(boost::get(&GraphIdx::EdgeProperties::length, graph.graph)),
-		predecessors(boost::num_vertices(graph.graph)),
-		indexmap(boost::get(boost::vertex_index, graph.graph)),
-		distances(graph.graph)
+		weightmap(boost::get(&GraphIdx::EdgeProperties::length, graph)),
+		predecessors(boost::num_vertices(graph)),
+		indexmap(boost::get(boost::vertex_index, graph)),
+		distances(graph)
 	{
 		
 	}
@@ -31,7 +31,7 @@ public:
 	void calculate(GraphIdx::vertex_descriptor v)
 	{
 		boost::dijkstra_shortest_paths(
-			graph_.graph,
+			graph_,
 			v,
 			boost::predecessor_map(boost::make_iterator_property_map(predecessors.begin(), indexmap))
 			.distance_map(distances.get_map())
@@ -51,9 +51,11 @@ public:
 
 protected:
 
-	const GraphIdx& graph_;
+	
 
 public:
+	const GraphIdx::Graph& graph_;
+
 	const index_map_t indexmap;
 
 	const weight_map_t weightmap;
