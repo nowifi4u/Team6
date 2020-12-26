@@ -47,7 +47,7 @@ namespace game_drawer_layer {
 
 		virtual void init(const GameData& gamedata, const game_drawer_config& config) = 0;
 		virtual void reset() = 0;
-		virtual void draw(sf::RenderWindow& window, const GameData& gamedata) = 0;
+		virtual void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config) = 0;
 	};
 
 
@@ -126,7 +126,7 @@ namespace game_drawer_layer {
 			nodes_g.clear();
 		}
 
-		void draw(sf::RenderWindow& window, const GameData& gamedata)
+		void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
 		{
 			for (const auto& vertex : nodes_g)
 			{
@@ -187,10 +187,12 @@ namespace game_drawer_layer {
 				if (coords[u][1] > coords[v][1]) {
 					tan_alpha = (config.padding_width.map(coords[v][0]) - config.padding_width.map(coords[u][0])) /
 						(config.padding_height.map(coords[u][1]) - config.padding_height.map(coords[v][1]));
+					edge.setRotation((float)(atan(tan_alpha) * 180.0 / 3.14159265));
 				}
 				else if (coords[u][1] < coords[v][1]) {
 					tan_alpha = (config.padding_height.map(coords[v][1]) - config.padding_height.map(coords[u][1])) /
 						(config.padding_width.map(coords[v][0]) - config.padding_width.map(coords[u][0]));
+					edge.setRotation((float)(90 + atan(tan_alpha) * 180.0 / 3.14159265));
 				}
 				else {
 					edge.setRotation(90);
@@ -204,7 +206,7 @@ namespace game_drawer_layer {
 			edges_g.clear();
 		}
 
-		void draw(sf::RenderWindow& window, const GameData& gamedata)
+		void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
 		{
 			for (const auto& edge : edges_g)
 			{
@@ -218,11 +220,10 @@ namespace game_drawer_layer {
 	{
 		std::map<Types::train_idx_t, sf::Sprite> trains_g;
 		std::map<Types::train_idx_t, const Trains::Train*> tMap;
-		const game_drawer_config& c;
 
 	public:
 
-		trains(const game_drawer_config& c_) : layer_base(), c(c_) {}
+		trains() : layer_base() {}
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
@@ -249,7 +250,7 @@ namespace game_drawer_layer {
 			trains_g.clear();
 		}
 
-		void draw(sf::RenderWindow& window, const GameData& gamedata)
+		void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
 		{
 			for (auto& s : trains_g)
 			{
@@ -260,18 +261,18 @@ namespace game_drawer_layer {
 
 				const auto& coords = gamedata.map_graph_coords->get_map();
 
-				double v_x_distance = c.padding_width.map(coords[u][0]) - c.padding_width.map(coords[v][0]);
-				double v_y_distance = c.padding_height.map(coords[u][1]) - c.padding_height.map(coords[v][1]);
+				double v_x_distance = config.padding_width.map(coords[u][0]) - config.padding_width.map(coords[v][0]);
+				double v_y_distance = config.padding_height.map(coords[u][1]) - config.padding_height.map(coords[v][1]);
 
 				double edge_length = gamedata.map_graph.graph[edge].length;
 				float position = (float)t->position;
 				float koeff = position / edge_length;
 
 				s.second.setPosition(
-					sf::Vector2f{
-					(float)c.padding_width.map(coords[u][0]) + (float)v_x_distance * koeff,
-					(float)c.padding_height.map(coords[u][1]) + (float)v_y_distance * koeff,
-					});
+					sf::Vector2f(
+					config.padding_width.map(coords[u][0]) + (float)v_x_distance * koeff,
+					config.padding_height.map(coords[u][1]) + (float)v_y_distance * koeff
+					));
 				window.draw(s.second);
 			}
 		}
@@ -301,8 +302,8 @@ namespace game_drawer_layer {
 				sf::Text& line_length = cached_edges_length[eprops.idx];
 				line_length.setString(std::to_string(eprops.length));
 				line_length.setPosition(sf::Vector2f(
-					config.padding_width.map((es[0] + et[0]) / 2),
-					config.padding_height.map((es[1] + et[1]) / 2)
+					(config.padding_width.map(es[0]) + config.padding_width.map(et[0])) / 2,
+					(config.padding_height.map(es[1]) + config.padding_height.map(et[1])) / 2
 				));
 
 				SpriteUtils::centerOrigin(line_length, sf::Vector2f(12, line_length.getCharacterSize() / 2.0f));
@@ -319,7 +320,7 @@ namespace game_drawer_layer {
 			cached_edges_length.clear();
 		}
 
-		void draw(sf::RenderWindow& window, const GameData& gamedata)
+		void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
 		{
 			for (const auto& edge : cached_edges_length)
 			{
@@ -352,7 +353,7 @@ namespace game_drawer_layer {
 			//nothing
 		}
 
-		void draw(sf::RenderWindow& window, const GameData& gamedata)
+		void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
 		{
 			window.draw(bg);
 		}
@@ -388,7 +389,7 @@ public:
 		layers.push_back(new game_drawer_layer::edges());
 		layers.push_back(new game_drawer_layer::vertecies());
 		layers.push_back(new game_drawer_layer::edges_length());
-		layers.push_back(new game_drawer_layer::trains(config));
+		layers.push_back(new game_drawer_layer::trains());
 	}
 
 	void init(const GameData& gamedata)
@@ -422,15 +423,15 @@ public:
 
 	
 
-	void draw(sf::RenderWindow& window, const GameData& gamedata)
+	void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
 	{
 		for (game_drawer_layer::layer_base& layer : layers)
 		{
-			layer.draw(window, gamedata);
+			layer.draw(window, gamedata, config);
 		}
 	}
 
-	void render(sf::RenderWindow& window, const GameData& gamedata, const status& s)
+	void render(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config, const status& s)
 	{
 		switch (s)
 		{
@@ -441,12 +442,12 @@ public:
 		}
 
 		if(s == status::READY)
-			draw(window, gamedata);
+			draw(window, gamedata, config);
 
 		window.display();
 	}
 
-	void start(sf::RenderWindow& window, const GameData& gamedata, const status& s)
+	void start(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config, const status& s)
 	{
 		LOG_2("game_drawer: start");
 
@@ -457,7 +458,7 @@ public:
 			try {	
 				this->handle_input(window, gamedata, s);
 				this->update(window, gamedata, s);
-				this->render(window, gamedata, s);
+				this->render(window, gamedata, config, s);
 				this->restart_clock();
 			}
 			catch (boost::thread_interrupted&)
@@ -499,5 +500,7 @@ void game_drawer_thread(const GameData& gamedata, const game_drawer_config& conf
 	game_drawer drawer(gamedata, config);
 
 	LOG_2("game_drawer_thread: Starting draw loop...");
-	drawer.start(window, gamedata, s);
+
+	drawer.start(window, gamedata, config, s);
 }
+
