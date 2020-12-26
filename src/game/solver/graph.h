@@ -49,6 +49,18 @@ public:
 		return distances[v];
 	}
 
+	template <class Func>
+	void for_each(Func f)
+	{
+		distances.for_each(graph_, f);
+	}
+
+	template <class Func>
+	void for_each(Func f) const
+	{
+		distances.for_each(graph_, f);
+	}
+
 protected:
 
 	
