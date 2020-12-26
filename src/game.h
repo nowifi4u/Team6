@@ -205,7 +205,7 @@ public:
 	void await_run()
 	{
         SPDLOG_DEBUG("waiting for run...");
-		this->drawer_set_state(AWAIT_PLAYERS);
+		this->drawer_set_state(status::AWAIT_PLAYERS);
 		this->drawer_window->setTitle("Awaiting players...");
 
         SPDLOG_DEBUG("sending turn package...");
