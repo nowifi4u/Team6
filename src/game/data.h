@@ -40,6 +40,16 @@ struct GameData
 
 	ptr_container::map<Types::post_idx_t, Posts::Post> posts;
 
+	GraphIdx::Graph& graph()
+	{
+		return map_graph.graph;
+	}
+
+	const GraphIdx::Graph& graph() const
+	{
+		return map_graph.graph;
+	}
+
 	void clear()
 	{
 		players.clear();
@@ -77,11 +87,6 @@ struct GameData
 		// Read Graph border size
 		val.map_graph_width = topology_width;
 		val.map_graph_height = topology_height;
-
-		val.map_graph_coords->for_each(val.map_graph.graph, [&](CoordsHolder::point_type& point) {
-			point[0] = (point[0] + topology_width) / 2;
-			point[1] = (point[1] + topology_height) / 2;
-			});
 	}
 
 	//-------------------- SERVER-SIDE COORDINATES --------------------//
