@@ -43,7 +43,7 @@ public:
         return tcp_connector::disconnect();
     }
 
-	game_connector(boost::asio::io_service& m_io, const std::string& addr, const std::string& port)
+	server_connector(boost::asio::io_service& m_io, const std::string& addr, const std::string& port)
 		: tcp_connector(m_io, addr, port)
     {
 	    SPDLOG_INFO("constructing");

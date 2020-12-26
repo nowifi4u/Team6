@@ -45,7 +45,7 @@ public:
 	void init(const server_connector::Login& lobby)
 	{
 	    SPDLOG_DEBUG("initiating game started.");
-		this->drawer_set_state(game_drawer::UPDATING);
+		this->drawer_set_state(status::UPDATING);
 
 		{
 			SPDLOG_TRACE("sending Login request...");
@@ -205,7 +205,7 @@ public:
 	void await_run()
 	{
         SPDLOG_DEBUG("waiting for run...");
-		this->drawer_set_state(game_drawer::AWAIT_PLAYERS);
+		this->drawer_set_state(status::AWAIT_PLAYERS);
 		this->drawer_window->setTitle("Awaiting players...");
 
         SPDLOG_DEBUG("sending turn package...");
@@ -223,7 +223,7 @@ public:
 	void await_move()
 	{
         SPDLOG_DEBUG("waiting for move...");
-		this->drawer_set_state(game_drawer::READY);
+		this->drawer_set_state(status::READY);
 		this->drawer_window->setTitle("Awaiting next tick...");
 
         SPDLOG_DEBUG("sending turn package...");

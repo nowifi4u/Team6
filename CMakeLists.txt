@@ -90,4 +90,4 @@ add_executable(Team6
         src/Types.h)
 
 add_dependencies(Team6 boost)
-target_link_libraries(Team6 sfml-graphics nlohmann_json spdlog::spdlog ${Boost_LIBRARIES})
+target_link_libraries(Team6 sfml-graphics nlohmann_json spdlog::spdlog ${Boost_LIBRARIES} -ldl)
