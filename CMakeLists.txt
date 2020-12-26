@@ -74,7 +74,10 @@ add_executable(Team6
         src/graph/CoordsHolder.h
         src/graph/graph.h
         src/graph/KKSCoordsCalculator.h
-        src/render/drawer.h
+        src/render/game_drawer.h
+        src/render/ResourceManager.h
+        src/render/SpriteUtils.h
+        src/render/TextureManager.h
         src/utils/network/server_connector.h
         src/utils/network/tcp_connector.h
         src/utils/bincharstream.h
