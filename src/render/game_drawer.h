@@ -241,6 +241,16 @@ namespace game_drawer_layer {
 					SpriteUtils::centerOrigin(s);
 				}
 			}
+
+			for (auto& train : gamedata.players.at(gamedata.player_idx).trains) {
+				sf::Sprite& s = trains_g[train.first];
+				tMap[train.first] = &train.second;
+
+				bool b = config.textures->RequireResource("train_good");
+				s = sf::Sprite(*config.textures->GetResource("train_good"));
+				SpriteUtils::setSize(s, { 25, 25 });
+				SpriteUtils::centerOrigin(s);
+			}
 		}
 
 		void reset()
