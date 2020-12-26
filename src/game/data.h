@@ -50,6 +50,16 @@ struct GameData
 		return map_graph.graph;
 	}
 
+	Player& self_data()
+	{
+		return players.at(player_idx);
+	}
+
+	const Player& self_data() const
+	{
+		return players.at(player_idx);
+	}
+
 	void clear()
 	{
 		players.clear();
