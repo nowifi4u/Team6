@@ -57,11 +57,11 @@ public:
 
 				if (Graph::isSource(gamedata.graph(), v, solver_path.front()))
 				{
-					return server_connector::Move{ Graph::get_edge_props(gamedata.graph(), v, solver_path.front())->idx, 1, train_idx };
+					return server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, 1, train_idx };
 				}
 				else
 				{
-					return server_connector::Move{ Graph::get_edge_props(gamedata.graph(), v, solver_path.front())->idx, -1, train_idx };
+					return server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, -1, train_idx };
 				}
 			}
 			else
@@ -80,11 +80,11 @@ public:
 
 				if (Graph::isSource(gamedata.graph(), v, solver_path.front()))
 				{
-					return server_connector::Move{ Graph::get_edge_props(gamedata.graph(), v, solver_path.front())->idx, 1, train_idx };
+					return server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, 1, train_idx };
 				}
 				else
 				{
-					return server_connector::Move{ Graph::get_edge_props(gamedata.graph(), v, solver_path.front())->idx, -1, train_idx };
+					return server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, -1, train_idx };
 				}
 			}
 			else
