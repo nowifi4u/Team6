@@ -146,7 +146,7 @@ public:
 	}
 
 
-	std::optional<game_connector::Move> calculate_Turn() const
+	std::optional<server_connector::Move> calculate_Turn() const
 	{
 		GraphIdx::vertex_descriptor target = choose_target();
 
@@ -167,16 +167,16 @@ public:
 				
 				if (Graph::isSource(gamedata.graph(), v, path.front()))
 				{
-					return game_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, 1, train_idx };
+					return server_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, 1, train_idx };
 				}
 				else
 				{
-					return game_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, -1, train_idx };
+					return server_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, -1, train_idx };
 				}
 			}
 			else
 			{
-				return game_connector::Move{ get_edge_props().idx, -1, train_idx };
+				return server_connector::Move{ get_edge_props().idx, -1, train_idx };
 			}
 		}
 		else
@@ -190,16 +190,16 @@ public:
 
 				if (Graph::isSource(gamedata.graph(), v, path.front()))
 				{
-					return game_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, 1, train_idx };
+					return server_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, 1, train_idx };
 				}
 				else
 				{
-					return game_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, -1, train_idx };
+					return server_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, -1, train_idx };
 				}
 			}
 			else
 			{
-				return game_connector::Move{ get_edge_props().idx, 1, train_idx };
+				return server_connector::Move{ get_edge_props().idx, 1, train_idx };
 			}
 		}
 	}
