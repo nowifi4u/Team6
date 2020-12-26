@@ -185,8 +185,12 @@ public:
 	{
 	    SPDLOG_INFO("starting game on {}:{}", addr, port);
 
+	    connect(addr, port);
+        init(lobby);
+
 		this->drawer_start();
 		this->drawer_window_wait();
+
 
 		this->await_run();
 		this->update();

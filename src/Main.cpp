@@ -23,9 +23,9 @@ int main()
 
 		Game game(io);
 
-		game.connect("wgforge-srv.wargaming.net", "443");
-		game.init({ "test3", "test3", "Game of Thrones", -1, 1 });
+		game.start("wgforge-srv.wargaming.net", "443", { "test3", "test3", "Game of Thrones", 500, 1 });
 		game.drawer_start();
+
 
 		game.drawer_join();
 	}
