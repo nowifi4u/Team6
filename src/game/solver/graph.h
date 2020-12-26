@@ -8,6 +8,7 @@
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 
 #include <vector>
+#include <deque>
 
 class GraphDijkstra
 {
@@ -18,8 +19,11 @@ public:
 
 	using index_map_t = boost::property_map<GraphIdx::Graph, boost::vertex_index_t>::type;
 
+	using path_t = std::deque<GraphIdx::vertex_descriptor>;
+
 	GraphDijkstra(const GraphIdx::Graph& graph)
 		: graph_(graph), 
+		vbegin(graph.null_vertex()),
 		weightmap(boost::get(&GraphIdx::EdgeProperties::length, graph)),
 		predecessors(boost::num_vertices(graph)),
 		indexmap(boost::get(boost::vertex_index, graph)),
@@ -30,6 +34,8 @@ public:
 
 	void calculate(GraphIdx::vertex_descriptor v)
 	{
+		vbegin = v;
+
 		boost::dijkstra_shortest_paths(
 			graph_,
 			v,
@@ -61,12 +67,27 @@ public:
 		distances.for_each(graph_, f);
 	}
 
+	path_t calculate_path(GraphIdx::vertex_descriptor vend) const
+	{
+		path_t path;
+		for (GraphIdx::vertex_descriptor cur = vend;
+			cur != graph_.null_vertex() 
+			&& predecessors[cur] != cur 
+			&& cur != vbegin;)
+		{
+			path.push_front(predecessors[cur]);
+			cur = predecessors[cur];
+		}
+		return path;
+	}
+
 protected:
 
 	
 
 public:
 	const GraphIdx::Graph& graph_;
+	GraphIdx::vertex_descriptor vbegin;
 
 	const index_map_t indexmap;
 
