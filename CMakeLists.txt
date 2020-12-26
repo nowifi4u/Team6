@@ -29,6 +29,7 @@ message(STATUS "Boost source dir: " ${boost_SOURCE_DIR})
 message(STATUS "Boost install dir: " ${boost_INSTALL})
 
 if(WIN32)
+    message(WARN  " WIN32 compilation may work wrong in some cases")
     set(boost_BOOTSTRAP ./bootstrap.bat)
     set(LIB_EXTENSION .lib)
     message(STATUS "Using WIN32 specific boost compilation")
