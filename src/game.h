@@ -14,7 +14,7 @@ protected:
 	boost::thread* drawer_thread = nullptr;
 	status drawer_status = status::READY;
 
-	game_connector connector;
+	server_connector connector;
 
 public:
 
@@ -39,7 +39,7 @@ public:
 		connector.connect(addr, port);
 	}
 
-	void init(const game_connector::Login& lobby)
+	void init(const server_connector::Login& lobby)
 	{
 		this->drawer_set_state(status::UPDATING);
 
@@ -216,7 +216,7 @@ public:
 		//Sleep(1000);
 	}
 
-	void start(const std::string& addr, const std::string& port, const game_connector::Login& lobby)
+	void start(const std::string& addr, const std::string& port, const server_connector::Login& lobby)
 	{
 		this->drawer_start();
 		this->drawer_window_wait();

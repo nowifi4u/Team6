@@ -13,7 +13,7 @@ using nlohmann::json;
 #include "../bincharstream.h"
 #include "../binstream.h"
 
-class game_connector : protected tcp_connector
+class server_connector : protected tcp_connector
 {
 public:
 
@@ -27,7 +27,7 @@ public:
 		return tcp_connector::get_endpoint();
 	}
 
-	game_connector(boost::asio::io_service& m_io)
+	server_connector(boost::asio::io_service& m_io)
 		: tcp_connector(m_io) {}
 
 	void connect(const std::string& addr, const std::string& port)
@@ -40,7 +40,7 @@ public:
         return tcp_connector::disconnect();
     }
 
-	game_connector(boost::asio::io_service& m_io, const std::string& addr, const std::string& port)
+	server_connector(boost::asio::io_service& m_io, const std::string& addr, const std::string& port)
 		: tcp_connector(m_io, addr, port) {}
 
 	void wait_read()
@@ -102,7 +102,7 @@ public:
 
     std::pair<Result, std::string> read_packet()
     {
-        LOG_2("game_connector::read_packet: Reading packet...");
+        LOG_2("server_connector::read_packet: Reading packet...");
 
         const auto header = _read_header();
 
