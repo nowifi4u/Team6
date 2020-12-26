@@ -25,6 +25,13 @@ namespace SpriteUtils {
 		sprite.setScale(size.x / act_size.x, size.y / act_size.y);
 	}
 
+	inline void setSize(sf::Sprite& sprite, const sf::Vector2u& size)
+	{
+		const auto act_size = getSize(sprite);
+
+		sprite.setScale(size.x / act_size.x, size.y / act_size.y);
+	}
+
 	inline void centerOrigin(sf::Transformable& obj, const sf::Vector2u& size)
 	{
 		obj.setOrigin(
