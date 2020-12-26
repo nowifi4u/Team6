@@ -9,11 +9,11 @@ class GameSolver
 public:
 
 	GameSolver(const GameData& gamedata, server_connector& connector)
-		: gamedata(gamedata), connector(connector)
+		: gamedata(gamedata), connector(connector), tick(0)
 	{
 		for (const auto& [train_idx, train_data] : gamedata.self_data().trains)
 		{
-			trainsolvers.emplace(train_idx, gamedata, connector, train_idx, deltas_market, deltas_storage);
+			trainsolvers.emplace_back(gamedata, connector, train_idx, deltas_market, deltas_storage);
 		}
 	}
 
@@ -29,11 +29,11 @@ public:
 	{
 		reset_deltas();
 
-		for (auto& [train_idx, train_solver] : trainsolvers)
+		for (auto& train_solver : trainsolvers)
 		{
 			std::optional<server_connector::Move> move = train_solver.calculate_Turn();
 
-			if (move.has_value()) connector.send_Move(move.value());
+			if (move.has_value()) connector.async_send_Move(move.value());
 		}
 	}
 
@@ -42,8 +42,10 @@ protected:
 	const GameData& gamedata;
 	server_connector& connector;
 
-	std::map<Types::train_idx_t, TrainSolver> trainsolvers;
+	std::vector<TrainSolver> trainsolvers;
 
 	GraphVertexMap<double> deltas_market;
 	GraphVertexMap<double> deltas_storage;
+	
+	Types::tick_t tick;
 };
