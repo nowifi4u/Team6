@@ -2,8 +2,10 @@
 
 #include <spdlog/spdlog.h>
 
-#include "utils/network/server_connector.h"
 #include "render/game_drawer.h"
+
+#include "game/data.h"
+#include "game/controller.h"
 
 #include "utils/MinMax.h"
 
@@ -15,17 +17,18 @@ protected:
 	boost::thread* drawer_thread = nullptr;
 	status drawer_status = status::READY;
 
-	server_connector connector;
 
 public:
 
 	GameData gamedata;
+    GameController gameController;
+
 
 	sf::RenderWindow* drawer_window = nullptr;
 	game_drawer_config drawer_config;
 
 	Game(boost::asio::io_service& io)
-		: connector(io)
+		: gameController(gamedata, io)
 	{
 	    SPDLOG_DEBUG("constructing from io.");
 	}
@@ -38,54 +41,12 @@ public:
 
 	void connect(const std::string& addr, const std::string& port)
 	{
-	    SPDLOG_INFO("Connecting to {}:{}", addr, port);
-		connector.connect(addr, port);
+	    gameController.connect(addr, port);
 	}
 
 	void init(const server_connector::Login& lobby)
 	{
-		this->drawer_set_state(status::UPDATING);
-	    SPDLOG_DEBUG("initiating game started.");
-
-		{
-			SPDLOG_TRACE("sending Login request...");
-			connector.send_Login(lobby);
-
-			const auto response = connector.read_packet();
-			SPDLOG_TRACE("received response code: {}", response.first);
-
-			GameData::readJSON_Login(gamedata, json::parse(response.second));
-		}
-
-		{
-			SPDLOG_TRACE("sending L0 request...");
-			connector.send_Map({ 0 });
-
-			const auto response = connector.read_packet();
-            SPDLOG_TRACE("received response code: {}", response.first);
-
-			GameData::readJSON_L0(gamedata, json::parse(response.second));
-		}
-
-		{
-			SPDLOG_TRACE("sending L10 request...");
-			connector.send_Map({ 10 });
-
-			const auto response = connector.read_packet();
-            SPDLOG_TRACE("received response code: {}", response.first);
-
-			GameData::readJSON_L10(gamedata, json::parse(response.second));
-		}
-
-		{
-			SPDLOG_TRACE("sending L1 request...");
-			connector.send_Map({ 1 });
-
-			const auto response = connector.read_packet();
-            SPDLOG_TRACE("received response code: {}", response.first);
-
-			GameData::readJSON_L1(gamedata, json::parse(response.second));
-		}
+	    gameController.init(lobby);
 
 		{
 			MinMaxReducer<float> minmax_x;
@@ -108,24 +69,16 @@ public:
 		this->drawer_set_state(status::UPDATING);
 		this->drawer_window->setTitle("Update game data...");
 
-		{
-			SPDLOG_DEBUG("updating game data...");
-			connector.send_Map({ 1 });
-
-			const auto response = connector.read_packet();
-            SPDLOG_TRACE("received response code: {}", response.first);
-
-			GameData::readJSON_L1(gamedata, json::parse(response.second));
-		}
+		gameController.update();
 	}
 
 	void reset()
 	{
 		SPDLOG_DEBUG("resetting game.");
 
-		connector.disconnect();
 		this->drawer_stop();
-		gamedata.clear();
+		gameController.reset();
+
         SPDLOG_DEBUG("resetting game end.");
 	}
 
@@ -208,9 +161,7 @@ public:
 		this->drawer_set_state(status::AWAIT_PLAYERS);
 		this->drawer_window->setTitle("Awaiting players...");
 
-        SPDLOG_DEBUG("sending turn package...");
-		this->connector.send_Turn();
-		this->connector.read_packet();
+        gameController.await_run();
 	}
 
 	void calculate_move()
@@ -226,10 +177,7 @@ public:
 		this->drawer_set_state(status::READY);
 		this->drawer_window->setTitle("Awaiting next tick...");
 
-        SPDLOG_DEBUG("sending turn package...");
-		this->connector.send_Turn();
-		this->connector.read_packet();
-
+		gameController.await_move();
 		//Sleep(1000);
 	}
 

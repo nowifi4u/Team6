@@ -73,6 +73,7 @@ add_executable(Team6
         src/game/data/train.h
         src/game/solver/RouteManager.h
         src/game/data.h
+        src/game/controller.h
         src/game/solver.h
         src/game/controller.h
         src/graph/CoordsCalculator.h
@@ -90,7 +91,7 @@ add_executable(Team6
         src/utils/ClassDefines.h
         src/game.h
         src/Main.cpp
-        src/Types.h)
+        src/Types.h  )
 
 add_dependencies(Team6 boost)
 target_link_libraries(Team6 sfml-graphics nlohmann_json spdlog::spdlog ${Boost_LIBRARIES} -ldl)
