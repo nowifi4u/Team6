@@ -58,8 +58,10 @@ public:
 
 					double value = std::min<double>({
 						(double)Trains::TrainTiers[train_data.level].goods_capacity - train_data.goods,
-						(double)market->product_capacity,
-						(double)market->product + market->replenishment * graphsolver[v].first - deltas_market[v]
+						std::min<double>(
+							(double)market->product_capacity,
+							(double)market->product + market->replenishment * graphsolver[v].first - deltas_market[v]
+							) / graphsolver[v].first
 						});
 
 					if (value > target_value)
@@ -87,10 +89,12 @@ public:
 				{
 					const Posts::Storage* storage = (const Posts::Storage*)gamedata.posts.at(gamedata.graph()[v].post_idx);
 
-					double value = std::min<double>({ 
+					double value = std::min<double>({
 						(double)Trains::TrainTiers[train_data.level].goods_capacity - train_data.goods,
-						(double)storage->armor_capacity,
-						(double)storage->armor + storage->replenishment * graphsolver[v].first - deltas_storage[v]
+						std::min<double>(
+							(double)storage->armor_capacity,
+							(double)storage->armor + storage->replenishment * graphsolver[v].first - deltas_storage[v]
+							) / graphsolver[v].first
 						});
 
 					if (value > target_value)
