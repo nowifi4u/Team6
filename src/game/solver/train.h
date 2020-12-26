@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../data.h"
-#include "graph_edge.h"
+#include "path.h"
 #include "../../utils/network/server_connector.h"
 #include "../../graph/GraphVertexMap.h"
 
@@ -22,9 +22,9 @@ public:
 		STANDBY
 	};
 
-	TrainSolver(const GameData& gamedata, GraphEdgeDijkstra& graphsolver, Types::train_idx_t train_idx, GraphVertexMap<double>& deltas_market, GraphVertexMap<double>& deltas_storage, State state = State::STANDBY)
+	TrainSolver(const GameData& gamedata, Types::train_idx_t train_idx, GraphVertexMap<double>& deltas_market, GraphVertexMap<double>& deltas_storage, State state = State::STANDBY)
 		: gamedata(gamedata),
-		graphsolver(graphsolver),
+		pathsolver(gamedata),
 		train_idx(train_idx), gamedata_train(gamedata.self_data().trains.at(train_idx)),
 		train_data(gamedata.self_data().trains.at(train_idx)),
 		deltas_market(deltas_market),
@@ -45,12 +45,15 @@ public:
 
 	GraphIdx::vertex_descriptor choose_target_NORMAL_FOOD() const
 	{
-		graphsolver.calculate(get_edge(), train_data.position);
+		pathsolver.init(get_edge(), train_data.position);
 
 		GraphIdx::vertex_descriptor target = gamedata.graph().null_vertex();
 		double target_value = -INFINITY;
 
 		gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+			Types::edge_length_t vdist = pathsolver.distance_to(v);
+			if (vdist == 0) return;
+
 			if (gamedata.graph()[v].post_idx != UINT32_MAX)
 				if (gamedata.posts.at(gamedata.graph()[v].post_idx)->type() == Posts::MARKET)
 				{
@@ -60,8 +63,8 @@ public:
 						(double)Trains::TrainTiers[train_data.level].goods_capacity - train_data.goods,
 						std::min<double>(
 							(double)market->product_capacity,
-							(double)market->product + market->replenishment * graphsolver[v].first - deltas_market[v]
-							) / graphsolver[v].first
+							(double)market->product + market->replenishment * vdist - deltas_market[v]
+							) / vdist
 						});
 
 					if (value > target_value)
@@ -78,12 +81,15 @@ public:
 
 	GraphIdx::vertex_descriptor choose_target_NORMAL_ARMOR() const
 	{
-		graphsolver.calculate(get_edge(), train_data.position);
+		pathsolver.init(get_edge(), train_data.position);
 
 		GraphIdx::vertex_descriptor target = gamedata.graph().null_vertex();
 		double target_value = -INFINITY;
 
 		gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+			Types::edge_length_t vdist = pathsolver.distance_to(v);
+			if (vdist == 0) return;
+
 			if (gamedata.graph()[v].post_idx != UINT32_MAX)
 				if (gamedata.posts.at(gamedata.graph()[v].post_idx)->type() == Posts::STORAGE)
 				{
@@ -93,8 +99,8 @@ public:
 						(double)Trains::TrainTiers[train_data.level].goods_capacity - train_data.goods,
 						std::min<double>(
 							(double)storage->armor_capacity,
-							(double)storage->armor + storage->replenishment * graphsolver[v].first - deltas_storage[v]
-							) / graphsolver[v].first
+							(double)storage->armor + storage->replenishment * vdist - deltas_storage[v]
+							) / vdist
 						});
 
 					if (value > target_value)
@@ -112,18 +118,20 @@ public:
 
 	GraphIdx::vertex_descriptor choose_target_EMERGENCY_FOOD() const
 	{
-		graphsolver.calculate(get_edge(), train_data.position);
+		pathsolver.init(get_edge(), train_data.position);
 
 		GraphIdx::vertex_descriptor target = gamedata.graph().null_vertex();
 		Types::edge_length_t target_dist = UINT32_MAX;
 
 		gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+			Types::edge_length_t vdist = pathsolver.distance_to(v);
+
 			if (gamedata.graph()[v].post_idx != UINT32_MAX)
 				if (gamedata.posts.at(gamedata.graph()[v].post_idx)->type() == Posts::MARKET)
-					if (graphsolver[v].first < target_dist)
+					if (vdist < target_dist)
 					{
 						target = v;
-						target_dist = graphsolver[v].first;
+						target_dist = vdist;
 					}
 			});
 
@@ -132,18 +140,20 @@ public:
 
 	GraphIdx::vertex_descriptor choose_target_EMERGENCY_ARMOR() const
 	{
-		graphsolver.calculate(get_edge(), train_data.position);
+		pathsolver.init(get_edge(), train_data.position);
 
 		GraphIdx::vertex_descriptor target = gamedata.graph().null_vertex();
 		Types::edge_length_t target_dist = UINT32_MAX;
 
 		gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+			Types::edge_length_t vdist = pathsolver.distance_to(v);
+
 			if (gamedata.graph()[v].post_idx != UINT32_MAX)
 				if (gamedata.posts.at(gamedata.graph()[v].post_idx)->type() == Posts::STORAGE)
-					if (graphsolver[v].first < target_dist)
+					if (vdist < target_dist)
 					{
 						target = v;
-						target_dist = graphsolver[v].first;
+						target_dist = vdist;
 					}
 			});
 
@@ -168,58 +178,7 @@ public:
 	{
 		GraphIdx::vertex_descriptor target = choose_target();
 
-		if (target == gamedata.graph().null_vertex()) return std::nullopt;
-
-		const auto solver = graphsolver.get_obj(target);
-		GraphDijkstra::path_t path = graphsolver.get_path(target);
-
-		if (path.size() == 0) return std::nullopt;
-
-		if (solver.second == false)
-		{
-			GraphIdx::vertex_descriptor v = boost::source(get_edge(), gamedata.graph());
-
-			if (train_data.position == 0)
-			{
-				if (path.size() == 0) return std::nullopt;
-				
-				if (Graph::isSource(gamedata.graph(), v, path.front()))
-				{
-					return server_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, 1, train_idx };
-				}
-				else
-				{
-					return server_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, -1, train_idx };
-				}
-			}
-			else
-			{
-				return server_connector::Move{ get_edge_props().idx, -1, train_idx };
-			}
-		}
-		else
-		{
-			GraphIdx::vertex_descriptor v = boost::target(get_edge(), gamedata.graph());
-
-
-			if (train_data.position == gamedata.graph()[get_edge()].length)
-			{
-				if (path.size() == 0) return std::nullopt;
-
-				if (Graph::isSource(gamedata.graph(), v, path.front()))
-				{
-					return server_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, 1, train_idx };
-				}
-				else
-				{
-					return server_connector::Move{ Graph::get_edge(gamedata.graph(), v, path.front())->idx, -1, train_idx };
-				}
-			}
-			else
-			{
-				return server_connector::Move{ get_edge_props().idx, 1, train_idx };
-			}
-		}
+		return pathsolver.calculate_Move(train_data.idx, target);
 	}
 
 
@@ -236,7 +195,7 @@ public:
 	const GameData& gamedata;
 	const Trains::Train& gamedata_train;
 
-	GraphEdgeDijkstra& graphsolver;
+	PathSolver pathsolver;
 
 	TrainSolver::State state;
 };
