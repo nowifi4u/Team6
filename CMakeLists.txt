@@ -73,6 +73,7 @@ add_executable(Team6
         src/game/data/train.h
         src/game/data.h
         src/game/solver.h
+        src/game/controller.h
         src/graph/CoordsCalculator.h
         src/graph/CoordsHolder.h
         src/graph/graph.h
