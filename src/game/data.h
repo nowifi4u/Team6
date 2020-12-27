@@ -2,10 +2,10 @@
 
 #include <vector>
 #include <memory>
+#include <map>
 
 #include "graph/graph.h"
 #include "graph/KKSCoordsCalculator.h"
-#include "utils/ptr_container.h"
 
 #include "data/event.h"
 #include "data/train.h"
@@ -38,7 +38,7 @@ struct GameData
 	Types::position_t map_graph_width;
 	Types::position_t map_graph_height;
 
-	ptr_container::map<Types::post_idx_t, Posts::Post> posts;
+	std::map<Types::post_idx_t, std::shared_ptr<Posts::Post>> posts;
 
 	void clear()
 	{
