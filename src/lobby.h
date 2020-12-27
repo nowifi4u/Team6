@@ -88,7 +88,7 @@ public:
 	{
 		draw();
 
-		std::cout << "'new' for creating a new lobby" << std::endl;
+		std::cout << "Enter 'new' for creating a new lobby" << std::endl;
 
 		std::string choice;
 		{
@@ -100,7 +100,7 @@ public:
 
 		server_connector::Login login;
 
-		if (choice == "new")
+		if (choice == "new" || choice == "n" || choice == "NEW" || choice == "N")
 		{
 			{
 				std::cout << "Enter name: ";
@@ -188,13 +188,13 @@ public:
 
 				game.start(login);
 			}
+			catch (std::invalid_argument& err)
+			{
+				std::cout << "Invalid choice! Please try again..." << std::endl;
+			}
 			catch (const nlohmann::detail::type_error& err)
 			{
 				std::cout << "JSON parsing ERROR! " << err.what() << std::endl;
-			}
-			catch (std::invalid_argument& err)
-			{
-				std::cout << "Cast ERROR! " << err.what() << std::endl;
 			}
 			catch (std::runtime_error& err)
 			{
@@ -207,10 +207,7 @@ public:
 
 			std::cout << "Press any key to try again...";
 			std::getc(stdin);
-
-			draw_split();
-			draw_split();
-			draw_split();
+			std::cout << "\n\n\n\n\n\n\n\n\n\n\n";
 			
 		}
 	}
