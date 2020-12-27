@@ -75,6 +75,7 @@ add_executable(Team6
         src/game/solver/task/task.cpp
         src/game/solver/task/empty.cpp
         src/game/solver/task/TakeProduct.cpp
+        src/game/solver/task/TakeArmor.cpp
         src/game/data.h
         src/game/solver.h
         src/game/controller.h
