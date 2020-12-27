@@ -178,6 +178,8 @@ public:
 	{
 		Graph::vertex_descriptor target = choose_target();
 
+		if (train_data.cooldown > 0) return std::nullopt;
+
 		return pathsolver.calculate_Move(train_data.idx, target);
 	}
 
