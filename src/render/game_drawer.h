@@ -240,7 +240,7 @@ namespace game_drawer_layer {
 
 					bool b = config.textures->RequireResource("train");
 					s = sf::Sprite(*config.textures->GetResource("train"));
-					SpriteUtils::setSize(s, sf::Vector2f{ 25, 25 });
+					SpriteUtils::setSize(s, sf::Vector2f{ 35, 35 });
 					SpriteUtils::centerOrigin(s);
 				}
 			}
@@ -249,7 +249,7 @@ namespace game_drawer_layer {
 				sf::Text& text = trains_info[p.first];
 				text.setFont(cashed_font);
 				text.setCharacterSize(24);
-				SpriteUtils::centerOrigin(text, sf::Vector2f(12, text.getCharacterSize() ));
+				SpriteUtils::centerOrigin(text, sf::Vector2f(12, text.getCharacterSize()));
 			}
 		}
 
@@ -301,10 +301,10 @@ namespace game_drawer_layer {
 				}
 				else if (t->goods_type == Trains::Product)
 				{
-					text.setFillColor(sf::Color::Green);
+					text.setFillColor(sf::Color::Black);
 				}
 				else {
-					text.setFillColor(sf::Color::Black);
+					text.setFillColor(sf::Color::Red);
 				}
 
 				text.setPosition(trains_g[p.first].getPosition());
@@ -342,9 +342,9 @@ namespace game_drawer_layer {
 					(config.padding_height.map(es[1]) + config.padding_height.map(et[1])) / 2
 				));
 
+				line_length.setCharacterSize(24);
 				SpriteUtils::centerOrigin(line_length, sf::Vector2f(12, line_length.getCharacterSize() / 2.0f));
 				line_length.setFont(cached_font);
-				line_length.setCharacterSize(24);
 				line_length.setFillColor(sf::Color::Red);
 				});
 		}
@@ -364,6 +364,80 @@ namespace game_drawer_layer {
 			}
 		}
 	};
+
+
+	class posts_infos : public layer_base
+	{
+		sf::Font cached_font;
+		std::map<Types::post_idx_t, sf::Text> posts_texts;
+
+	public:
+
+		posts_infos() : layer_base() {}
+
+		void init(const GameData& gamedata, const game_drawer_config& config)
+		{
+			LOG_3("game_drawer_layer::posts_infos::init");
+
+			cached_font.loadFromFile(config.edge_length_font);
+
+			for (auto& p : gamedata.posts) {
+				sf::Text& text = posts_texts[p.first];
+
+				text.setCharacterSize(20);
+				SpriteUtils::centerOrigin(text, sf::Vector2f(20, text.getCharacterSize()));
+
+				text.setFont(cached_font);
+
+				if (p.second->type() == Posts::MARKET) {
+					text.setFillColor(sf::Color::Black);
+				}
+				else if (p.second->type() == Posts::STORAGE){
+					text.setFillColor(sf::Color::Blue);
+				}
+				else if (p.second->type() == Posts::TOWN) {
+					text.setFillColor(sf::Color(109, 37, 0, 255));
+				}
+
+				auto v_idx = p.second->point_idx;
+				auto v = gamedata.map_graph.vmap.at(v_idx);
+				auto point = gamedata.map_graph_coords->get_map()[v];
+				text.setPosition(
+					config.padding_width.map(point[0]),
+					config.padding_height.map(point[1])
+				);
+			}
+		}
+
+		void reset()
+		{
+			LOG_3("game_drawer_layer::edges_length::reset");
+
+			posts_texts.clear();
+		}
+
+		void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+			for (const auto& p : gamedata.posts) {
+				sf::Text& text = posts_texts[p.first];
+
+				if (p.second->type() == Posts::MARKET) {
+					const Posts::Market* ptr = (Posts::Market*)p.second.get();
+					text.setString(std::to_string(ptr->product));
+				}
+				else if (p.second->type() == Posts::STORAGE) {
+					const Posts::Storage* ptr = (Posts::Storage*)p.second.get();
+					text.setString(std::to_string(ptr->armor));
+				}
+				else if (p.second->type() == Posts::TOWN) {
+					const Posts::Town* ptr = (Posts::Town*)p.second.get();
+					text.setString(std::to_string(ptr->product)+"\n"+ (std::to_string(ptr->armor)));
+				}
+				window.draw(text);
+			}
+		}
+	};
+
 
 	class background : public layer_base
 	{
@@ -424,7 +498,8 @@ public:
 		layers.push_back(new game_drawer_layer::background());
 		layers.push_back(new game_drawer_layer::edges());
 		layers.push_back(new game_drawer_layer::vertecies());
-		layers.push_back(new game_drawer_layer::edges_length());
+		//layers.push_back(new game_drawer_layer::edges_length());
+		layers.push_back(new game_drawer_layer::posts_infos());
 		layers.push_back(new game_drawer_layer::trains());
 	}
 
