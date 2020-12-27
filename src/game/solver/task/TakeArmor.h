@@ -7,10 +7,10 @@
 class TakeArmorTask : public Task
 {
 private:
-    std::shared_ptr<Posts::Market> spStorage_;
+    std::shared_ptr<Posts::Storage> spStorage_;
 
 public:
-    TakeArmorTask(GameController& gc, const std::shared_ptr<Posts::Market>& spStorage)
+    TakeArmorTask(GameController& gc, const std::shared_ptr<Posts::Storage>& spStorage)
         :Task(gc, spStorage->point_idx), spStorage_(spStorage)
     {}
 
