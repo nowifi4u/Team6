@@ -88,6 +88,23 @@ namespace Posts {
 			//j["replenishment"].get_to(ptr->replenishment);
 		}
 
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Storage ";
+
+            os << "{";
+            Post::doprint(os);
+            os << "} ";
+
+            os  << "armor="             << armor            << ", "
+                << "armor_capacity="    << armor_capacity   << ", "
+                << "replenishment="     << replenishment; //   << ", ";
+
+            os << "]";
+
+            return os;
+        }
+
 		CLASS_VIRTUAL_DESTRUCTOR(Storage);
 	};
 
