@@ -15,7 +15,7 @@ protected:
 	boost::thread* drawer_thread = nullptr;
 	status drawer_status = status::READY;
 
-	server_connector connector;
+	server_connector& connector;
 
 public:
 
@@ -24,8 +24,8 @@ public:
 	sf::RenderWindow* drawer_window = nullptr;
 	game_drawer_config drawer_config;
 
-	Game(boost::asio::io_service& io)
-		: connector(io)
+	Game(server_connector& connector)
+		: connector(connector)
 	{
 
 	}
