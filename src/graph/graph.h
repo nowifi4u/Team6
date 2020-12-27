@@ -53,7 +53,7 @@ namespace Graph {
 
 
 	template <class Func>
-	void for_each_vertex_iterator(Graph& graph, Func f)
+	inline void for_each_vertex_iterator(Graph& graph, Func f)
 	{
 		vertex_iterator vi, vend;
 		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
@@ -63,7 +63,7 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_vertex_iterator(const Graph& graph, Func f)
+	inline void for_each_vertex_iterator(const Graph& graph, Func f)
 	{
 		vertex_iterator vi, vend;
 		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
@@ -73,7 +73,18 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_edge_iterator(Graph& graph, Func f)
+	inline bool any_of_vertex_iterator(const Graph& graph, Func f)
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			if (f(vi)) return true;
+		}
+		return false;
+	}
+
+	template <class Func>
+	inline void for_each_edge_iterator(Graph& graph, Func f)
 	{
 		edge_iterator ei, eend;
 		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
@@ -83,7 +94,7 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_edge_iterator(const Graph& graph, Func f)
+	inline void for_each_edge_iterator(const Graph& graph, Func f)
 	{
 		edge_iterator ei, eend;
 		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
@@ -93,7 +104,18 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_vertex_descriptor(Graph& graph, Func f)
+	inline bool any_of_edge_iterator(const Graph& graph, Func f)
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			if (f(ei)) return true;
+		}
+		return false;
+	}
+
+	template <class Func>
+	inline void for_each_vertex_descriptor(Graph& graph, Func f)
 	{
 		vertex_iterator vi, vend;
 		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
@@ -103,7 +125,7 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_vertex_descriptor(const Graph& graph, Func f)
+	inline void for_each_vertex_descriptor(const Graph& graph, Func f)
 	{
 		vertex_iterator vi, vend;
 		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
@@ -113,7 +135,18 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_edge_descriptor(Graph& graph, Func f)
+	inline bool any_of_vertex_descriptor(const Graph& graph, Func f)
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			if (f(*vi)) return true;
+		}
+		return false;
+	}
+
+	template <class Func>
+	inline void for_each_edge_descriptor(Graph& graph, Func f)
 	{
 		edge_iterator ei, eend;
 		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
@@ -123,7 +156,7 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_edge_descriptor(const Graph& graph, Func f)
+	inline void for_each_edge_descriptor(const Graph& graph, Func f)
 	{
 		edge_iterator ei, eend;
 		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
@@ -133,7 +166,18 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_vertex_props(Graph& graph, Func f)
+	inline bool any_of_edge_descriptor(const Graph& graph, Func f)
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			if (f(*ei)) return true;
+		}
+		return false;
+	}
+
+	template <class Func>
+	inline void for_each_vertex_props(Graph& graph, Func f)
 	{
 		vertex_iterator vi, vend;
 		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
@@ -143,7 +187,7 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_vertex_props(const Graph& graph, Func f)
+	inline void for_each_vertex_props(const Graph& graph, Func f)
 	{
 		vertex_iterator vi, vend;
 		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
@@ -153,7 +197,18 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_edge_props(Graph& graph, Func f)
+	inline bool any_of_vertex_props(const Graph& graph, Func f)
+	{
+		vertex_iterator vi, vend;
+		for (boost::tie(vi, vend) = boost::vertices(graph); vi != vend; ++vi)
+		{
+			if (f(graph[*vi])) return true;
+		}
+		return false;
+	}
+
+	template <class Func>
+	inline void for_each_edge_props(Graph& graph, Func f)
 	{
 		edge_iterator ei, eend;
 		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
@@ -163,7 +218,7 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_edge_props(const Graph& graph, Func f)
+	inline void for_each_edge_props(const Graph& graph, Func f)
 	{
 		edge_iterator ei, eend;
 		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
@@ -173,7 +228,18 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_out_edge(const Graph& graph, Graph::vertex_descriptor vertex, Func f)
+	inline bool any_of_edge_props(const Graph& graph, Func f)
+	{
+		edge_iterator ei, eend;
+		for (boost::tie(ei, eend) = boost::edges(graph); ei != eend; ++ei)
+		{
+			if (f(graph[*ei])) return true;
+		}
+		return false;
+	}
+
+	template <class Func>
+	inline void for_each_out_edge(const Graph& graph, Graph::vertex_descriptor vertex, Func f)
 	{
 		for_each_edge_descriptor(graph, [&](Graph::edge_descriptor ei) {
 			if (vertex == boost::source(ei, graph))
@@ -184,7 +250,19 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_in_edge(const Graph& graph, Graph::vertex_descriptor vertex, Func f)
+	inline bool any_of_out_edge(const Graph& graph, Graph::vertex_descriptor vertex, Func f)
+	{
+		return any_of_edge_descriptor(graph, [&](Graph::edge_descriptor ei) {
+			if (vertex == boost::source(ei, graph))
+			{
+				if (f(ei)) return true;
+			}
+			return false;
+			});
+	}
+
+	template <class Func>
+	inline void for_each_in_edge(const Graph& graph, Graph::vertex_descriptor vertex, Func f)
 	{
 		for_each_edge_descriptor(graph, [&](Graph::edge_descriptor ei) {
 			if (vertex == boost::target(ei, graph))
@@ -195,7 +273,19 @@ namespace Graph {
 	}
 
 	template <class Func>
-	void for_each_connected_edge(const Graph& graph, Graph::vertex_descriptor vertex, Func f)
+	inline bool any_of_in_edge(const Graph& graph, Graph::vertex_descriptor vertex, Func f)
+	{
+		return any_of_edge_descriptor(graph, [&](Graph::edge_descriptor ei) {
+			if (vertex == boost::target(ei, graph))
+			{
+				if (f(ei)) return true;
+			}
+			return false;
+			});
+	}
+
+	template <class Func>
+	inline void for_each_connected_edge(const Graph& graph, Graph::vertex_descriptor vertex, Func f)
 	{
 		for_each_edge_descriptor(graph, [&](Graph::edge_descriptor ei) {
 			if (vertex == boost::source(ei, graph)
@@ -203,6 +293,19 @@ namespace Graph {
 			{
 				f(ei);
 			}
+			});
+	}
+
+	template <class Func>
+	inline bool any_of_connected_edge(const Graph& graph, Graph::vertex_descriptor vertex, Func f)
+	{
+		return any_of_edge_descriptor(graph, [&](Graph::edge_descriptor ei) {
+			if (vertex == boost::source(ei, graph)
+				|| vertex == boost::target(ei, graph))
+			{
+				if (f(ei)) return true;
+			}
+			return false;
 			});
 	}
 
