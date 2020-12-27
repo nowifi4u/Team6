@@ -5,6 +5,9 @@
 #include <nlohmann/json.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
+#include <spdlog/spdlog.h>
+#include "spdlog/fmt/ostr.h"
+
 
 namespace Trains {
 
@@ -77,6 +80,37 @@ namespace Trains {
 
 			Events::make_Event_vector(val.events, j);
 		}
+
+        template<typename OStream>
+        friend OStream &operator<<(OStream &os, const Train &t)
+        {
+            os  << "[Train "
+                << "idx="           << t.idx        << ", "
+                << "level="         << t.level      << ", "
+                //<< "cooldown="      << t.cooldown   << ", "
+                //<< "fuel="          << t.fuel       << ", "
+                << "goods="         << t.goods      << ", "
+                << "goods_type="    << t.goods_type << ", "
+                << "line_idx="      << t.line_idx   << ", "
+                //<< "player_ix="     << t.player_idx << ", "
+                << "position="      << t.position;// << ", ";
+                //<< "speed="         << t.speed      << ", "
+
+
+            /*
+            os << '\n';
+            os << "events=";
+            {
+                os << "[\n";
+                for (const Events::Event &e : t.events)
+                {
+                    os << '\t' << e << '\n';
+                }
+                os << "]";
+            }*/
+            os << "]";
+            return os;
+        }
 	};
 
 
