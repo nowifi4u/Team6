@@ -45,6 +45,11 @@ public:
 		std::cout << std::string(91, '-') << std::endl;
 	}
 
+	void draw_clear() const
+	{
+		std::cout << std::string(20, '\n');
+	}
+
 	void cin_clear() const
 	{
 		std::cin.clear();
@@ -186,6 +191,9 @@ public:
 
 				Game game(connector);
 
+				draw_clear();
+
+				std::cout << "Starting the game.." << std::endl;
 				game.start(login);
 			}
 			catch (std::invalid_argument& err)
@@ -207,7 +215,7 @@ public:
 
 			std::cout << "Press any key to try again...";
 			std::getc(stdin);
-			std::cout << "\n\n\n\n\n\n\n\n\n\n\n";
+			draw_clear();
 			
 		}
 	}
