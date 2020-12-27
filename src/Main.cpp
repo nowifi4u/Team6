@@ -1,5 +1,3 @@
-#define LOG_LEVEL_3
-
 #include <iostream>
 
 #include <SFML/Graphics.hpp>
