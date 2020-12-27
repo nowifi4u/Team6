@@ -1,12 +1,11 @@
 #pragma once
 
-#include <boost/ptr_container/ptr_map.hpp>
-
 #include <vector>
 #include <memory>
 
 #include "../graph/graph.h"
 #include "../graph/KKSCoordsCalculator.h"
+#include "../utils/ptr_container.h"
 
 #include "data/event.h"
 #include "data/train.h"
@@ -39,7 +38,7 @@ struct GameData
 	Types::position_t map_graph_width;
 	Types::position_t map_graph_height;
 
-	boost::ptr_map<Types::post_idx_t, Posts::Post*> posts;
+	ptr_container::map<Types::post_idx_t, Posts::Post> posts;
 
 	void clear()
 	{
@@ -131,7 +130,7 @@ struct GameData
 		{
 			Types::post_idx_t post_idx = ji["idx"].get<Types::post_idx_t>();
 
-			val.posts[post_idx] = Posts::make_Post(ji);
+			val.posts[post_idx] = std::unique_ptr<Posts::Post>(Posts::make_Post(ji));
 		}
 	}
 
@@ -158,7 +157,7 @@ struct GameData
 		{
 			Types::post_idx_t post_idx = ji["idx"].get<Types::post_idx_t>();
 
-			Posts::updateJSON_L1(val.posts.at(post_idx), ji);
+			Posts::updateJSON_L1(val.posts.at(post_idx).get(), ji);
 		}
 	}
 
