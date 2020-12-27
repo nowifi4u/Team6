@@ -18,13 +18,12 @@ std::basic_ostream<char>& Task::doprint(std::basic_ostream<char> &os) const
     os << "[Task "
        << "idx=" << idx_ << ", ";
 
-    os << '\n';
     os << "executors=";
     {
-        os << "[\n";
+        os << "[";
         for (const auto& e : executors_)
         {
-            os << '\t' << *e << '\n';
+            os << '\t' << *e << ", ";
         }
         os << "]";
     }
