@@ -61,15 +61,13 @@ public:
 			if (gamedata.graph()[v].post_idx != UINT32_MAX)
 				if (gamedata.posts.at(gamedata.graph()[v].post_idx)->type() == Posts::MARKET)
 				{
-					const Posts::Market* market = (const Posts::Market*) gamedata.posts.at(gamedata.graph()[v].post_idx);
+					const Posts::Market* market = (const Posts::Market*) gamedata.posts.at(gamedata.graph()[v].post_idx).get();
 
 					double value = std::min<double>({
 						(double)Trains::TrainTiers[train_data.level].goods_capacity - train_data.goods,
-						std::min<double>(
-							(double)market->product_capacity,
-							(double)market->product + market->replenishment * vdist - deltas_market[v]
-							) / vdist
-						});
+						(double)market->product_capacity,
+						(double)market->product + market->replenishment * vdist - deltas_market[v]
+						}) / vdist;
 
 					if (value > target_value)
 					{
@@ -97,15 +95,13 @@ public:
 			if (gamedata.graph()[v].post_idx != UINT32_MAX)
 				if (gamedata.posts.at(gamedata.graph()[v].post_idx)->type() == Posts::STORAGE)
 				{
-					const Posts::Storage* storage = (const Posts::Storage*)gamedata.posts.at(gamedata.graph()[v].post_idx);
+					const Posts::Storage* storage = (const Posts::Storage*)gamedata.posts.at(gamedata.graph()[v].post_idx).get();
 
 					double value = std::min<double>({
 						(double)Trains::TrainTiers[train_data.level].goods_capacity - train_data.goods,
-						std::min<double>(
-							(double)storage->armor_capacity,
-							(double)storage->armor + storage->replenishment * vdist - deltas_storage[v]
-							) / vdist
-						});
+						(double)storage->armor_capacity,
+						(double)storage->armor + storage->replenishment * vdist - deltas_storage[v]
+						}) / vdist;
 
 					if (value > target_value)
 					{
