@@ -78,6 +78,7 @@ add_executable(Team6
         src/game/solver/task/TakeArmor.cpp
         src/game/solver/task/BringToTown.cpp
         src/game/solver/task/UpgradeTown.cpp
+        src/game/solver/task/UpgradeTrain.cpp
         src/game/data.h
         src/game/solver.h
         src/game/controller.h
