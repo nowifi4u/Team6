@@ -53,6 +53,17 @@ namespace Events {
 			return event;
 		}
 
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Event TrainCrash "
+                << "train_idx=" << train << ", "
+                << "tick="      << tick;//  << ", "
+
+            os << ']';
+
+            return os;
+        }
+
 		CLASS_VIRTUAL_DESTRUCTOR(Event_TrainCrash);
 	};
 
