@@ -10,10 +10,20 @@ class Lobby
 {
 public:
 
-	Lobby(boost::asio::io_service& io, const std::string& addr, const std::string& port)
-		: connector(io, addr, port)
+	void connect(const std::string& addr, const std::string& port)
+	{
+		connector.connect(addr, port);
+	}
+
+	Lobby(boost::asio::io_service& io)
+		: connector(io)
 	{
 
+	}
+
+	~Lobby()
+	{
+		connector.disconnect();
 	}
 
 	void init()
@@ -50,6 +60,83 @@ public:
 		}
 	}
 
+	server_connector::Login choose_lobby() const
+	{
+		draw();
+
+		std::cout << "'new' for creating a new lobby";
+		std::cout << "Your choice: ";
+
+		std::string choice;
+		std::cin >> choice;
+
+		std::cin.clear();
+		std::cin.ignore(-1, '\n');
+
+		server_connector::Login login;
+
+		{
+			std::cout << "Enter name: ";
+
+			std::getline(std::cin, login.name);
+			std::cin.clear();
+			std::cin.ignore(-1, '\n');
+		}
+
+		{
+			std::cout << "Enter password: ";
+			std::string password;
+
+			std::getline(std::cin, password);
+			std::cin.clear();
+			std::cin.ignore(-1, '\n');
+
+			login.password = password;
+		}
+
+		if (choice == "new")
+		{
+			{
+				std::cout << "Enter game name: ";
+				std::string game;
+
+				std::getline(std::cin, game);
+				std::cin.clear();
+				std::cin.ignore(-1, '\n');
+
+				login.game = game;
+			}
+
+			{
+				std::cout << "Enter number of turns (default: INFINITY): ";
+				std::string num_turns;
+
+				std::getline(std::cin, num_turns);
+				std::cin.clear();
+				std::cin.ignore(-1, '\n');
+
+				login.num_turns = ((num_turns.length() == 0) ? -1 : std::stoul(num_turns));
+			}
+
+			{
+				std::cout << "Enter number of players (default: 1): ";
+				std::string num_players;
+
+				std::getline(std::cin, num_players);
+				std::cin.clear();
+				std::cin.ignore(-1, '\n');
+
+				login.num_players = ((num_players.length() == 0) ? 1 : std::stoi(num_players));
+			}
+		}
+		else
+		{
+			login.game = lobbies.at(std::stoi(choice)).name;
+		}
+
+		return login;
+	}
+
 	void start()
 	{
 		while (true)
@@ -57,84 +144,28 @@ public:
 			try {
 
 				init();
-				draw();
+				
+				server_connector::Login login = choose_lobby();
 
-				std::cout << "'new' for creating a new lobby";
-				std::cout << "Your choice: ";
+				Game game(connector);
 
-				std::string choice;
-				std::cin >> choice;
-
-				server_connector::Login login;
-
-				{
-					std::cout << "Enter name: ";
-
-					std::getline(std::cin, login.name);
-					std::cin.clear();
-					std::cin.ignore();
-				}
-
-				{
-					std::cout << "Enter password: ";
-					std::string password;
-
-					std::getline(std::cin, password);
-					std::cin.clear();
-					std::cin.ignore(-1, '\n');
-
-					login.password = password;
-				}
-
-				if (choice == "new")
-				{
-					{
-						std::cout << "Enter game name: ";
-						std::string game;
-
-						std::getline(std::cin, game);
-						std::cin.clear();
-						std::cin.ignore(-1, '\n');
-
-						login.game = game;
-					}
-
-					{
-						std::cout << "Enter number of turns (default: INFINITY): ";
-						std::string num_turns;
-
-						std::getline(std::cin, num_turns);
-						std::cin.clear();
-						std::cin.ignore(-1, '\n');
-
-						login.num_turns = ((num_turns.length() == 0) ? -1 : std::stoul(num_turns));
-					}
-
-					{
-						std::cout << "Enter number of players (default: 1): ";
-						std::string num_players;
-
-						std::getline(std::cin, num_players);
-						std::cin.clear();
-						std::cin.ignore(-1, '\n');
-
-						login.num_players = ((num_players.length() == 0) ? 1 : std::stoi(num_players));
-					}
-				}
-				else
-				{
-					login.game = lobbies.at(std::stoi(choice)).name;
-				}
-
-				// TODO: Game start
+				game.start(login);
+			}
+			catch (const nlohmann::detail::type_error& err)
+			{
+				std::cout << "JSON parsing ERROR! " << err.what() << std::endl;
+			}
+			catch (std::bad_cast& err)
+			{
+				std::cout << "Cast ERROR! " << err.what() << std::endl;
+			}
+			catch (std::runtime_error& err)
+			{
+				std::cout << "Runtime ERROR! " << err.what() << std::endl;
 			}
 			catch (int err)
 			{
-
-			}
-			catch(...)
-			{
-				std::cout << "Some error occured." << std::endl;
+				std::cout << "ERROR! Code " << err << std::endl;
 			}
 
 			std::cout << "Press any key to try again...";
