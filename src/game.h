@@ -1,11 +1,11 @@
 #pragma once
 
 
-#include "utils/network/server_connector.h"
-#include "render/game_drawer.h"
-#include "game/solver.h"
+#include <src/utils/network/server_connector.h>
+#include <src/render/game_drawer.h>
+#include <src/game/solver.h>
 
-#include "utils/MinMax.h"
+#include <src/utils/MinMax.h>
 
 
 class Game
