@@ -48,6 +48,8 @@ namespace game_drawer_layer {
 		virtual void init(const GameData& gamedata, const game_drawer_config& config) = 0;
 		virtual void reset() = 0;
 		virtual void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config) = 0;
+
+		virtual void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config) = 0;
 	};
 
 
@@ -133,6 +135,21 @@ namespace game_drawer_layer {
 				window.draw(vertex.second);
 			}
 		}
+
+		void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+			for (const auto& [v, node] : nodes_g)
+			{
+				if (node.getGlobalBounds().contains(pos))
+				{
+					std::cout << "Vertex = " << gamedata.graph()[v].encodeJSON() << std::endl;
+					if (gamedata.map_graph.graph[v].post_idx != UINT32_MAX)
+					{
+						std::cout << "Post = " << gamedata.posts.at(gamedata.map_graph.graph[v].post_idx)->encodeJSON() << std::endl;
+					}
+				}
+			}
+		}
 	};
 
 
@@ -211,6 +228,17 @@ namespace game_drawer_layer {
 			for (const auto& edge : edges_g)
 			{
 				window.draw(edge.second);
+			}
+		}
+
+		void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+			for (const auto& [e, edge] : edges_g)
+			{
+				if (edge.getGlobalBounds().contains(pos))
+				{
+					std::cout << "Edge = " << gamedata.graph()[e].encodeJSON() << std::endl;
+				}
 			}
 		}
 	};
@@ -312,6 +340,17 @@ namespace game_drawer_layer {
 				window.draw(text);
 			}
 		}
+
+		void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+			for (const auto& [train_idx, train] : trains_g)
+			{
+				if (train.getGlobalBounds().contains(pos))
+				{
+					std::cout << "Train = " << gamedata.trains.at(train_idx)->encodeJSON() << std::endl;
+				}
+			}
+		}
 	};
 
 
@@ -362,6 +401,11 @@ namespace game_drawer_layer {
 			{
 				window.draw(edge.second);
 			}
+		}
+
+		void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+
 		}
 	};
 
@@ -436,6 +480,11 @@ namespace game_drawer_layer {
 				window.draw(text);
 			}
 		}
+
+		void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+
+		}
 	};
 
 
@@ -466,6 +515,11 @@ namespace game_drawer_layer {
 		void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
 		{
 			window.draw(bg);
+		}
+
+		void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+
 		}
 	};
 
@@ -529,6 +583,14 @@ public:
 		for (game_drawer_layer::layer_base& layer : layers)
 		{
 			layer.reset();
+		}
+	}
+
+	void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+	{
+		for (game_drawer_layer::layer_base& layer : layers)
+		{
+			layer.onMouseClick(pos, window, gamedata, config);
 		}
 	}
 
@@ -603,21 +665,27 @@ public:
 			{
 				switch(event.type)
 				{
-				case sf::Event::Closed:
-				{
-					window.close();
-					exit(0);
-				}
-				case sf::Event::Resized:
-					const sf::Vector2u size = window.getSize();
-					config.padding_width.set_output(size.x / 10, size.x * 9 / 10);
-					config.padding_height.set_output(size.y / 10, size.y * 9 / 10);
+					case sf::Event::Closed:
+					{
+						window.close();
+						exit(0);
+					} break;
+					case sf::Event::Resized:
+					{
+						const sf::Vector2u size = window.getSize();
+						config.padding_width.set_output(size.x / 10, size.x * 9 / 10);
+						config.padding_height.set_output(size.y / 10, size.y * 9 / 10);
 
-					config.window_videomode.width = size.x;
-					config.window_videomode.height = size.y;
-					window.setView(sf::View(sf::Vector2f(size.x / 2, size.y / 2), sf::Vector2f(size.x, size.y)));
+						config.window_videomode.width = size.x;
+						config.window_videomode.height = size.y;
+						window.setView(sf::View(sf::Vector2f(size.x / 2, size.y / 2), sf::Vector2f(size.x, size.y)));
 
-					init(gamedata);
+						init(gamedata);
+					} break;
+					case sf::Event::MouseButtonPressed:
+					{
+						onMouseClick(sf::Vector2f(event.mouseButton.x, event.mouseButton.y), window, gamedata, config);
+					} break;
 				}
 				
 			}
