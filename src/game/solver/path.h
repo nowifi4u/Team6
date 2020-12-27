@@ -111,6 +111,25 @@ public:
 		}
 	}
 
+	bool is_train_at_vertex(Types::train_idx_t train_idx, Graph::vertex_descriptor vertex) const
+	{
+		const Trains::Train& train_data = gamedata.self_data().trains.at(train_idx);
+		const Types::position_t train_pos = train_data.position;
+
+		if (train_pos == 0)
+		{
+			return Graph::any_of_out_edge(gamedata.graph(), vertex, [&](Graph::edge_descriptor edge) {
+				return true;
+				});
+		}
+		else
+		{
+			return Graph::any_of_in_edge(gamedata.graph(), vertex, [&](Graph::edge_descriptor edge) {
+				return (train_pos == gamedata.graph()[edge].length);
+				});
+		}
+	}
+
 protected:
 
 	const GameData& gamedata;
