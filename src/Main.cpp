@@ -7,7 +7,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
-#include "game.h"
+#include <src/game.h>
 
 int main()
 {

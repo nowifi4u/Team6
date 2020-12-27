@@ -3,14 +3,14 @@
 #include <vector>
 #include <memory>
 
-#include "../graph/graph.h"
-#include "../graph/KKSCoordsCalculator.h"
-#include "../utils/ptr_container.h"
+#include <src/graph/graph.h>
+#include <src/graph/KKSCoordsCalculator.h>
+#include <src/utils/ptr_container.h>
 
-#include "data/event.h"
-#include "data/train.h"
-#include "data/player.h"
-#include "data/post.h"
+#include <src/game/data/event.h>
+#include <src/game/data/train.h>
+#include <src/game/data/player.h>
+#include <src/game/data/post.h>
 
 
 

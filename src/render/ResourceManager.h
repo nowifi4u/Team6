@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include "../globals/working_directory.h"
+#include <src/globals/working_directory.h>
 
 template<typename Derived, typename T>
 class ResourceManager {

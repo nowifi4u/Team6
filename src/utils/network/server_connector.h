@@ -7,11 +7,11 @@ using nlohmann::json;
 
 #include <boost/endian/conversion.hpp>
 
-#include "tcp_connector.h"
-#include "../../Types.h"
+#include <src/utils/network/tcp_connector.h>
+#include <src/Types.h>
 
-#include "../bincharstream.h"
-#include "../binstream.h"
+#include <src/utils/bincharstream.h>
+#include <src/utils/binstream.h>
 
 class server_connector : protected tcp_connector
 {
