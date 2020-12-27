@@ -47,6 +47,24 @@ namespace Trains {
 
 		boost::ptr_vector<Events::Event> events;
 
+		json encodeJSON() const
+		{
+			json j;
+
+			j["idx"] = idx;
+			j["level"] = level;
+			j["cooldown"] = cooldown;
+			//DISABLED j["fuel"] = fuel;
+			j["goods"] = goods;
+			j["goods_type"] = goods_type;
+			j["line_idx"] = line_idx;
+			j["player_idx"] = player_idx;
+			j["position"] = position;
+			j["speed"] = speed;
+
+			return j;
+		}
+
 		static void readJSON_L1(Train& val, const json& j)
 		{
 			j["idx"].get_to(val.idx);
