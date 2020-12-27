@@ -34,7 +34,7 @@ struct GameData
 	std::map<Types::player_uid_t, Player> players;
 
 	GraphIdx map_graph;
-	CoordsHolder* map_graph_coords = nullptr;
+	std::unique_ptr<CoordsHolder> map_graph_coords = nullptr;
 	Types::position_t map_graph_width;
 	Types::position_t map_graph_height;
 
@@ -46,11 +46,7 @@ struct GameData
 		map_graph.clear();
 		posts.clear();
 
-		if (map_graph_coords != nullptr)
-		{
-			delete map_graph_coords;
-			map_graph_coords = nullptr;
-		}
+		map_graph_coords = nullptr;
 	}
 
 	static void readJSON_Login(GameData& val, const json& j)
@@ -72,7 +68,7 @@ struct GameData
 
 	static void calculateCoordinates(GameData& val, double topology_width, double topology_height, double unit_edge_length)
 	{
-		val.map_graph_coords = (CoordsHolder*) new KKSCoordsCalculator(val.map_graph.graph, topology_width, topology_height, unit_edge_length);
+		val.map_graph_coords = std::unique_ptr<CoordsHolder>(new KKSCoordsCalculator(val.map_graph.graph, topology_width, topology_height, unit_edge_length));
 
 		// Read Graph border size
 		val.map_graph_width = topology_width;
@@ -88,7 +84,7 @@ struct GameData
 
 	static void readJSON_L10(GameData& val, const json& j)
 	{
-		val.map_graph_coords = new CoordsHolder(val.map_graph.graph);
+		val.map_graph_coords = std::unique_ptr<CoordsHolder>(new CoordsHolder(val.map_graph.graph));
 
 		// Read Vertex coordinates
 		for (const json& ji : j["coordinates"])
