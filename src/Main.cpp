@@ -7,34 +7,63 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
-#include <src/game.h>
+#include <src/lobby.h>
+
+const std::string DEFAULT_ADDR = "wgforge-srv.wargaming.net";
+const std::string DEFAULT_PORT = "443";
 
 int main()
 {
 	boost::asio::io_service io;
-	server_connector connector(io);
 
-	try
+	Lobby lobby(io);
+
+	while (true)
 	{
+		try
+		{
+			std::string addr, port;
+			
+			{
+				std::cout << "Enter the IP address (default: " << DEFAULT_ADDR << "): ";
 
-		Game game(io);
+				std::getline(std::cin, addr);
+				std::cin.clear();
+				std::cin.ignore(-1, '\n');
 
-		game.connect("wgforge-srv.wargaming.net", "443");
-		game.init({ "test3", "test3", "Game of Thrones", -1, 1 });
-		game.drawer_start();
+				if (addr.empty())
+				{
+					addr = DEFAULT_ADDR;
+				}
+			}
 
-		game.drawer_join();
+			{
+				std::cout << "Enter the port (default: " << DEFAULT_PORT << "): ";
+
+				std::getline(std::cin, port);
+				std::cin.clear();
+				std::cin.ignore(-1, '\n');
+
+				if (port.empty())
+				{
+					port = DEFAULT_PORT;
+				}
+			}
+
+			lobby.connect(addr, port);
+
+			lobby.start();
+		}
+		catch (boost::asio::error::basic_errors& err)
+		{
+			std::cout << "ASIO error! " << err;
+		}
+		catch (...)
+		{
+			std::cout << "Uncaught ERROR!" << std::endl;
+		}
 	}
-	catch (const nlohmann::detail::type_error& err)
-	{
-		std::cout << "ERROR! " << err.what() << std::endl;
-	}
-	catch (const std::runtime_error& err)
-	{
-		std::cout << "ERROR! " << err.what() << std::endl;
-	}
-
-	//connector.disconnect();
+	lobby.start();
 
 	return 0;
 }

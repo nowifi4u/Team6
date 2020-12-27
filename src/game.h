@@ -217,8 +217,10 @@ public:
 		//Sleep(1000);
 	}
 
-	void start(const std::string& addr, const std::string& port, const server_connector::Login& lobby)
+	void start(const server_connector::Login& lobby)
 	{
+		this->init(lobby);
+
 		this->drawer_start();
 		this->drawer_window_wait();
 
