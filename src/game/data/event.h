@@ -117,6 +117,17 @@ namespace Events {
 			return event;
 		}
 
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Event Bandits "
+                << "hijacker_power="    << (uint32_t) hijacker_power << ", "
+                << "tick="              << tick;//           << ", "
+
+            os << ']';
+
+            return os;
+        }
+
 		CLASS_VIRTUAL_DESTRUCTOR(Event_Bandits);
 	};
 
