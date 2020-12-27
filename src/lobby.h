@@ -6,6 +6,8 @@
 
 #include <src/game.h>
 
+#include <cstdio>
+
 class Lobby
 {
 public:
@@ -38,71 +40,91 @@ public:
 		}
 	}
 
+	void draw_split() const
+	{
+		std::cout << std::string(91, '-') << std::endl;
+	}
+
+	void cin_clear() const
+	{
+		std::cin.clear();
+		std::cin.ignore(-1, '\n');
+	}
+
 	void draw() const
 	{
 		std::cout << "Lobbies:" << std::endl;
+		draw_split();
+		std::cout << '|';
+		std::cout << std::setw(5) << "#" << '|';
+		std::cout << std::setw(40) << "Name" << '|';
+		std::cout << std::setw(10) << "Players" << '|';
+		std::cout << std::setw(15) << "Turns" << '|';
+		std::cout << std::setw(15) << "Status" << '|';
+		std::cout << std::endl;
+		draw_split();
 		for (size_t idx = 0; idx < lobbies.size(); idx++)
 		{
 			const LobbyData& lobby = lobbies.at(idx);
 
-			std::cout << "#:" << idx << std::setw(4);
-			std::cout << "Name:" << lobby.name << std::setw(16);
-			std::cout << "Player:" << lobby.num_players << std::setw(4);
-			std::cout << "Turns:" << ((lobby.num_turns == -1) ? "Infinity" : std::to_string(lobby.num_turns)) << std::setw(6);
-			std::cout << "State:";
+			std::cout << '|';
+			std::cout << std::setw(5) << idx << '|';
+			std::cout << std::setw(40) << lobby.name << '|';
+			std::cout << std::setw(10) << (int)lobby.num_players << '|';
+			std::cout << std::setw(15) << ((lobby.num_turns == -1) ? "Infinity" : std::to_string(lobby.num_turns)) << '|';
+			std::cout << std::setw(15);
 			switch (lobby.state)
 			{
-			case LobbyData::INIT: std::cout << "INIT";
-			case LobbyData::RUN: std::cout << "RUN";
-			case LobbyData::FINISHED: std::cout << "FINISHED";
+			case LobbyData::INIT: std::cout << "INIT"; break;
+			case LobbyData::RUN: std::cout << "RUN"; break;
+			case LobbyData::FINISHED: std::cout << "FINISHED"; break;
 			}
-			std::cout << std::endl;
+			std::cout << '|' << std::endl;
 		}
+		draw_split();
 	}
 
 	server_connector::Login choose_lobby() const
 	{
 		draw();
 
-		std::cout << "'new' for creating a new lobby";
-		std::cout << "Your choice: ";
+		std::cout << "'new' for creating a new lobby" << std::endl;
 
 		std::string choice;
-		std::cin >> choice;
+		{
+			std::cout << "Your choice: ";
 
-		std::cin.clear();
-		std::cin.ignore(-1, '\n');
+			std::getline(std::cin, choice);
+			cin_clear();
+		}
 
 		server_connector::Login login;
 
-		{
-			std::cout << "Enter name: ";
-
-			std::getline(std::cin, login.name);
-			std::cin.clear();
-			std::cin.ignore(-1, '\n');
-		}
-
-		{
-			std::cout << "Enter password: ";
-			std::string password;
-
-			std::getline(std::cin, password);
-			std::cin.clear();
-			std::cin.ignore(-1, '\n');
-
-			login.password = password;
-		}
-
 		if (choice == "new")
 		{
+			{
+				std::cout << "Enter name: ";
+
+				std::getline(std::cin, login.name);
+				cin_clear();
+			}
+
+			{
+				std::cout << "Enter password: ";
+				std::string password;
+
+				std::getline(std::cin, password);
+				cin_clear();
+
+				login.password = password;
+			}
+
 			{
 				std::cout << "Enter game name: ";
 				std::string game;
 
 				std::getline(std::cin, game);
-				std::cin.clear();
-				std::cin.ignore(-1, '\n');
+				cin_clear();
 
 				login.game = game;
 			}
@@ -112,8 +134,7 @@ public:
 				std::string num_turns;
 
 				std::getline(std::cin, num_turns);
-				std::cin.clear();
-				std::cin.ignore(-1, '\n');
+				cin_clear();
 
 				login.num_turns = ((num_turns.length() == 0) ? -1 : std::stoul(num_turns));
 			}
@@ -123,8 +144,7 @@ public:
 				std::string num_players;
 
 				std::getline(std::cin, num_players);
-				std::cin.clear();
-				std::cin.ignore(-1, '\n');
+				cin_clear();
 
 				login.num_players = ((num_players.length() == 0) ? 1 : std::stoi(num_players));
 			}
@@ -132,6 +152,23 @@ public:
 		else
 		{
 			login.game = lobbies.at(std::stoi(choice)).name;
+
+			{
+				std::cout << "Enter name: ";
+
+				std::getline(std::cin, login.name);
+				cin_clear();
+			}
+
+			{
+				std::cout << "Enter password: ";
+				std::string password;
+
+				std::getline(std::cin, password);
+				cin_clear();
+
+				login.password = password;
+			}
 		}
 
 		return login;
@@ -155,7 +192,7 @@ public:
 			{
 				std::cout << "JSON parsing ERROR! " << err.what() << std::endl;
 			}
-			catch (std::bad_cast& err)
+			catch (std::invalid_argument& err)
 			{
 				std::cout << "Cast ERROR! " << err.what() << std::endl;
 			}
@@ -169,8 +206,11 @@ public:
 			}
 
 			std::cout << "Press any key to try again...";
+			std::getc(stdin);
 
-			std::cout << "-----------------------------------------------------------------" << std::endl;
+			draw_split();
+			draw_split();
+			draw_split();
 			
 		}
 	}
