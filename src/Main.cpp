@@ -46,6 +46,8 @@ int main()
 				try {
 					lobby.connect(addr, port);
 
+					lobby.draw_clear();
+					std::cout << "Starting the game..." << std::endl;
 					lobby.start();
 				}
 				catch (...)
