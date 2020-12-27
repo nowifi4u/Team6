@@ -22,4 +22,5 @@ namespace Types
 
 	using position_t = int32_t;
 
+	using Epoch = uint32_t;
 } // namespace Types
