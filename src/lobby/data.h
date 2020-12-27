@@ -23,7 +23,7 @@ struct LobbyData
 	static void readJSON_Games(LobbyData& val, const json& j)
 	{
 		j["name"].get_to(val.name);
-		j["num_plaers"].get_to(val.num_players);
+		j["num_players"].get_to(val.num_players);
 		j["num_turns"].get_to(val.num_turns);
 		j["state"].get_to(val.state);
 	}
