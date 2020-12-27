@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.h"
+#include "event.h"
 
 #include <nlohmann/json.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
@@ -86,7 +87,7 @@ namespace Trains {
         {
             os  << "[Train "
                 << "idx="           << t.idx        << ", "
-                << "level="         << t.level      << ", "
+                << "level="         << (int)t.level << ", "
                 //<< "cooldown="      << t.cooldown   << ", "
                 //<< "fuel="          << t.fuel       << ", "
                 << "goods="         << t.goods      << ", "
