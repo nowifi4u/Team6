@@ -1,12 +1,3 @@
-#define LOG_LEVEL_3
-
-#include <sdkddkver.h>
-
-#include <iostream>
-
-#include <SFML/Graphics.hpp>
-#include <SFML/Window.hpp>
-
 #include <src/lobby.h>
 
 const std::string DEFAULT_ADDR = "wgforge-srv.wargaming.net";
@@ -50,13 +41,24 @@ int main()
 				}
 			}
 
-			lobby.connect(addr, port);
+			while (true)
+			{
+				try {
+					lobby.connect(addr, port);
 
-			lobby.start();
+					lobby.start();
+				}
+				catch (...)
+				{
+					std::cout << "Uncaught ERROR!" << std::endl;
+				}
+			}
+
+			
 		}
-		catch (boost::asio::error::basic_errors& err)
+		catch (boost::system::system_error& err)
 		{
-			std::cout << "ASIO error! " << err;
+			std::cout << "Connection error: " << err.what();
 		}
 		catch (...)
 		{
