@@ -99,7 +99,6 @@ public:
 	void update()
 	{
 		this->drawer_set_state(status::UPDATING);
-		this->drawer_window->setTitle("Update game data...");
 
 		{
 			connector.send_Map({ 1 });
@@ -192,7 +191,6 @@ public:
 	void await_run()
 	{
 		this->drawer_set_state(AWAIT_PLAYERS);
-		this->drawer_window->setTitle("Awaiting players...");
 
 		this->connector.send_Turn();
 		this->connector.read_packet();
@@ -208,7 +206,6 @@ public:
 	void await_move()
 	{
 		this->drawer_set_state(status::READY);
-		this->drawer_window->setTitle("Awaiting next tick...");
 
 		this->connector.send_Turn();
 		this->connector.read_packet();
