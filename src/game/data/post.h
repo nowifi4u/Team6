@@ -1,11 +1,12 @@
 #pragma once
 
 #include <src/Types.h>
-#include <src/utils/Logging.h>
 
 #include <nlohmann/json.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 
+#include <spdlog/spdlog.h>
+#include "spdlog/fmt/ostr.h"
 
 namespace Posts {
 
@@ -27,6 +28,35 @@ namespace Posts {
 		boost::ptr_vector<Events::Event> events;
 
 		virtual PostType type() const = 0;
+
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Post "
+                << "idx="       << idx       << ", "
+                << "name="      << name      << ", "
+                << "point_idx=" << point_idx; // << ", ";
+
+            /*
+            os << "events=";
+            {
+                os << "[\n";
+                for (const auto& e  : events)
+                {
+                    os << '\t' << e << '\n';
+                }
+                os << "]";
+            }
+             */
+            os << "]";
+
+            return os;
+        }
+
+        template<typename OStream>
+        friend OStream &operator<<(OStream &os, const Post &p)
+        {
+            return p.doprint(os);
+        }
 
 		CLASS_VIRTUAL_DESTRUCTOR(Post);
 	};
@@ -58,6 +88,23 @@ namespace Posts {
 			//j["replenishment"].get_to(ptr->replenishment);
 		}
 
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Storage ";
+
+            os << "{";
+            Post::doprint(os);
+            os << "} ";
+
+            os  << "armor="             << armor            << ", "
+                << "armor_capacity="    << armor_capacity   << ", "
+                << "replenishment="     << replenishment; //   << ", ";
+
+            os << "]";
+
+            return os;
+        }
+
 		CLASS_VIRTUAL_DESTRUCTOR(Storage);
 	};
 
@@ -87,6 +134,23 @@ namespace Posts {
 			//j["product_capacity"].get_to(ptr->product_capacity);
 			//j["replenishment"].get_to(ptr->replenishment);
 		}
+
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Market ";
+
+            os << "{";
+            Post::doprint(os);
+            os << "} ";
+
+            os  << "product="           << product            << ", "
+                << "product_capacity="  << product_capacity   << ", "
+                << "replenishment="     << replenishment;//      << ", ";
+
+            os << "]";
+
+            return os;
+        }
 
 		CLASS_VIRTUAL_DESTRUCTOR(Market);
 	};
@@ -135,6 +199,25 @@ namespace Posts {
 			j["product"].get_to(ptr->product);
 			j["train_cooldown"].get_to(ptr->train_cooldown);
 		}
+
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Town ";
+
+            os << "{";
+            Post::doprint(os);
+            os << "} ";
+
+            os  << "armor="             << armor            << ", "
+                << "level="             << level            << ", "
+                << "player_idx="        << player_idx       << ", "
+                << "population="        << population       << ", "
+                << "product="           << product          << ", "
+                << "train_cooldown="    << train_cooldown;
+
+            os << "]";
+            return os;
+        }
 
 		CLASS_VIRTUAL_DESTRUCTOR(Town);
 	};

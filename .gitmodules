@@ -11,3 +11,6 @@
 	url = https://github.com/nlohmann/json
 	branch = master
 	ignore = dirty
+[submodule "libs/spdlog"]
+	path = libs/spdlog
+	url = https://github.com/gabime/spdlog.git

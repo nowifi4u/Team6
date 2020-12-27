@@ -2,9 +2,9 @@
 
 #include <optional>
 
+#include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
-using nlohmann::json;
-
+using namespace nlohmann;
 #include <boost/endian/conversion.hpp>
 
 #include <src/utils/network/tcp_connector.h>
@@ -12,6 +12,7 @@ using nlohmann::json;
 
 #include <src/utils/bincharstream.h>
 #include <src/utils/binstream.h>
+
 
 class server_connector : protected tcp_connector
 {
@@ -32,16 +33,21 @@ public:
 
 	void connect(const std::string& addr, const std::string& port)
 	{
+        SPDLOG_DEBUG("connecting to {}:{}", addr, port);
 		return tcp_connector::connect(addr, port);
 	}
 
     void disconnect()
     {
+        SPDLOG_DEBUG("disconnecting...");
         return tcp_connector::disconnect();
     }
 
 	server_connector(boost::asio::io_service& m_io, const std::string& addr, const std::string& port)
-		: tcp_connector(m_io, addr, port) {}
+		: tcp_connector(m_io, addr, port) 
+    {
+	    SPDLOG_INFO("constructing");
+    }
 
 	void wait_read()
 	{
@@ -64,7 +70,7 @@ protected:
 
 	static std::string _encodeAction(Action action, const std::string& data = "")
 	{
-		LOG_2("_encodeAction: {Action:" << action << ",data:" << data << "}");
+		SPDLOG_TRACE("encoding Action: {}, data: \n{}", action, data);
 
 		uint32_t _action = boost::endian::native_to_little((uint32_t)action);
 		uint32_t _length = boost::endian::native_to_little(data.length());
@@ -72,6 +78,7 @@ protected:
 		writeStreamBinary(out, _action);
 		writeStreamBinary(out, _length);
 		out << data;
+
 		return out.str();
 	}
 
@@ -102,16 +109,13 @@ public:
 
     std::pair<Result, std::string> read_packet()
     {
-        LOG_2("server_connector::read_packet: Reading packet...");
+        SPDLOG_TRACE("reading packet...");
 
         const auto header = _read_header();
 
         const std::string data = tcp_connector::read_until_size(header.second);
 
-        LOG_3("------------------------- BEGIN -------------------------");
-        LOG_3("Action:" << header.first << " Size:" << header.second);
-        LOG_3(data);
-        LOG_3("-------------------------  END  -------------------------");
+        SPDLOG_TRACE("Action: {}, size: {}, data: \n{}", header.first, header.second, data);
 
         if (header.first != Result::OKEY) throw header.first;
 
@@ -133,6 +137,8 @@ public:
 
         static std::string encodeJSON(const Login& val)
         {
+            SPDLOG_TRACE("encoding login.");
+
             json j{
                 {"name", val.name}
             };
@@ -141,17 +147,20 @@ public:
             if (val.num_turns.has_value()) j["num_turns"] = val.num_turns.value();
             if (val.num_players.has_value()) j["num_players"] = val.num_players.value();
 
+            SPDLOG_TRACE("encoding login end.");
             return _encodeAction(Action::LOGIN, j.dump());
         }
     };
 
     void send_Login(const Login& val)
     {
+        SPDLOG_TRACE("sending login.");
         return tcp_connector::send(Login::encodeJSON(val));
     }
 
     void async_send_Login(const Login& val)
     {
+        SPDLOG_TRACE("async sending login.");
         return tcp_connector::async_send(Login::encodeJSON(val));
     }
 
@@ -161,17 +170,20 @@ public:
     {
         static std::string encodeJSON()
         {
+            SPDLOG_TRACE("encoding Player.");
             return _encodeAction(Action::PLAYER);
         }
     };
 
     void send_Player()
     {
+        SPDLOG_TRACE("sending Player.");
         return tcp_connector::send(Player::encodeJSON());
     }
 
     void async_send_Player()
     {
+        SPDLOG_TRACE("async sending Player.");
         return tcp_connector::async_send(Player::encodeJSON());
     }
 
@@ -181,17 +193,20 @@ public:
     {
         static std::string encodeJSON()
         {
+            SPDLOG_TRACE("encoding Logout.");
             return _encodeAction(Action::LOGOUT);
         }
     };
 
     void send_Logout()
     {
+        SPDLOG_TRACE("sending Logout.");
         return tcp_connector::send(Logout::encodeJSON());
     }
 
     void async_send_Logout()
     {
+        SPDLOG_TRACE("async sending Logout.");
         return tcp_connector::async_send(Logout::encodeJSON());
     }
 
@@ -203,6 +218,7 @@ public:
 
         static std::string encodeJSON(const Map& val)
         {
+            SPDLOG_TRACE("encoding Map.");
             json j{
                 {"layer", val.layer}
             };
@@ -213,11 +229,13 @@ public:
 
     void send_Map(const Map& val)
     {
+        SPDLOG_TRACE("map Map.");
         return tcp_connector::send(Map::encodeJSON(val));
     }
 
     void async_send_Map(const Map& val)
     {
+        SPDLOG_TRACE("async send Map.");
         return tcp_connector::async_send(Map::encodeJSON(val));
     }
 
@@ -231,6 +249,7 @@ public:
 
         static std::string encodeJSON(const Move& val)
         {
+            SPDLOG_TRACE("encode Move.");
             json j{
                 {"line_idx", val.line_idx},
                 {"speed", val.speed},
@@ -243,11 +262,13 @@ public:
 
     void send_Move(const Move& val)
     {
+        SPDLOG_TRACE("send Move.");
         return tcp_connector::send(Move::encodeJSON(val));
     }
 
     void async_send_Move(const Move& val)
     {
+        SPDLOG_TRACE("async send Move.");
         return tcp_connector::async_send(Move::encodeJSON(val));
     }
 
@@ -260,6 +281,7 @@ public:
 
         static std::string encodeJSON(const Upgrade& val)
         {
+            SPDLOG_TRACE("encode Upgrade.");
             json j{
                 {"posts", val.posts},
                 {"trains", val.trains}
@@ -271,11 +293,13 @@ public:
 
     void send_Upgrade(const Upgrade& val)
     {
+        SPDLOG_TRACE("send Upgrade.");
         return tcp_connector::send(Upgrade::encodeJSON(val));
     }
 
     void async_send_Upgrade(const Upgrade& val)
     {
+        SPDLOG_TRACE("async send Upgrade.");
         return tcp_connector::async_send(Upgrade::encodeJSON(val));
     }
 
@@ -285,17 +309,20 @@ public:
     {
         static std::string encodeJSON()
         {
+            SPDLOG_TRACE("encode Turn.");
             return _encodeAction(Action::TURN);
         }
     };
 
     void send_Turn()
     {
+        SPDLOG_TRACE("send Turn.");
         return tcp_connector::send(Turn::encodeJSON());
     }
 
     void async_send_Turn()
     {
+        SPDLOG_TRACE("async send Turn.");
         return tcp_connector::async_send(Turn::encodeJSON());
     }
 
@@ -305,17 +332,20 @@ public:
     {
         static std::string encodeJSON()
         {
+            SPDLOG_TRACE("encode Game.");
             return _encodeAction(Action::GAMES);
         }
     };
 
     void send_Games()
     {
+        SPDLOG_TRACE("send Game.");
         return tcp_connector::send(Games::encodeJSON());
     }
 
     void async_send_Games()
     {
+        SPDLOG_TRACE("async send Game.");
         return tcp_connector::async_send(Games::encodeJSON());
     }
 

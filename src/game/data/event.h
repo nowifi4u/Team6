@@ -1,10 +1,12 @@
 #pragma once
 
 #include <src/Types.h>
-#include <src/utils/Logging.h>
 
 #include <nlohmann/json.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+
+#include <spdlog/spdlog.h>
+#include "spdlog/fmt/ostr.h"
 
 
 namespace Events {
@@ -23,6 +25,14 @@ namespace Events {
 	struct Event
 	{
 		virtual EventType type() const = 0;
+
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const = 0;
+
+        template<typename OStream>
+        friend OStream &operator<<(OStream &os, const Event &e)
+        {
+            return e.doprint(os);
+        }
 	};
 
 	struct Event_TrainCrash : public Event
@@ -42,6 +52,17 @@ namespace Events {
 
 			return event;
 		}
+
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Event TrainCrash "
+                << "train_idx=" << train << ", "
+                << "tick="      << tick;//  << ", "
+
+            os << ']';
+
+            return os;
+        }
 
 		CLASS_VIRTUAL_DESTRUCTOR(Event_TrainCrash);
 	};
@@ -64,6 +85,17 @@ namespace Events {
 			return event;
 		}
 
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Event Parasites "
+                << "parasite_power="    << (uint32_t) parasite_power << ", "
+                << "tick="              << tick;//           << ", "
+
+            os << ']';
+
+            return os;
+        }
+
 		CLASS_VIRTUAL_DESTRUCTOR(Event_Parasites);
 	};
 
@@ -84,6 +116,17 @@ namespace Events {
 
 			return event;
 		}
+
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Event Bandits "
+                << "hijacker_power="    << (uint32_t) hijacker_power << ", "
+                << "tick="              << tick;//           << ", "
+
+            os << ']';
+
+            return os;
+        }
 
 		CLASS_VIRTUAL_DESTRUCTOR(Event_Bandits);
 	};
@@ -106,6 +149,17 @@ namespace Events {
 			return event;
 		}
 
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Event Refugees "
+                << "refugees_number="    << (uint32_t) refugees_number << ", "
+                << "tick="               << tick;//           << ", "
+
+            os << ']';
+
+            return os;
+        }
+
 		CLASS_VIRTUAL_DESTRUCTOR(Event_Refugees);
 	};
 
@@ -120,6 +174,14 @@ namespace Events {
 
 			return event;
 		}
+
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Event ResourceOverflow ";
+            os << ']';
+
+            return os;
+        }
 
 		CLASS_VIRTUAL_DESTRUCTOR(Event_ResourceOverflow);
 	};
@@ -136,6 +198,14 @@ namespace Events {
 			return event;
 		}
 
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Event ResourceLack ";
+            os << ']';
+
+            return os;
+        }
+
 		CLASS_VIRTUAL_DESTRUCTOR(Event_ResourceLack);
 	};
 
@@ -151,6 +221,14 @@ namespace Events {
 			return event;
 		}
 
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Event GameOver ";
+            os << ']';
+
+            return os;
+        }
+
 		CLASS_VIRTUAL_DESTRUCTOR(Event_GameOver);
 	};
 
@@ -159,7 +237,7 @@ namespace Events {
 	{
 		EventType event_type = (EventType)j["type"].get<int>();
 
-		LOG_1("game_data::make_Event: " << j);
+		SPDLOG_DEBUG("game_data::make_Event: {} ", j);
 
 		switch (event_type)
 		{
@@ -181,6 +259,7 @@ namespace Events {
 		for (const json& ji : j["events"])
 		{
 			vec.push_back(make_Event(ji));
+			SPDLOG_DEBUG("Last pushed event: {}", vec[vec.size()-1]);
 		}
 	}
 

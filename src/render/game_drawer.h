@@ -61,7 +61,7 @@ namespace game_drawer_layer {
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
-			LOG_3("game_drawer_layer::vertecies::init");
+			SPDLOG_INFO("game_drawer_layer::vertecies::init");
 
 			gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
 
@@ -121,7 +121,7 @@ namespace game_drawer_layer {
 
 		void reset()
 		{
-			LOG_3("game_drawer_layer::vertecies::reset");
+			SPDLOG_INFO("game_drawer_layer::vertecies::reset");
 
 			nodes_g.clear();
 		}
@@ -147,7 +147,7 @@ namespace game_drawer_layer {
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
-			LOG_3("game_drawer_layer::edges::init");
+			SPDLOG_INFO("game_drawer_layer::edges::init");
 
 			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
 
@@ -202,7 +202,7 @@ namespace game_drawer_layer {
 
 		void reset()
 		{
-			LOG_3("game_drawer_layer::edges::reset");
+			SPDLOG_INFO("game_drawer_layer::edges::reset");
 			edges_g.clear();
 		}
 
@@ -227,7 +227,7 @@ namespace game_drawer_layer {
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
-			LOG_3("game_drawer_layer::trains::init");
+			SPDLOG_INFO("game_drawer_layer::trains::init");
 
 			for (auto& player : gamedata.players)
 			{
@@ -245,7 +245,7 @@ namespace game_drawer_layer {
 
 		void reset()
 		{
-			LOG_3("game_drawer_layer::edges::reset");
+			SPDLOG_INFO("game_drawer_layer::edges::reset");
 
 			trains_g.clear();
 		}
@@ -290,7 +290,7 @@ namespace game_drawer_layer {
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
-			LOG_3("game_drawer_layer::edges_length::init");
+			SPDLOG_INFO("game_drawer_layer::edges_length::init");
 
 			cached_font.loadFromFile(config.edge_length_font);
 
@@ -315,7 +315,7 @@ namespace game_drawer_layer {
 
 		void reset()
 		{
-			LOG_3("game_drawer_layer::edges_length::reset");
+			SPDLOG_INFO("game_drawer_layer::edges_length::reset");
 
 			cached_edges_length.clear();
 		}
@@ -339,7 +339,7 @@ namespace game_drawer_layer {
 
 		void init(const GameData& gamedata, const game_drawer_config& config)
 		{
-			LOG_3("game_drawer_layer::background::init");
+			SPDLOG_INFO("game_drawer_layer::background::init");
 
 			config.textures->RequireResource("bg");
 			sf::Texture* bg_texture = config.textures->GetResource("bg");
@@ -349,7 +349,7 @@ namespace game_drawer_layer {
 
 		void reset()
 		{
-			LOG_3("game_drawer_layer::background::reset");
+			SPDLOG_INFO("game_drawer_layer::background::reset");
 			//nothing
 		}
 
@@ -394,7 +394,7 @@ public:
 
 	void init(const GameData& gamedata)
 	{
-		LOG_2("game_drawer::init");
+		SPDLOG_DEBUG("game_drawer::init");
 
 		for (game_drawer_layer::layer_base& layer : layers)
 		{
@@ -413,7 +413,7 @@ public:
 
 	void reset()
 	{
-		LOG_2("game_drawer::reset");
+		SPDLOG_DEBUG("game_drawer::reset");
 
 		for (game_drawer_layer::layer_base& layer : layers)
 		{
@@ -449,7 +449,7 @@ public:
 
 	void start(sf::RenderWindow& window, const GameData& gamedata, game_drawer_config& config, const status& s)
 	{
-		LOG_2("game_drawer: start");
+		SPDLOG_DEBUG("game_drawer: start");
 
 		init(gamedata);
 
@@ -463,7 +463,7 @@ public:
 			}
 			catch (boost::thread_interrupted&)
 			{
-				LOG_2("game_render: Render thread interrupted");
+				SPDLOG_DEBUG("game_render: Render thread interrupted");
 			}
 		}
 	}
@@ -504,15 +504,15 @@ public:
 
 void game_drawer_thread(const GameData& gamedata, game_drawer_config& config, const status& s, sf::RenderWindow*& callback)
 {
-	LOG_2("game_drawer_thread: Creating RenderWindow...");
+	SPDLOG_DEBUG("game_drawer_thread: Creating RenderWindow...");
 	sf::RenderWindow window(config.window_videomode, config.window_name);
-	LOG_2("game_drawer_thread: Saving RenderWindow pointer...");
+	SPDLOG_DEBUG("game_drawer_thread: Saving RenderWindow pointer...");
 	callback = &window;
 	
 
-	LOG_2("game_drawer_thread: Creating game_drawer...");
+	SPDLOG_DEBUG("game_drawer_thread: Creating game_drawer...");
 	game_drawer drawer(gamedata, config);
 
-	LOG_2("game_drawer_thread: Starting draw loop...");
+	SPDLOG_DEBUG("game_drawer_thread: Starting draw loop...");
 	drawer.start(window, gamedata, config, s);
 }

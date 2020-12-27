@@ -1,11 +1,12 @@
 #pragma once
 
 #include <src/Types.h>
-#include <src/utils/Logging.h>
 
 #include <nlohmann/json.hpp>
 #include <map>
 
+#include <spdlog/spdlog.h>
+#include "spdlog/fmt/ostr.h"
 
 struct Player
 {
@@ -29,5 +30,28 @@ struct Player
 		j["rating"].get_to(val.rating);
 	}
 
-	CLASS_VIRTUAL_DESTRUCTOR(Player);
+    template<typename OStream>
+    friend OStream &operator<<(OStream &os, const Player &p)
+    {
+        os  << "[Player "
+                << "idx="       << p.idx    << ", "
+                << "name="      << p.name   << ", "
+                << "rating="    << p.rating << ", ";
+
+        os << '\n';
+        os << "trains=";
+        {
+            os << "[\n";
+            for (const auto& [idx, t]  : p.trains)
+            {
+                os << '\t' << t << '\n';
+            }
+            os << "]";
+        }
+        os << "]";
+
+        return os;
+    }
+
+    CLASS_VIRTUAL_DESTRUCTOR(Player);
 };
