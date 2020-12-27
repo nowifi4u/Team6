@@ -22,10 +22,8 @@ public:
 
 	void reset_deltas()
 	{
-		Graph::for_each_vertex_descriptor(gamedata.graph(), [&](Graph::vertex_descriptor v) {
-			deltas_market[v] = 0;
-			deltas_storage[v] = 0;
-			});
+		deltas_market.init(gamedata.graph());
+		deltas_storage.init(gamedata.graph());
 	}
 
 	void calculate()
