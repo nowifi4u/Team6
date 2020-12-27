@@ -4,7 +4,9 @@
 
 #include <nlohmann/json.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+
 #include <spdlog/spdlog.h>
+#include "spdlog/fmt/ostr.h"
 
 
 namespace Events {
@@ -23,6 +25,14 @@ namespace Events {
 	struct Event
 	{
 		virtual EventType type() const = 0;
+
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const = 0;
+
+        template<typename OStream>
+        friend OStream &operator<<(OStream &os, const Event &e)
+        {
+            return e.doprint(os);
+        }
 	};
 
 	struct Event_TrainCrash : public Event
@@ -181,6 +191,7 @@ namespace Events {
 		for (const json& ji : j["events"])
 		{
 			vec.push_back(make_Event(ji));
+			SPDLOG_DEBUG("Last pushed event: {}", vec[vec.size()-1]);
 		}
 	}
 
