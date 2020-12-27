@@ -100,6 +100,8 @@ struct GameData
 
 	static void readJSON_L10(GameData& val, const json& j)
 	{
+		if (j.find("error") != j.end()) throw std::runtime_error(j["error"].get<std::string>());
+
 		val.map_graph_coords = new CoordsHolder(val.map_graph.graph);
 
 		// Read Vertex coordinates
@@ -120,6 +122,8 @@ struct GameData
 
 	static void readJSON_L1(GameData& val, const json& j)
 	{
+		if (j.find("error") != j.end()) throw std::runtime_error(j["error"].get<std::string>());
+
 		//Parse Players
 		for (const auto& [player_idx, ji] : j["ratings"].items())
 		{
@@ -148,6 +152,8 @@ struct GameData
 
 	static void updateJSON_L1(GameData& val, const json& j)
 	{
+		if (j.find("error") != j.end()) throw std::runtime_error(j["error"].get<std::string>());
+
 		//Parse Players
 		for (const auto& [player_idx, ji] : j["ratings"].items())
 		{
