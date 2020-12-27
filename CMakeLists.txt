@@ -74,6 +74,7 @@ add_executable(Team6
         src/game/solver/executor/executor.cpp
         src/game/solver/task/task.cpp
         src/game/solver/task/empty.cpp
+        src/game/solver/task/TakeProduct.cpp
         src/game/data.h
         src/game/solver.h
         src/game/controller.h
@@ -89,7 +90,6 @@ add_executable(Team6
         src/utils/network/tcp_connector.h
         src/utils/bincharstream.h
         src/utils/binstream.h
-        src/utils/ClassDefines.h
         src/game.h
         src/Main.cpp
         src/Types.h )
