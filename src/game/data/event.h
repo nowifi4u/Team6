@@ -175,6 +175,14 @@ namespace Events {
 			return event;
 		}
 
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Event ResourceOverflow ";
+            os << ']';
+
+            return os;
+        }
+
 		CLASS_VIRTUAL_DESTRUCTOR(Event_ResourceOverflow);
 	};
 
