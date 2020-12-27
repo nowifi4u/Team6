@@ -73,6 +73,7 @@ add_executable(Team6
         src/game/solver/RouteManager.h
         src/game/solver/executor/executor.cpp
         src/game/solver/task/task.cpp
+        src/game/solver/task/empty.cpp
         src/game/data.h
         src/game/solver.h
         src/game/controller.h
