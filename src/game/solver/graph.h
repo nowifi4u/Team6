@@ -15,21 +15,17 @@ class GraphDijkstra
 public:
 
 	using weight_map_t = boost::property_map<Graph::Graph, Types::edge_length_t Graph::EdgeProperties::*>::const_type;
-	using ro_weight_map_t = boost::detail::readable_only_pmap<weight_map_t>;
+	using ro_weight_map_t = detail::readable_only_pmap<weight_map_t>;
 
 	using index_map_t = boost::property_map<Graph::Graph, boost::vertex_index_t>::type;
-
-	using path_t = std::deque<Graph::vertex_descriptor>;
-
-	using path_edges_t = std::deque<Graph::edge_descriptor>;
 
 	GraphDijkstra(const Graph::Graph& graph)
 		: graph_(graph), 
 		vbegin(graph.null_vertex()),
 		weightmap(boost::get(&Graph::EdgeProperties::length, graph)),
 		predecessors(boost::num_vertices(graph)),
-		indexmap(boost::get(boost::vertex_index, graph)),
-		distances(graph)
+		distances_vec(boost::num_vertices(graph)),
+		distances(distances_vec.begin(), boost::get(boost::vertex_index, graph))
 	{
 		
 	}
@@ -41,8 +37,8 @@ public:
 		boost::dijkstra_shortest_paths(
 			graph_,
 			v,
-			boost::predecessor_map(boost::make_iterator_property_map(predecessors.begin(), indexmap))
-			.distance_map(distances.get_map())
+			boost::predecessor_map(boost::make_iterator_property_map(predecessors.begin(), get(boost::vertex_index, graph_)))
+			.distance_map(distances)
 			.weight_map(weightmap)
 			);
 	}
@@ -60,14 +56,20 @@ public:
 	template <class Func>
 	void for_each(Func f)
 	{
-		distances.for_each(graph_, f);
+		Graph::for_each_vertex_descriptor(graph_, [&](Graph::vertex_descriptor v) {
+			f(distances[v]);
+			});
 	}
 
 	template <class Func>
 	void for_each(Func f) const
 	{
-		distances.for_each(graph_, f);
+		Graph::for_each_vertex_descriptor(graph_, [&](Graph::vertex_descriptor v) {
+			f(distances[v]);
+			});
 	}
+
+	using path_t = std::deque<Graph::vertex_descriptor>;
 
 	path_t calculate_path(Graph::vertex_descriptor vend) const
 	{
@@ -82,6 +84,8 @@ public:
 		}
 		return path;
 	}
+
+	using path_edges_t = std::deque<Graph::edge_descriptor>;
 
 	path_edges_t calculate_path_edges(Graph::vertex_descriptor vend) const
 	{
@@ -104,12 +108,11 @@ public:
 	const Graph::Graph& graph_;
 	Graph::vertex_descriptor vbegin;
 
-	const index_map_t indexmap;
-
 	const weight_map_t weightmap;
 
 	std::vector<Graph::vertex_descriptor> predecessors;
 	
-	GraphVertexMap<Types::edge_length_t> distances;
+	GraphVertexMap<Types::edge_length_t>::PositionVec distances_vec;
+	GraphVertexMap<Types::edge_length_t>::PositionMap distances;
 
 };
