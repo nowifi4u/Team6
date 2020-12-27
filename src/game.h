@@ -220,12 +220,14 @@ public:
 		this->drawer_start();
 		this->drawer_window_wait();
 
+		GameSolver gamesolver(gamedata, connector);
+
 		this->await_run();
 		this->update();
 
 		while (true /*gamedata.game_state == GameData::GameState::RUN*/)
 		{
-			//this->calculate_move();
+			gamesolver.calculate();
 
 			this->await_move();
 
