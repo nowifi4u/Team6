@@ -172,6 +172,40 @@ namespace Graph {
 		}
 	}
 
+	template <class Func>
+	void for_each_out_edge(const Graph& graph, Graph::vertex_descriptor vertex, Func f)
+	{
+		for_each_edge_descriptor(graph, [&](Graph::edge_descriptor ei) {
+			if (vertex == boost::source(ei, graph))
+			{
+				f(ei);
+			}
+			});
+	}
+
+	template <class Func>
+	void for_each_in_edge(const Graph& graph, Graph::vertex_descriptor vertex, Func f)
+	{
+		for_each_edge_descriptor(graph, [&](Graph::edge_descriptor ei) {
+			if (vertex == boost::target(ei, graph))
+			{
+				f(ei);
+			}
+			});
+	}
+
+	template <class Func>
+	void for_each_connected_edge(const Graph& graph, Graph::vertex_descriptor vertex, Func f)
+	{
+		for_each_edge_descriptor(graph, [&](Graph::edge_descriptor ei) {
+			if (vertex == boost::source(ei, graph)
+				|| vertex == boost::target(ei, graph))
+			{
+				f(ei);
+			}
+			});
+	}
+
 	inline bool isSource(const Graph& g, vertex_descriptor v, vertex_descriptor ve)
 	{
 		if (boost::edge(v, ve, g).second)
