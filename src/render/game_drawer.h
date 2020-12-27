@@ -221,6 +221,9 @@ namespace game_drawer_layer {
 		std::map<Types::train_idx_t, sf::Sprite> trains_g;
 		std::map<Types::train_idx_t, const Trains::Train*> tMap;
 
+		std::map<Types::train_idx_t, sf::Text> trains_info;
+		sf::Font cashed_font;
+
 	public:
 
 		trains() : layer_base() {}
@@ -241,6 +244,13 @@ namespace game_drawer_layer {
 					SpriteUtils::centerOrigin(s);
 				}
 			}
+			cashed_font.loadFromFile(config.edge_length_font);
+			for (auto& p : trains_g) {
+				sf::Text& text = trains_info[p.first];
+				text.setFont(cashed_font);
+				text.setCharacterSize(24);
+				SpriteUtils::centerOrigin(text, sf::Vector2f(12, text.getCharacterSize() ));
+			}
 		}
 
 		void reset()
@@ -248,6 +258,8 @@ namespace game_drawer_layer {
 			LOG_3("game_drawer_layer::edges::reset");
 
 			trains_g.clear();
+			tMap.clear();
+			trains_info.clear();
 		}
 
 		void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
@@ -270,10 +282,34 @@ namespace game_drawer_layer {
 
 				s.second.setPosition(
 					sf::Vector2f(
-					config.padding_width.map(coords[u][0]) + (float)v_x_distance * koeff,
-					config.padding_height.map(coords[u][1]) + (float)v_y_distance * koeff
+						config.padding_width.map(coords[u][0]) + (float)v_x_distance * koeff,
+						config.padding_height.map(coords[u][1]) + (float)v_y_distance * koeff
 					));
 				window.draw(s.second);
+
+			}
+
+			for (auto& p : trains_info) {
+				sf::Text& text = p.second;
+				const Trains::Train* t = tMap[p.first];
+				
+				text.setString(std::to_string(t->goods));
+				
+				if (t->goods_type == Trains::Armor)
+				{
+					text.setFillColor(sf::Color::Blue);
+				}
+				else if (t->goods_type == Trains::Product)
+				{
+					text.setFillColor(sf::Color::Green);
+				}
+				else {
+					text.setFillColor(sf::Color::Black);
+				}
+
+				text.setPosition(trains_g[p.first].getPosition());
+
+				window.draw(text);
 			}
 		}
 	};
