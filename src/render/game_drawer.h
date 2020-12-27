@@ -248,7 +248,7 @@ namespace game_drawer_layer {
 
 				bool b = config.textures->RequireResource("train_good");
 				s = sf::Sprite(*config.textures->GetResource("train_good"));
-				SpriteUtils::setSize(s, { 25, 25 });
+				SpriteUtils::setSize(s, sf::Vector2f{ 25, 25 });
 				SpriteUtils::centerOrigin(s);
 			}
 		}
