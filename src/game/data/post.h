@@ -152,6 +152,7 @@ namespace Posts {
 			j["population"] = population;
 			j["product"] = product;
 			j["train_cooldown"] = train_cooldown;
+			return j;
 		}
 
 		[[nodiscard]]
