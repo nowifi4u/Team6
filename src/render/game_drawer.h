@@ -546,10 +546,24 @@ public:
 	{
 		switch (s)
 		{
-			case status::AWAIT_PLAYERS:  window.clear(sf::Color::Blue);  break;
-			case status::UPDATING:  window.clear(sf::Color::Red);  break;
-			case status::CALCULATING:  window.clear(sf::Color::Yellow);   break;
-			case status::READY:  window.clear(config.clear_color); break;
+			case status::AWAIT_PLAYERS:  
+			{
+				window.setTitle("Game: Awaiting Players...");
+				window.clear(sf::Color::Green);
+			} break;
+			case status::UPDATING: 
+			{
+				window.setTitle("Game: Updating data...");
+			} break;
+			case status::CALCULATING: 
+			{
+				window.setTitle("Game: Calculating moves...");
+			} break;
+			case status::READY:
+			{
+				window.setTitle("Game: Waiting for other players...");
+				window.clear(config.clear_color);
+			} break;
 		}
 
 		if(s == status::READY)
