@@ -11,7 +11,6 @@
 
 #include <src/utils/ClassDefines.h>
 #include <src/Types.h>
-#include <src/utils/Logging.h>
 
 #include <nlohmann/json.hpp>
 using nlohmann::json;

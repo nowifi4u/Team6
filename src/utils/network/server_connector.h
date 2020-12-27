@@ -4,6 +4,7 @@
 
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
+using namespace nlohmann;
 #include <boost/endian/conversion.hpp>
 
 #include <src/utils/network/tcp_connector.h>
