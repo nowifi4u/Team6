@@ -60,6 +60,17 @@ public:
 		MAP = 10
 	};
 
+    enum Result : uint32_t
+    {
+        OKEY = 0,
+        BAD_COMMAND = 1,
+        RESOURCE_NOT_FOUND = 2,
+        ACCESS_DENIED = 3,
+        INAPPROPRIATE_GAME_STATE = 4,
+        TIMEOUT = 5,
+        INTERNAL_SERVER_ERROR = 500
+    };
+
 protected:
 
 	static std::string _encodeAction(Action action, const std::string& data = "")
@@ -74,17 +85,6 @@ protected:
 		out << data;
 		return out.str();
 	}
-
-    enum Result : uint32_t
-    {
-        OKEY = 0,
-        BAD_COMMAND = 1,
-        RESOURCE_NOT_FOUND = 2,
-        ACCESS_DENIED = 3,
-        INAPPROPRIATE_GAME_STATE = 4,
-        TIMEOUT = 5,
-        INTERNAL_SERVER_ERROR = 500
-    };
 
 	std::pair<Result, size_t> _read_header()
 	{
