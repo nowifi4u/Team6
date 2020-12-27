@@ -23,12 +23,43 @@ namespace Graph {
 	{
 		Types::vertex_idx_t idx;
 		Types::post_idx_t post_idx;
+
+		json encodeJSON() const
+		{
+			json j;
+
+			j["idx"] = idx;
+			if (post_idx == UINT32_MAX) j["post_idx"] = nullptr;
+			else j["post_idx"] = post_idx;
+
+			return j;
+		}
+
+		static void readJSON_L0(VertexProperties& val, const json& j)
+		{
+			val.post_idx = j["post_idx"].is_null() ? UINT32_MAX : j["post_idx"].get<Types::post_idx_t>();
+		}
 	};
 
 	struct EdgeProperties
 	{
 		Types::edge_idx_t idx;
 		Types::edge_length_t length;
+
+		json encodeJSON() const
+		{
+			json j;
+
+			j["idx"] = idx;
+			j["length"] = length;
+
+			return j;
+		}
+
+		static void readJSON_L0(EdgeProperties& val, const json& j)
+		{
+			j["length"].get_to(val.length);
+		}
 	};
 
 	struct GraphProperties
@@ -50,7 +81,24 @@ namespace Graph {
 	using vertex_iterator = boost::graph_traits<Graph>::vertex_iterator;
 	using edge_iterator = boost::graph_traits<Graph>::edge_iterator;
 
+	json encodeJSON_vertex(const Graph& graph, Graph::vertex_descriptor v)
+	{
+		json j = graph[v].encodeJSON();
 
+		j["descriptor"] = v;
+
+		return j;
+	}
+
+	json encodeJSON_edge(const Graph& graph, Graph::edge_descriptor e)
+	{
+		json j = graph[e].encodeJSON();
+
+		j["source"] = graph[boost::source(e, graph)].encodeJSON();
+		j["target"] = graph[boost::target(e, graph)].encodeJSON();
+
+		return j;
+	}
 
 	template <class Func>
 	inline void for_each_vertex_iterator(Graph& graph, Func f)
@@ -453,7 +501,6 @@ public:
 		return graph[boost::graph_bundle];
 	}
 
-
 	static void readJSON_L0(GraphIdx& g, const json& j)
 	{
 		// Read Vertex properties
@@ -463,7 +510,7 @@ public:
 
 			Graph::vertex_descriptor v = g.add_vertex(idx);
 
-			g.graph[v].post_idx = ji["post_idx"].is_null() ? UINT32_MAX : ji["post_idx"].get<Types::post_idx_t>();
+			Graph::VertexProperties::readJSON_L0(g.graph[v], ji);
 		}
 
 		// Read Edge properties
@@ -475,7 +522,7 @@ public:
 
 			Graph::edge_descriptor e = g.add_edge(idx, vidx1, vidx2);
 
-			ji["length"].get_to(g.graph[e].length);
+			Graph::EdgeProperties::readJSON_L0(g.graph[e], ji);
 		}
 	}
 };
