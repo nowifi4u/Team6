@@ -33,6 +33,12 @@ public:
 		init(g);
 	}
 
+	static void init(const Graph::Graph& g, PositionVec& position_vec, PositionMap& position_map)
+	{
+		m_position_vec = std::move(PositionVec(num_vertices(g)));
+		m_position = boost::move(PositionMap(m_position_vec.begin(), get(boost::vertex_index, g)));
+	}
+
 	void init(const Graph::Graph& g)
 	{
 		m_position_vec = PositionVec(num_vertices(g));
@@ -40,6 +46,16 @@ public:
 	}
 
 	virtual ~GraphVertexMap() = default;
+
+	PositionVec& get_vec()
+	{
+		return m_position_vec;
+	}
+
+	const PositionVec& get_vec() const
+	{
+		return m_position_vec;
+	}
 
 	PositionMap& get_map()
 	{
