@@ -216,6 +216,10 @@ public:
 			{
 				std::cout << "Invalid packet! Error code " << conerr << std::endl;
 			}
+			catch (nlohmann::detail::parse_error& err)
+			{
+				std::cout << "JSON parse ERROR! " << err.what() << std::endl;
+			}
 
 			std::cout << "Press any key to try again...";
 			std::getc(stdin);
