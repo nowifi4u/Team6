@@ -2,6 +2,20 @@
 
 #include <SFML/Graphics.hpp>
 
+namespace VectorUtils {
+
+	inline sf::Vector2f makeVector2f(const sf::Vector2u& vec)
+	{
+		return sf::Vector2f(vec.x, vec.y);
+	}
+
+	inline sf::Vector2u makeVector2u(const sf::Vector2f& vec)
+	{
+		return sf::Vector2u(vec.x, vec.y);
+	}
+
+} // namespace VectorUtils
+
 namespace TextureUtils {
 
 	inline sf::Vector2u getSize(const sf::Texture& texture)
