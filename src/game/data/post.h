@@ -200,6 +200,25 @@ namespace Posts {
 			j["train_cooldown"].get_to(ptr->train_cooldown);
 		}
 
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Town ";
+
+            os << "{";
+            Post::doprint(os);
+            os << "} ";
+
+            os  << "armor="             << armor            << ", "
+                << "level="             << level            << ", "
+                << "player_idx="        << player_idx       << ", "
+                << "population="        << population       << ", "
+                << "product="           << product          << ", "
+                << "train_cooldown="    << train_cooldown;
+
+            os << "]";
+            return os;
+        }
+
 		CLASS_VIRTUAL_DESTRUCTOR(Town);
 	};
 
