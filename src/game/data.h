@@ -29,6 +29,7 @@ struct GameData
 	bool in_game;
 
 	std::map<Types::player_uid_t, Player> players;
+	std::map<Types::train_idx_t, Trains::Train*> trains;
 
 	GraphIdx map_graph;
 	CoordsHolder* map_graph_coords = nullptr;
@@ -139,6 +140,7 @@ struct GameData
 
 			//Train memory initialization + value initialization
 			Trains::Train::readJSON_L1(val.players.at(player_idx).trains[train_idx], ji);
+			val.trains[train_idx] = &val.players.at(player_idx).trains.at(train_idx);
 		}
 
 		//Parse Posts
