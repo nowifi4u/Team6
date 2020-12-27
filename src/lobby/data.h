@@ -27,4 +27,14 @@ struct LobbyData
 		j["num_turns"].get_to(val.num_turns);
 		j["state"].get_to(val.state);
 	}
+
+	static void readJSON_Games_vector(std::vector<LobbyData>& vec, const json& j)
+	{
+		vec.clear();
+		vec.reserve(j["games"].size());
+		for (const json& ji : j["games"])
+		{
+			readJSON_Games(vec.emplace_back(), ji);
+		}
+	}
 };
