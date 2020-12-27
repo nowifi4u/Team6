@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoordsCalculator.h"
+#include <src/graph/CoordsCalculator.h>
 
 #include <boost/graph/kamada_kawai_spring_layout.hpp>
 #include <boost/graph/circle_layout.hpp>

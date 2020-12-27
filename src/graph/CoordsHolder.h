@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graph.h"
+#include <src/graph/graph.h>
 
 #include <boost/property_map/transform_value_property_map.hpp>
 #include <boost/graph/topology.hpp>
