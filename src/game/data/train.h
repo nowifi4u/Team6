@@ -14,15 +14,15 @@ namespace Trains {
 	struct Train_Tier
 	{
 		const uint32_t goods_capacity;
-		const uint32_t fuel_capacity;
+		//const uint32_t fuel_capacity;
 		const uint64_t next_level_price;
 	};
 
 	const Train_Tier TrainTiers[3]
 	{
-		{40,400,40},
-		{80,800,80},
-		{160,1600,UINT32_MAX}
+		{40,30},
+		{80,60},
+		{160,UINT32_MAX}
 	};
 
 	enum GoodsType : uint8_t

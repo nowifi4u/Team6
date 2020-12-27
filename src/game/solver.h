@@ -32,6 +32,8 @@ public:
 
 		reset_deltas();
 
+		calculate_upgrades();
+
 		calculate_states();
 
 		for (auto& train_solver : trainsolvers)
@@ -90,6 +92,62 @@ public:
 					ts.state = TrainSolver::State::NORMAL_FOOD;
 			}
 		}
+	}
+
+	void calculate_upgrades() {
+		const Posts::Town* town = get_home_town();
+		if (town != nullptr) {
+			auto armour = town->armor;
+
+			bool updated = true;
+			while (updated) {
+				uint8_t min_level = 4;
+				Types::train_idx_t min_train_index = UINT32_MAX;
+
+				for (size_t i = 0; i < trainsolvers.size(); ++i) {
+
+					if (trainsolvers[i].gamedata_train.level < min_level) {
+						min_level = trainsolvers[i].gamedata_train.level;
+						min_train_index = i;
+					}
+				}
+
+				updated = false;
+				//check for train updates
+				if (min_level == 1 && armour >= Trains::TrainTiers[0].next_level_price) {
+					armour -= Trains::TrainTiers[0].next_level_price;
+					connector.async_send_Upgrade({ {},{min_train_index} });
+
+					updated = true;
+				}
+				else if (min_level == 2 && armour >= Trains::TrainTiers[1].next_level_price) {
+					armour -= Trains::TrainTiers[1].next_level_price;
+					connector.async_send_Upgrade({ {},{min_train_index} });
+					updated = true;
+				}
+				else if (town->level == 2 && armour >= 75) {  //check for city updates
+					armour -= 75;
+					connector.async_send_Upgrade({ {gamedata.home_idx},{} });
+					updated = true;
+				}
+				else if (town->level == 2 && armour >= 185) {
+					armour -= 150;
+					connector.async_send_Upgrade({ {gamedata.home_idx},{} });
+					updated = true;
+				}
+			}
+		}
+		else {
+			std::cout << "nullptr while getting home town";
+		}
+
+	}
+	Posts::Town* get_home_town() {
+		for (const auto& p : gamedata.posts) {
+			if (p.first == gamedata.home_idx)
+				return (Posts::Town*)p.second.get();
+		}
+		return nullptr;
 	}
 
 	Types::Epoch get_epoch() {
