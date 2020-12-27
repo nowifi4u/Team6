@@ -102,7 +102,6 @@ public:
 		this->drawer_window->setTitle("Update game data...");
 
 		{
-			LOG("Updating game data...");
 			connector.send_Map({ 1 });
 
 			const auto response = connector.read_packet();
