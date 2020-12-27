@@ -12,17 +12,14 @@
 #include <src/game/data/player.h>
 #include <src/game/data/post.h>
 
+#include <src/lobby/data.h>
+
 
 
 
 struct GameData
 {
-	enum GameState : uint8_t
-	{
-		INIT = 1,
-		RUN = 2,
-		FINISHED = 3
-	};
+	using GameState = LobbyData::GameState;
 
 	GameState game_state;
 
@@ -177,20 +174,4 @@ struct GameData
 	}
 
 	CLASS_VIRTUAL_DESTRUCTOR(GameData);
-};
-
-struct GameLobby
-{
-	std::string name;
-	uint8_t num_players;
-	Types::tick_t num_turns;
-	GameData::GameState state;
-
-	static void readJSON_Games(GameLobby& val, const json& j)
-	{
-		j["name"].get_to(val.name);
-		j["num_plaers"].get_to(val.num_players);
-		j["num_turns"].get_to(val.num_turns);
-		j["state"].get_to(val.state);
-	}
 };
