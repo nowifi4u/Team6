@@ -9,7 +9,10 @@ class GameSolver
 public:
 
 	GameSolver(const GameData& gamedata, server_connector& connector)
-		: gamedata(gamedata), connector(connector), tick(0)
+		: gamedata(gamedata), 
+		connector(connector), 
+		pathsolver(gamedata),
+		tick(0)
 	{
 		for (const auto& [train_idx, train_data] : gamedata.self_data().trains)
 		{
@@ -144,6 +147,8 @@ protected:
 
 	GraphVertexMap<double> deltas_market;
 	GraphVertexMap<double> deltas_storage;
+
+	PathSolver pathsolver;
 	
 	Types::tick_t tick;
 	size_t food_epoch4_ts_idx;
