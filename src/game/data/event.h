@@ -85,6 +85,17 @@ namespace Events {
 			return event;
 		}
 
+        virtual std::basic_ostream<char>& doprint(std::basic_ostream<char> &os) const
+        {
+            os  << "[Event Parasites "
+                << "parasite_power="    << (uint32_t) parasite_power << ", "
+                << "tick="              << tick;//           << ", "
+
+            os << ']';
+
+            return os;
+        }
+
 		CLASS_VIRTUAL_DESTRUCTOR(Event_Parasites);
 	};
 
