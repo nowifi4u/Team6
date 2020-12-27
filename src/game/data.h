@@ -160,8 +160,6 @@ struct GameData
 			Posts::updateJSON_L1(val.posts.at(post_idx).get(), ji);
 		}
 	}
-
-	CLASS_VIRTUAL_DESTRUCTOR(GameData);
 };
 
 struct GameLobby

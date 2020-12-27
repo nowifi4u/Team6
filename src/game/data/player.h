@@ -52,6 +52,4 @@ struct Player
 
         return os;
     }
-
-    CLASS_VIRTUAL_DESTRUCTOR(Player);
 };

@@ -3,10 +3,11 @@
 #include "Types.h"
 
 #include <nlohmann/json.hpp>
+using namespace nlohmann;
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include <spdlog/spdlog.h>
-#include "spdlog/fmt/ostr.h"
+#include <spdlog/fmt/ostr.h>
 
 
 namespace Events {
@@ -33,6 +34,7 @@ namespace Events {
         {
             return e.doprint(os);
         }
+
 	};
 
 	struct Event_TrainCrash : public Event
@@ -64,7 +66,6 @@ namespace Events {
             return os;
         }
 
-		CLASS_VIRTUAL_DESTRUCTOR(Event_TrainCrash);
 	};
 
 	struct Event_Parasites : public Event
@@ -96,7 +97,6 @@ namespace Events {
             return os;
         }
 
-		CLASS_VIRTUAL_DESTRUCTOR(Event_Parasites);
 	};
 
 	struct Event_Bandits : public Event
@@ -128,7 +128,6 @@ namespace Events {
             return os;
         }
 
-		CLASS_VIRTUAL_DESTRUCTOR(Event_Bandits);
 	};
 
 	struct Event_Refugees : public Event
@@ -160,7 +159,6 @@ namespace Events {
             return os;
         }
 
-		CLASS_VIRTUAL_DESTRUCTOR(Event_Refugees);
 	};
 
 	struct Event_ResourceOverflow : public Event
@@ -183,7 +181,6 @@ namespace Events {
             return os;
         }
 
-		CLASS_VIRTUAL_DESTRUCTOR(Event_ResourceOverflow);
 	};
 
 	struct Event_ResourceLack : public Event
@@ -206,7 +203,6 @@ namespace Events {
             return os;
         }
 
-		CLASS_VIRTUAL_DESTRUCTOR(Event_ResourceLack);
 	};
 
 	struct Event_GameOver : public Event
@@ -229,7 +225,6 @@ namespace Events {
             return os;
         }
 
-		CLASS_VIRTUAL_DESTRUCTOR(Event_GameOver);
 	};
 
 	[[nodiscard]]

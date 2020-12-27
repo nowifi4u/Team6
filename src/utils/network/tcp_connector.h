@@ -6,8 +6,6 @@
 #include <boost/asio.hpp>
 #include <spdlog/spdlog.h>
 
-#include "utils/ClassDefines.h"
-
 using boost::asio::ip::tcp;
 
 class tcp_connector

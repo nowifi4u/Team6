@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Types.h"
+#include "event.h"
 
 #include <nlohmann/json.hpp>
+using namespace nlohmann;
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #include <spdlog/spdlog.h>
@@ -58,7 +60,6 @@ namespace Posts {
             return p.doprint(os);
         }
 
-		CLASS_VIRTUAL_DESTRUCTOR(Post);
 	};
 
 	struct Storage : public Post
@@ -105,7 +106,6 @@ namespace Posts {
             return os;
         }
 
-		CLASS_VIRTUAL_DESTRUCTOR(Storage);
 	};
 
 	struct Market : public Post
@@ -152,7 +152,6 @@ namespace Posts {
             return os;
         }
 
-		CLASS_VIRTUAL_DESTRUCTOR(Market);
 	};
 
 	struct Town_Tier
@@ -219,7 +218,6 @@ namespace Posts {
             return os;
         }
 
-		CLASS_VIRTUAL_DESTRUCTOR(Town);
 	};
 
 	[[nodiscard]]

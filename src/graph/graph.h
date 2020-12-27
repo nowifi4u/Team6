@@ -8,7 +8,6 @@
 #include <vector>
 #include <map>
 
-#include "utils/ClassDefines.h"
 #include "Types.h"
 
 #include <nlohmann/json.hpp>
@@ -80,8 +79,6 @@ public:
 		: vmap(std::move(g.vmap)),
 		emap(std::move(g.emap)),
 		graph(boost::move(g.graph)) {}
-
-	CLASS_VIRTUAL_DESTRUCTOR(GraphIdx);
 
 	void clear()
 	{
