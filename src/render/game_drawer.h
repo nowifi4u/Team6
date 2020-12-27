@@ -9,13 +9,13 @@
 #include <map>
 #include <functional>
 
-#include "../game/data.h"
-#include "TextureManager.h"
-#include "SpriteUtils.h"
+#include <src/game/data.h>
+#include <src/render/TextureManager.h>
+#include <src/render/SpriteUtils.h>
 
-#include "../utils/value_map.h"
-#include "../utils/Math.h"
-#include "../utils/MinMax.h"
+#include <src/utils/value_map.h>
+#include <src/utils/Math.h>
+#include <src/utils/MinMax.h>
 
 
 struct game_drawer_config

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoordsHolder.h"
+#include <src/graph/CoordsHolder.h>
 
 class CoordsCalculator : public CoordsHolder
 {

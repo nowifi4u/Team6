@@ -3,8 +3,6 @@
 #include <limits>
 #include <algorithm>
 
-#include "Math.h"
-
 template <class Ty>
 class MinReducer
 {

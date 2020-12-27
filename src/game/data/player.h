@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Types.h"
-#include "../../utils/Logging.h"
+#include <src/Types.h>
+#include <src/utils/Logging.h>
 
 #include <nlohmann/json.hpp>
 #include <map>
