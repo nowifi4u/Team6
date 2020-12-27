@@ -93,7 +93,7 @@ public:
 	{
 		draw();
 
-		std::cout << "Enter 'new' for creating a new lobby" << std::endl;
+		std::cout << "Press Enter to create a new Game" << std::endl;
 
 		std::string choice;
 		{
@@ -105,7 +105,7 @@ public:
 
 		server_connector::Login login;
 
-		if (choice == "new" || choice == "n" || choice == "NEW" || choice == "N")
+		if (choice.empty())
 		{
 			{
 				std::cout << "Enter name: ";
@@ -196,7 +196,7 @@ public:
 				std::cout << "Starting the game.." << std::endl;
 				game.start(login);
 			}
-			catch (std::invalid_argument& err)
+			catch (const std::invalid_argument& err)
 			{
 				std::cout << "Invalid choice! Please try again..." << std::endl;
 			}
@@ -204,13 +204,17 @@ public:
 			{
 				std::cout << "JSON parsing ERROR! " << err.what() << std::endl;
 			}
-			catch (std::runtime_error& err)
+			catch (const std::runtime_error& err)
 			{
 				std::cout << "Runtime ERROR! " << err.what() << std::endl;
 			}
 			catch (int err)
 			{
 				std::cout << "ERROR! Code " << err << std::endl;
+			}
+			catch (server_connector::Result conerr)
+			{
+				std::cout << "Invalid packet! Error code " << conerr << std::endl;
 			}
 
 			std::cout << "Press any key to try again...";
