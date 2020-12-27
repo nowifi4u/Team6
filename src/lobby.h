@@ -136,7 +136,7 @@ public:
 				std::getline(std::cin, num_turns);
 				cin_clear();
 
-				login.num_turns = ((num_turns.length() == 0) ? -1 : std::stoul(num_turns));
+				login.num_turns = ((num_turns.length() == 0) ? -1 : std::stoi(num_turns));
 			}
 
 			{
