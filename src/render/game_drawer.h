@@ -142,7 +142,7 @@ namespace game_drawer_layer {
 			{
 				if (node.getGlobalBounds().contains(pos))
 				{
-					std::cout << "Vertex = " << gamedata.graph()[v].encodeJSON() << std::endl;
+					std::cout << "Vertex = " << Graph::encodeJSON_vertex(gamedata.graph(), v) << std::endl;
 					if (gamedata.map_graph.graph[v].post_idx != UINT32_MAX)
 					{
 						std::cout << "Post = " << gamedata.posts.at(gamedata.map_graph.graph[v].post_idx)->encodeJSON() << std::endl;
@@ -237,7 +237,7 @@ namespace game_drawer_layer {
 			{
 				if (edge.getGlobalBounds().contains(pos))
 				{
-					std::cout << "Edge = " << gamedata.graph()[e].encodeJSON() << std::endl;
+					std::cout << "Edge = " << Graph::encodeJSON_edge(gamedata.graph(), e) << std::endl;
 				}
 			}
 		}
@@ -588,10 +588,14 @@ public:
 
 	void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
 	{
+		LOG("---------------------------------------- INFO ----------------------------------------");
+
 		for (game_drawer_layer::layer_base& layer : layers)
 		{
 			layer.onMouseClick(pos, window, gamedata, config);
 		}
+
+		LOG("--------------------------------------------------------------------------------------");
 	}
 
 	
