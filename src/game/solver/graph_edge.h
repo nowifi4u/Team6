@@ -10,8 +10,8 @@ class GraphEdgeDijkstra
 
 public:
 
-	GraphEdgeDijkstra(const Graph::Graph& graph)
-		: s(graph), t(graph) {}
+	GraphEdgeDijkstra(const Graph::Graph& graph, const GraphDijkstra::weightmap_transform_t& weightmap_transform)
+		: s(graph, weightmap_transform), t(graph, weightmap_transform) {}
 
 	void calculate(Graph::edge_descriptor e, Types::edge_idx_t pos)
 	{
