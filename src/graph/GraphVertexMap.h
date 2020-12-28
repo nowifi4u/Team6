@@ -35,8 +35,8 @@ public:
 
 	static void init(const Graph::Graph& g, PositionVec& position_vec, PositionMap& position_map)
 	{
-		m_position_vec = std::move(PositionVec(num_vertices(g)));
-		m_position = boost::move(PositionMap(m_position_vec.begin(), get(boost::vertex_index, g)));
+		m_position_vec = PositionVec(num_vertices(g));
+		m_position = PositionMap(m_position_vec.begin(), get(boost::vertex_index, g));
 	}
 
 	void init(const Graph::Graph& g)

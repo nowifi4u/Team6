@@ -28,7 +28,8 @@ public:
 		weightmap_transform(weightmap_transform),
 		vbegin(graph.null_vertex()),
 		weightmap(boost::get(&Graph::EdgeProperties::length, graph)),
-		predecessors(boost::num_vertices(graph)),
+		predecessors_vec(boost::num_vertices(graph)),
+		predecessors(predecessors_vec.begin(), boost::get(boost::vertex_index, graph)),
 		distances_vec(boost::num_vertices(graph)),
 		distances(distances_vec.begin(), boost::get(boost::vertex_index, graph))
 	{
@@ -42,20 +43,20 @@ public:
 		boost::dijkstra_shortest_paths(
 			graph_,
 			v,
-			boost::predecessor_map(boost::make_iterator_property_map(predecessors.begin(), get(boost::vertex_index, graph_)))
+			boost::predecessor_map(predecessors)
 			.distance_map(distances)
 			.weight_map(boost::make_transform_value_property_map([&](const Graph::EdgeProperties& edge) { 
-				return (weightmap_transform.find(edge.idx) != weightmap_transform.end() ? edge.length : UINT32_MAX); 
+				return (weightmap_transform.find(edge.idx) == weightmap_transform.end() ? INFINITY : edge.length);
 				}, get(boost::edge_bundle, graph_)))
 			);
 	}
 
-	Types::edge_length_t& operator[](Graph::vertex_descriptor v)
+	double& operator[](Graph::vertex_descriptor v)
 	{
 		return distances[v];
 	}
 
-	const Types::edge_length_t& operator[](Graph::vertex_descriptor v) const
+	const double& operator[](Graph::vertex_descriptor v) const
 	{
 		return distances[v];
 	}
@@ -118,9 +119,10 @@ public:
 	const weight_map_t weightmap;
 	const std::set<Types::edge_idx_t>& weightmap_transform;
 
-	std::vector<Graph::vertex_descriptor> predecessors;
+	GraphVertexMap< Graph::vertex_descriptor>::PositionVec predecessors_vec;
+	GraphVertexMap< Graph::vertex_descriptor>::PositionMap predecessors;
 	
-	GraphVertexMap<Types::edge_length_t>::PositionVec distances_vec;
-	GraphVertexMap<Types::edge_length_t>::PositionMap distances;
+	GraphVertexMap<double>::PositionVec distances_vec;
+	GraphVertexMap<double>::PositionMap distances;
 
 };

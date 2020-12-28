@@ -18,7 +18,7 @@ public:
 		{
 			s.calculate(boost::source(e, s.graph_));
 			Types::edge_length_t delta_s = pos;
-			s.for_each([&](Types::edge_length_t& di) {
+			s.for_each([&](auto& di) {
 				di += delta_s;
 				});
 		}
@@ -26,7 +26,7 @@ public:
 		{
 			t.calculate(boost::target(e, t.graph_));
 			Types::edge_length_t delta_t = s.graph_[e].length - pos;
-			t.for_each([&](Types::edge_length_t& di) {
+			t.for_each([&](auto& di) {
 				di += delta_t;
 				});
 		}
