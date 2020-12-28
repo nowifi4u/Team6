@@ -1,13 +1,10 @@
 #pragma once
 
-#include <src/Types.h>
-#include <src/utils/Logging.h>
-
-#include <nlohmann/json.hpp>
+#include <src/game/data/base_json_encodable.h>
 #include <map>
 
 
-struct Player
+struct Player : base_json_encodable
 {
 	Types::player_uid_t idx;
 	std::string name;

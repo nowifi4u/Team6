@@ -1,9 +1,6 @@
 #pragma once
 
-#include <src/Types.h>
-#include <src/utils/Logging.h>
-
-#include <nlohmann/json.hpp>
+#include <src/game/data/base_json_encodable.h>
 #include <boost/ptr_container/ptr_vector.hpp>
 
 
@@ -18,7 +15,7 @@ namespace Posts {
 		STORAGE = 3
 	};
 
-	struct Post
+	struct Post : public base_json_encodable
 	{
 		Types::vertex_idx_t idx;
 		std::string name;
