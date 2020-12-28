@@ -38,8 +38,6 @@ public:
 
 		for (auto& train_solver : trainsolvers)
 		{
-
-
 			std::optional<server_connector::Move> move = train_solver.calculate_Turn();
 
 			if (move.has_value()) connector.async_send_Move(move.value());
