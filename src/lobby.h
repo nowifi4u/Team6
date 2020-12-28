@@ -193,32 +193,32 @@ public:
 
 				draw_clear();
 
-				std::cout << "Starting the game.." << std::endl;
+				LOG("Starting the game..");
 				game.start(login);
+
+				LOG("Press any key to continue...");
+				std::getc(stdin);
+				draw_clear();
 			}
 			catch (const std::invalid_argument& err)
 			{
-				std::cout << "Invalid choice! Please try again..." << std::endl;
-			}
-			catch (const nlohmann::detail::type_error& err)
-			{
-				std::cout << "JSON parsing ERROR! " << err.what() << std::endl;
-			}
-			catch (const std::runtime_error& err)
-			{
-				std::cout << "Runtime ERROR! " << err.what() << std::endl;
+				LOG("Invalid choice! Please try again...");
 			}
 			catch (int err)
 			{
-				std::cout << "ERROR! Code " << err << std::endl;
+				LOG("ERROR! Code " << err);
 			}
 			catch (server_connector::Result conerr)
 			{
-				std::cout << "Invalid packet! Error code " << conerr << std::endl;
+				LOG("Invalid packet! ERROR code " << conerr);
 			}
 			catch (nlohmann::detail::parse_error& err)
 			{
-				std::cout << "JSON parse ERROR! " << err.what() << std::endl;
+				LOG("ERROR! JSON parsing: " << err.what());
+			}
+			catch (const nlohmann::detail::type_error& err)
+			{
+				LOG("ERROR! JSON parsing: " << err.what());
 			}
 
 			std::cout << "Press any key to try again...";

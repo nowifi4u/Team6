@@ -145,7 +145,7 @@ namespace game_drawer_layer {
 					std::cout << "Vertex = " << Graph::encodeJSON_vertex(gamedata.graph(), v) << std::endl;
 					if (gamedata.map_graph.graph[v].post_idx != UINT32_MAX)
 					{
-						std::cout << "Post = " << gamedata.posts.at(gamedata.map_graph.graph[v].post_idx)->encodeJSON() << std::endl;
+						LOG("Post = " << gamedata.posts.at(gamedata.map_graph.graph[v].post_idx)->encodeJSON());
 					}
 				}
 			}
@@ -237,7 +237,7 @@ namespace game_drawer_layer {
 			{
 				if (edge.getGlobalBounds().contains(pos))
 				{
-					std::cout << "Edge = " << Graph::encodeJSON_edge(gamedata.graph(), e) << std::endl;
+					LOG("Edge = " << Graph::encodeJSON_edge(gamedata.graph(), e));
 				}
 			}
 		}
@@ -347,7 +347,7 @@ namespace game_drawer_layer {
 			{
 				if (train.getGlobalBounds().contains(pos))
 				{
-					std::cout << "Train = " << gamedata.trains.at(train_idx)->encodeJSON() << std::endl;
+					LOG("Train = " << gamedata.trains.at(train_idx)->encodeJSON());
 				}
 			}
 		}
@@ -598,6 +598,24 @@ public:
 		LOG("--------------------------------------------------------------------------------------");
 	}
 
+	void onKeyboardPress(const sf::Event& event, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+	{
+		LOG("---------------------------------------- INFO ----------------------------------------");
+
+		switch (event.key.code)
+		{
+			case sf::Keyboard::P:
+			{
+				for (const auto& [player_idx, player] : gamedata.players)
+				{
+					LOG("Player = " << player.encodeJSON());
+				}
+			} break;
+		}
+
+		LOG("--------------------------------------------------------------------------------------");
+	}
+
 	
 
 	void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
@@ -689,6 +707,10 @@ public:
 					case sf::Event::MouseButtonPressed:
 					{
 						onMouseClick(sf::Vector2f(event.mouseButton.x, event.mouseButton.y), window, gamedata, config);
+					} break;
+					case sf::Event::KeyPressed:
+					{
+						onKeyboardPress(event, window, gamedata, config);
 					} break;
 				}
 				

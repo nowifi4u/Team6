@@ -43,28 +43,26 @@ int main()
 
 			while (true)
 			{
-				try {
-					lobby.connect(addr, port);
+				lobby.connect(addr, port);
 
-					lobby.draw_clear();
-					std::cout << "Starting the game..." << std::endl;
-					lobby.start();
-				}
-				catch (...)
-				{
-					std::cout << "Uncaught ERROR!" << std::endl;
-				}
+				lobby.draw_clear();
+				
+				lobby.start();
 			}
 
 			
 		}
 		catch (boost::system::system_error& err)
 		{
-			std::cout << "Connection error: " << err.what();
+			LOG("Connection error: " << err.what());
+		}
+		catch (const std::runtime_error& err)
+		{
+			LOG("Error! " << err.what());
 		}
 		catch (...)
 		{
-			std::cout << "Uncaught ERROR!" << std::endl;
+			LOG("Uncaught ERROR!");
 		}
 	}
 	lobby.start();
