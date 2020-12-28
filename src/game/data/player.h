@@ -15,6 +15,17 @@ struct Player
 
 	std::map<Types::train_idx_t, Trains::Train> trains;
 
+	json encodeJSON() const
+	{
+		json j;
+
+		j["idx"] = idx;
+		j["name"] = name;
+		j["rating"] = rating;
+
+		return j;
+	}
+
 	static void readJSON_L1(Player& val, const json& j)
 	{
 		j["idx"].get_to(val.idx);
