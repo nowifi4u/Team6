@@ -42,7 +42,7 @@ public:
 			train_solver.calculate_Turn();
 		}
 
-		CollisionsChecker::check_and_solve(trainsolvers);
+		CollisionsChecker::check_and_solve(trainsolvers, gamedata);
 
 		for (auto& train_solver : trainsolvers) {
 
@@ -150,12 +150,8 @@ public:
 		}
 
 	}
-	Posts::Town* get_home_town() {
-		for (const auto& p : gamedata.posts) {
-			if (p.first == gamedata.home_idx)
-				return (Posts::Town*)p.second.get();
-		}
-		return nullptr;
+	const Posts::Town* get_home_town() {
+		return (const Posts::Town*) gamedata.posts.at(gamedata.post_idx).get();
 	}
 
 	Types::Epoch get_epoch() {
