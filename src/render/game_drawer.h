@@ -92,8 +92,8 @@ namespace game_drawer_layer {
 					SpriteUtils::setSize(s, sf::Vector2f{ 40, 40 });
 				}
 				else {
-					b = config.textures->RequireResource("cs");
-					s = sf::Sprite(*config.textures->GetResource("cs"));
+					b = config.textures->RequireResource("circle");
+					s = sf::Sprite(*config.textures->GetResource("circle"));
 
 					SpriteUtils::setSize(s, sf::Vector2f{ 25, 25 });
 				}
@@ -268,7 +268,7 @@ namespace game_drawer_layer {
 
 					bool b = config.textures->RequireResource("train");
 					s = sf::Sprite(*config.textures->GetResource("train"));
-					SpriteUtils::setSize(s, sf::Vector2f{ 35, 35 });
+					SpriteUtils::setSize(s, sf::Vector2f{ 20, 20 });
 					SpriteUtils::centerOrigin(s);
 				}
 			}
@@ -276,7 +276,7 @@ namespace game_drawer_layer {
 			for (auto& p : trains_g) {
 				sf::Text& text = trains_info[p.first];
 				text.setFont(cashed_font);
-				text.setCharacterSize(24);
+				text.setCharacterSize(14);
 				SpriteUtils::centerOrigin(text, sf::Vector2f(12, text.getCharacterSize()));
 			}
 		}
@@ -647,11 +647,9 @@ public:
 			{
 				window.setTitle("Game: Waiting for other players...");
 				window.clear(config.clear_color);
+				draw(window, gamedata, config);
 			} break;
 		}
-
-		if(s == status::READY)
-			draw(window, gamedata, config);
 
 		window.display();
 	}
