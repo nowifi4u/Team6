@@ -191,7 +191,7 @@ public:
 
 
 private:
-	const Types::train_idx_t train_idx;
+	
 	
 	const Trains::Train& train_data;
 
@@ -201,9 +201,13 @@ private:
 	const GameData& gamedata;
 
 public:
+	const Types::train_idx_t train_idx;
+
 	const Trains::Train& gamedata_train;
 
 	PathSolver pathsolver;
 
 	TrainSolver::State state;
+
+	std::optional<std::tuple<GraphDijkstra::path_t, GraphDijkstra::path_edges_t, server_connector::Move, Graph::vertex_descriptor>> possible_move;
 };

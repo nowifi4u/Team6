@@ -36,11 +36,12 @@ public:
 		return graphsolver.get_distance(target);
 	}
 
-	std::optional<std::tuple<GraphDijkstra::path_t, GraphDijkstra::path_edges_t, server_connector::Move>> 
+	std::optional<std::tuple<GraphDijkstra::path_t, GraphDijkstra::path_edges_t, server_connector::Move, Graph::vertex_descriptor>> 
 		calculate_Move(Types::train_idx_t train_idx, Graph::vertex_descriptor target) const
 	{
 		if (target == gamedata.graph().null_vertex()) return std::nullopt;
 
+		
 		bool solver_is_source = graphsolver.get_is_source(target);
 		GraphDijkstra::path_edges_t solver_path_edges = graphsolver.get_path_edges(target);
 		GraphDijkstra::path_t solver_path = graphsolver.get_path(target);
@@ -59,16 +60,16 @@ public:
 
 				if (Graph::isSource(gamedata.graph(), v, solver_path.front()))
 				{
-					return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, 1, train_idx });
+					return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, 1, train_idx }, target);
 				}
 				else
 				{
-					return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, -1, train_idx });
+					return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, -1, train_idx }, target);
 				}
 			}
 			else
 			{
-				return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[epos].idx, -1, train_idx });
+				return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[epos].idx, -1, train_idx }, target);
 			}
 		}
 		else
@@ -82,16 +83,16 @@ public:
 
 				if (Graph::isSource(gamedata.graph(), v, solver_path.front()))
 				{
-					return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, 1, train_idx });
+					return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, 1, train_idx }, target);
 				}
 				else
 				{
-					return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, -1, train_idx });
+					return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, -1, train_idx }, target);
 				}
 			}
 			else
 			{
-				return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[epos].idx, 1, train_idx });
+				return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[epos].idx, 1, train_idx }, target);
 			}
 		}
 	}
@@ -131,8 +132,8 @@ public:
 protected:
 
 	const GameData& gamedata;
-	GraphEdgeDijkstra graphsolver;
 
 public:
 	GraphDijkstra::weightmap_transform_t exclude_edges;
+	GraphEdgeDijkstra graphsolver;
 };
