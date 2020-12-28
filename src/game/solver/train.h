@@ -174,14 +174,19 @@ public:
 	}
 
 
-	std::optional<server_connector::Move> calculate_Turn()
+	void calculate_Turn()
 	{
 		Graph::vertex_descriptor target = choose_target();
 
-		if (train_data.cooldown > 0) return std::nullopt;
+		if (train_data.cooldown > 0)
+		{
+			possible_move = std::nullopt;
+			return;
+		}
 
-		return pathsolver.calculate_Move(train_data.idx, target);
+		possible_move = pathsolver.calculate_Move(train_data.idx, target);
 	}
+
 
 
 
@@ -201,4 +206,6 @@ public:
 	PathSolver pathsolver;
 
 	TrainSolver::State state;
+
+	std::optional<std::tuple<GraphDijkstra::path_t, GraphDijkstra::path_edges_t, server_connector::Move>> possible_move;
 };

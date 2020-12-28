@@ -36,7 +36,8 @@ public:
 		return graphsolver.get_distance(target);
 	}
 
-	std::optional<server_connector::Move> calculate_Move(Types::train_idx_t train_idx, Graph::vertex_descriptor target) const
+	std::optional<std::tuple<GraphDijkstra::path_t, GraphDijkstra::path_edges_t, server_connector::Move>> 
+		calculate_Move(Types::train_idx_t train_idx, Graph::vertex_descriptor target) const
 	{
 		if (target == gamedata.graph().null_vertex()) return std::nullopt;
 
@@ -58,16 +59,16 @@ public:
 
 				if (Graph::isSource(gamedata.graph(), v, solver_path.front()))
 				{
-					return server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, 1, train_idx };
+					return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, 1, train_idx });
 				}
 				else
 				{
-					return server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, -1, train_idx };
+					return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, -1, train_idx });
 				}
 			}
 			else
 			{
-				return server_connector::Move{ gamedata.graph()[epos].idx, -1, train_idx };
+				return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[epos].idx, -1, train_idx });
 			}
 		}
 		else
@@ -81,16 +82,16 @@ public:
 
 				if (Graph::isSource(gamedata.graph(), v, solver_path.front()))
 				{
-					return server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, 1, train_idx };
+					return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, 1, train_idx });
 				}
 				else
 				{
-					return server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, -1, train_idx };
+					return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[solver_path_edges.front()].idx, -1, train_idx });
 				}
 			}
 			else
 			{
-				return server_connector::Move{ gamedata.graph()[epos].idx, 1, train_idx };
+				return std::make_tuple(solver_path, solver_path_edges, server_connector::Move{ gamedata.graph()[epos].idx, 1, train_idx });
 			}
 		}
 	}

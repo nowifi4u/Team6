@@ -1,7 +1,8 @@
 #pragma once
 
-#include "solver/train.h"
-#include "../utils/network/server_connector.h"
+#include <src/game/solver/train.h>
+#include <src/game/solver/collisions_checker.h>
+#include <src/utils/network/server_connector.h>
 
 
 class GameSolver
@@ -38,10 +39,19 @@ public:
 
 		for (auto& train_solver : trainsolvers)
 		{
-			std::optional<server_connector::Move> move = train_solver.calculate_Turn();
-
-			if (move.has_value()) connector.async_send_Move(move.value());
+			train_solver.calculate_Turn();
 		}
+
+		CollisionsChecker::check_and_solve(trainsolvers);
+
+		for (auto& train_solver : trainsolvers) {
+
+			if (train_solver.possible_move.has_value())
+			{
+				connector.async_send_Move(get<2>(train_solver.possible_move.value()));
+			}
+		}
+
 	}
 
 	void calculate_states() {
