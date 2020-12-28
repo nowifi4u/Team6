@@ -206,6 +206,4 @@ public:
 	PathSolver pathsolver;
 
 	TrainSolver::State state;
-
-	std::optional<std::tuple<GraphDijkstra::path_t, GraphDijkstra::path_edges_t, server_connector::Move>> possible_move;
 };

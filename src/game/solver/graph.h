@@ -1,14 +1,16 @@
 #pragma once
 
-#include "../../graph/graph.h"
-#include "../../graph/readable_only_pmap.h"
+#include <src/graph/graph.h>
+#include <src/graph/readable_only_pmap.h>
 
-#include "../../graph/GraphVertexMap.h"
+#include <src/graph/GraphVertexMap.h>
 
 #include <boost/graph/dijkstra_shortest_paths.hpp>
+#include <boost/property_map/transform_value_property_map.hpp>
 
 #include <vector>
 #include <deque>
+#include <set>
 
 class GraphDijkstra
 {
@@ -17,10 +19,13 @@ public:
 	using weight_map_t = boost::property_map<Graph::Graph, Types::edge_length_t Graph::EdgeProperties::*>::const_type;
 	using ro_weight_map_t = detail::readable_only_pmap<weight_map_t>;
 
+	using weightmap_transform_t = std::set<Types::edge_idx_t>;
+
 	using index_map_t = boost::property_map<Graph::Graph, boost::vertex_index_t>::type;
 
-	GraphDijkstra(const Graph::Graph& graph)
+	GraphDijkstra(const Graph::Graph& graph, const std::set<Types::edge_idx_t>& weighmap_transform)
 		: graph_(graph), 
+		weightmap_transform(weightmap_transform),
 		vbegin(graph.null_vertex()),
 		weightmap(boost::get(&Graph::EdgeProperties::length, graph)),
 		predecessors(boost::num_vertices(graph)),
@@ -39,7 +44,9 @@ public:
 			v,
 			boost::predecessor_map(boost::make_iterator_property_map(predecessors.begin(), get(boost::vertex_index, graph_)))
 			.distance_map(distances)
-			.weight_map(weightmap)
+			.weight_map(boost::make_transform_value_property_map([&](const Graph::EdgeProperties& edge) { 
+				return (weightmap_transform.find(edge.idx) != weightmap_transform.end() ? edge.length : UINT32_MAX); 
+				}, get(boost::edge_bundle, graph_)))
 			);
 	}
 
@@ -109,6 +116,7 @@ public:
 	Graph::vertex_descriptor vbegin;
 
 	const weight_map_t weightmap;
+	const std::set<Types::edge_idx_t>& weightmap_transform;
 
 	std::vector<Graph::vertex_descriptor> predecessors;
 	
