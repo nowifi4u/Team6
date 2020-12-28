@@ -80,20 +80,16 @@ public:
 	template <class Func>
 	void for_each(Graph::Graph& g, Func f)
 	{
-		Graph::vertex_iterator vi, vend;
-		for (boost::tie(vi, vend) = boost::vertices(g); vi != vend; ++vi)
-		{
-			f(m_position[*vi]);
-		}
+		Graph::for_each_vertex_descriptor(g, [&](Graph::vertex_descriptor v) {
+			f(m_position[v]);
+			});
 	}
 
 	template <class Func>
 	void for_each(const Graph::Graph& g, Func f) const
 	{
-		Graph::vertex_iterator vi, vend;
-		for (boost::tie(vi, vend) = boost::vertices(g); vi != vend; ++vi)
-		{
-			f(m_position[*vi]);
-		}
+		Graph::for_each_vertex_descriptor(g, [&](Graph::vertex_descriptor v) {
+			f(m_position[v]);
+			});
 	}
 };
