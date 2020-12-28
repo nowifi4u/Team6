@@ -215,25 +215,41 @@ public:
 
 	void start(const server_connector::Login& lobby)
 	{
-		this->init(lobby);
-
-		this->drawer_start();
-		this->drawer_window_wait();
-
-		GameSolver gamesolver(gamedata, connector);
-
-		this->await_run();
-		this->update();
-
-		while (true /*gamedata.game_state == GameData::GameState::RUN*/)
+		try
 		{
-			gamesolver.calculate();
 
-			this->await_move();
+			this->init(lobby);
 
+			this->drawer_start();
+			this->drawer_window_wait();
+
+			GameSolver gamesolver(gamedata, connector);
+
+			this->await_run();
 			this->update();
+
+			//this->drawer_set_state(status::READY);
+			//this->drawer_join();
+
+			while (true /*gamedata.game_state == GameData::GameState::RUN*/)
+			{
+				gamesolver.calculate();
+
+				this->await_move();
+
+				this->update();
+			}
+
+			LOG("Game::start: Game ended.");
+
+		}
+		catch (const std::runtime_error& err)
+		{
+			LOG("Error! " << err.what());
+			this->drawer_window->setTitle((std::string)"Error! " + err.what());
+			this->drawer_join();
 		}
 
-		LOG("Game::start: Game ended.");
+		connector.send_Logout();
 	}
 };
