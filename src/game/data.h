@@ -73,7 +73,7 @@ struct GameData
 
 	static void readJSON_Login(GameData& val, const json& j)
 	{
-		if (j.find("error") != j.end()) throw std::runtime_error(j["error"].get<std::string>());
+		if (j.find("error") != j.end()) throw std::invalid_argument(j["error"].get<std::string>());
 
 		j["idx"].get_to(val.player_idx);
 		j["home"]["idx"].get_to(val.home_idx);
@@ -101,7 +101,7 @@ struct GameData
 
 	static void readJSON_L10(GameData& val, const json& j)
 	{
-		if (j.find("error") != j.end()) throw std::runtime_error(j["error"].get<std::string>());
+		if (j.find("error") != j.end()) throw std::invalid_argument(j["error"].get<std::string>());
 
 		val.map_graph_coords = new CoordsHolder(val.map_graph.graph);
 
@@ -123,7 +123,7 @@ struct GameData
 
 	static void readJSON_L1(GameData& val, const json& j)
 	{
-		if (j.find("error") != j.end()) throw std::runtime_error(j["error"].get<std::string>());
+		if (j.find("error") != j.end()) throw std::invalid_argument(j["error"].get<std::string>());
 
 		//Parse Players
 		for (const auto& [player_idx, ji] : j["ratings"].items())
@@ -154,7 +154,7 @@ struct GameData
 
 	static void updateJSON_L1(GameData& val, const json& j)
 	{
-		if (j.find("error") != j.end()) throw std::runtime_error(j["error"].get<std::string>());
+		if (j.find("error") != j.end()) throw std::invalid_argument(j["error"].get<std::string>());
 
 		//Parse Players
 		for (const auto& [player_idx, ji] : j["ratings"].items())

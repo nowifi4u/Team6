@@ -231,19 +231,25 @@ public:
 			//this->drawer_set_state(status::READY);
 			//this->drawer_join();
 
-			while (true /*gamedata.game_state == GameData::GameState::RUN*/)
+			while (true)
 			{
-				gamesolver.calculate();
+				//gamesolver.calculate();
 
 				this->await_move();
 
 				this->update();
 			}
 
-			LOG("Game::start: Game ended.");
+			LOG("The GAME has ended!");
+			LOG("Final Player info:");
+
+			for (const auto& [player_idx, player] : gamedata.players)
+			{
+				LOG(player.encodeJSON());
+			}
 
 		}
-		catch (const std::runtime_error& err)
+		catch (const std::invalid_argument& err)
 		{
 			LOG("Error! " << err.what());
 			this->drawer_window->setTitle((std::string)"Error! " + err.what());
