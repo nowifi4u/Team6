@@ -12,8 +12,8 @@ class PathSolver
 public:
 
 	PathSolver(const GameData& gamedata)
-		: gamedata(gamedata), 
-		graphsolver(gamedata.graph())
+		: gamedata(gamedata),
+		graphsolver(gamedata.graph(), exclude_edges)
 	{
 	}
 
@@ -96,21 +96,18 @@ public:
 		}
 	}
 
-	bool is_train_nearby(Types::train_idx_t itrain_idx, Types::edge_length_t dist) const
+	/*bool is_train_nearby(Types::train_idx_t train_idx, Types::edge_length_t dist) const
 	{
-		const Trains::Train& itrain_data = gamedata.self_data().trains.at(itrain_idx);
+		const Trains::Train& train_data = gamedata.self_data().trains.at(train_idx);
+		const Graph::EdgeProperties& train_edge = gamedata.map_graph.get_edge(train_data.line_idx);
 
-		for (const auto& [player_idx, player_data] : gamedata.players)
+		if (train_data.position <= dist)
 		{
-			for (const auto& [train_idx, train_data] : player_data.trains)
+			for (const auto& [itrain, itrain_data] : gamedata.trains)
 			{
-				if (train_idx != itrain_idx)
-				{
-					//if (train_data.)
-				}
 			}
 		}
-	}
+	}*/
 
 	bool is_train_at_vertex(Types::train_idx_t train_idx, Graph::vertex_descriptor vertex) const
 	{
@@ -135,4 +132,7 @@ protected:
 
 	const GameData& gamedata;
 	GraphEdgeDijkstra graphsolver;
+
+public:
+	GraphDijkstra::weightmap_transform_t exclude_edges;
 };
