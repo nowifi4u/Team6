@@ -12,6 +12,11 @@
 
 namespace Trains {
 
+    struct Train;
+// declarate some usings
+    using sp = std::shared_ptr<Trains::Train>;
+    using wp = std::weak_ptr<Trains::Train>;
+
 
 
 	struct Train_Tier
@@ -50,36 +55,41 @@ namespace Trains {
 
 		boost::ptr_vector<Events::Event> events;
 
-		static void readJSON_L1(Train& val, const json& j)
+		static void readJSON_L1(Trains::sp& val, const json& j)
 		{
-			j["idx"].get_to(val.idx);
-			j["level"].get_to(val.level);
-			j["cooldown"].get_to(val.cooldown);
-			//DISABLED j["fuel"].get_to(val.fuel);
-			j["goods"].get_to(val.goods);
-			val.goods_type = j["goods_type"].is_null() ? GoodsType::None : j["goods_type"].get<GoodsType>();
-			j["line_idx"].get_to(val.line_idx);
-			j["player_idx"].get_to(val.player_idx);
-			j["position"].get_to(val.position);
-			j["speed"].get_to(val.speed);
+		    if(val == nullptr){
+		        SPDLOG_DEBUG("Creating new Train obj");
+		        val.reset(new Train());
+		    }
 
-			Events::make_Event_vector(val.events, j);
+			j["idx"].get_to(val->idx);
+			j["level"].get_to(val->level);
+			j["cooldown"].get_to(val->cooldown);
+			//DISABLED j["fuel"].get_to(val->.fuel);
+			j["goods"].get_to(val->goods);
+			val->goods_type = j["goods_type"].is_null() ? GoodsType::None : j["goods_type"].get<GoodsType>();
+			j["line_idx"].get_to(val->line_idx);
+			j["player_idx"].get_to(val->player_idx);
+			j["position"].get_to(val->position);
+			j["speed"].get_to(val->speed);
+
+			Events::make_Event_vector(val->events, j);
 		}
 
-		static void updateJSON_L1(Train& val, const json& j)
+		static void updateJSON_L1(const Trains::sp& val, const json& j)
 		{
 			//j["idx"].get_to(val.idx);
-			j["level"].get_to(val.level);
-			j["cooldown"].get_to(val.cooldown);
-			//DISABLED j["fuel"].get_to(val.fuel);
-			j["goods"].get_to(val.goods);
-			val.goods_type = j["goods_type"].is_null() ? GoodsType::None : j["goods_type"].get<GoodsType>();
-			j["line_idx"].get_to(val.line_idx);
-			//j["player_idx"].get_to(val.player_idx);
-			j["position"].get_to(val.position);
-			j["speed"].get_to(val.speed);
+			j["level"].get_to(val->level);
+			j["cooldown"].get_to(val->cooldown);
+			//DISABLED j["fuel"].get_to(val->fuel);
+			j["goods"].get_to(val->goods);
+			val->goods_type = j["goods_type"].is_null() ? GoodsType::None : j["goods_type"].get<GoodsType>();
+			j["line_idx"].get_to(val->line_idx);
+			//j["player_idx"].get_to(val->player_idx);
+			j["position"].get_to(val->position);
+			j["speed"].get_to(val->speed);
 
-			Events::make_Event_vector(val.events, j);
+			Events::make_Event_vector(val->events, j);
 		}
 
         template<typename OStream>
@@ -117,3 +127,4 @@ namespace Trains {
 
 
 } // namespace Trains
+

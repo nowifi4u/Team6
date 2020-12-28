@@ -8,13 +8,15 @@
 #include <spdlog/spdlog.h>
 #include "spdlog/fmt/ostr.h"
 
+#include "train.h"
+
 struct Player
 {
 	Types::player_uid_t idx;
 	std::string name;
 	int32_t rating;
 
-	std::map<Types::train_idx_t, Trains::Train> trains;
+	std::map<Types::train_idx_t, Trains::sp> trains;
 
 	static void readJSON_L1(Player& val, const json& j)
 	{

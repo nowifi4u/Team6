@@ -219,7 +219,7 @@ namespace game_drawer_layer {
 	class trains : public layer_base
 	{
 		std::map<Types::train_idx_t, sf::Sprite> trains_g;
-		std::map<Types::train_idx_t, const Trains::Train*> tMap;
+		std::map<Types::train_idx_t, Trains::wp> tMap;
 
 	public:
 
@@ -233,7 +233,7 @@ namespace game_drawer_layer {
 			{
 				for (auto& train : player.second.trains) {
 					sf::Sprite& s = trains_g[train.first];
-					tMap[train.first] = &train.second;
+					tMap[train.first] = train.second;
 
 					bool b = config.textures->RequireResource("train");
 					s = sf::Sprite(*config.textures->GetResource("train"));
@@ -254,7 +254,7 @@ namespace game_drawer_layer {
 		{
 			for (auto& s : trains_g)
 			{
-				const Trains::Train* t = tMap[s.first];
+				Trains::sp t = tMap[s.first].lock();
 				const auto& edge = gamedata.map_graph.emap.at(t->line_idx);
 				auto u = boost::source(edge, gamedata.map_graph.graph);
 				auto v = boost::target(edge, gamedata.map_graph.graph);
