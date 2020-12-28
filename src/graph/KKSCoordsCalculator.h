@@ -50,17 +50,16 @@ public:
 
 	KKSCoordsCalculator() : CoordsCalculator() {}
 
-	KKSCoordsCalculator(GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length) : 
-		KKSCoordsCalculator()
+	KKSCoordsCalculator(const Graph::Graph& g, double topology_width, double topology_height, double unit_edge_length) : KKSCoordsCalculator()
 	{
 		calculate(g, topology_width, topology_height, unit_edge_length);
 	}
 
 	virtual ~KKSCoordsCalculator() = default;
 
-	void calculate(GraphIdx::Graph& g, double topology_width, double topology_height, double unit_edge_length)
+	void calculate(const Graph::Graph& g, double topology_width, double topology_height, double unit_edge_length)
 	{
-		CoordsHolder::init(g);
+		init(g);
 
 		boost::minstd_rand gen;
 		topology_type topo(gen, 0, 0, topology_width, topology_width);
@@ -70,7 +69,7 @@ public:
 		bool kamada = kamada_kawai_spring_layout(
 			g,
 			m_position,
-			boost::make_transform_value_property_map(to_double(), get(&GraphIdx::EdgeProperties::length, g)),
+			boost::make_transform_value_property_map(to_double(), get(&Graph::EdgeProperties::length, g)),
 			topo,
 			boost::edge_length(unit_edge_length),
 			KamadaKawaiDone()

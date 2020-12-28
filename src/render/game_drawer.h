@@ -48,6 +48,8 @@ namespace game_drawer_layer {
 		virtual void init(const GameData& gamedata, const game_drawer_config& config) = 0;
 		virtual void reset() = 0;
 		virtual void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config) = 0;
+
+		virtual void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config) = 0;
 	};
 
 
@@ -55,7 +57,7 @@ namespace game_drawer_layer {
 	{
 	public:
 
-		std::map<GraphIdx::vertex_descriptor, sf::Sprite> nodes_g;
+		std::map<Graph::vertex_descriptor, sf::Sprite> nodes_g;
 
 		vertecies() : layer_base() {}
 
@@ -63,13 +65,13 @@ namespace game_drawer_layer {
 		{
 			LOG_3("game_drawer_layer::vertecies::init");
 
-			gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+			Graph::for_each_vertex_descriptor(gamedata.graph(), [&](Graph::vertex_descriptor v) {
 
 				sf::Sprite& s = nodes_g[v];
 				bool b = false;
 
 				
-				if (gamedata.map_graph.graph[v].post_idx != GraphIdx::uint32_max) {
+				if (gamedata.map_graph.graph[v].post_idx != UINT32_MAX) {
 					switch (getPostType(v, gamedata)) {
 					case Posts::PostType::MARKET:
 						b = config.textures->RequireResource("market");
@@ -107,9 +109,9 @@ namespace game_drawer_layer {
 			);
 		}
 
-		Posts::PostType getPostType(GraphIdx::vertex_descriptor v, const GameData& gamedata) {
+		Posts::PostType getPostType(Graph::vertex_descriptor v, const GameData& gamedata) {
 
-			const GraphIdx::VertexProperties& vprops = gamedata.map_graph.graph[v];
+			const Graph::VertexProperties& vprops = gamedata.map_graph.graph[v];
 
 			switch (gamedata.posts.at(vprops.post_idx)->type())
 			{
@@ -133,13 +135,28 @@ namespace game_drawer_layer {
 				window.draw(vertex.second);
 			}
 		}
+
+		void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+			for (const auto& [v, node] : nodes_g)
+			{
+				if (node.getGlobalBounds().contains(pos))
+				{
+					std::cout << "Vertex = " << Graph::encodeJSON_vertex(gamedata.graph(), v) << std::endl;
+					if (gamedata.map_graph.graph[v].post_idx != UINT32_MAX)
+					{
+						std::cout << "Post = " << gamedata.posts.at(gamedata.map_graph.graph[v].post_idx)->encodeJSON() << std::endl;
+					}
+				}
+			}
+		}
 	};
 
 
 
 	class edges : public layer_base
 	{
-		std::map<GraphIdx::edge_descriptor, sf::Sprite> edges_g;
+		std::map<Graph::edge_descriptor, sf::Sprite> edges_g;
 
 	public:
 		edges() : layer_base() {}
@@ -149,7 +166,7 @@ namespace game_drawer_layer {
 		{
 			LOG_3("game_drawer_layer::edges::init");
 
-			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
+			Graph::for_each_edge_descriptor(gamedata.graph(), [&](Graph::edge_descriptor e) {
 
 				sf::Sprite& edge = edges_g[e];
 
@@ -213,6 +230,17 @@ namespace game_drawer_layer {
 				window.draw(edge.second);
 			}
 		}
+
+		void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+			for (const auto& [e, edge] : edges_g)
+			{
+				if (edge.getGlobalBounds().contains(pos))
+				{
+					std::cout << "Edge = " << Graph::encodeJSON_edge(gamedata.graph(), e) << std::endl;
+				}
+			}
+		}
 	};
 
 
@@ -220,6 +248,9 @@ namespace game_drawer_layer {
 	{
 		std::map<Types::train_idx_t, sf::Sprite> trains_g;
 		std::map<Types::train_idx_t, const Trains::Train*> tMap;
+
+		std::map<Types::train_idx_t, sf::Text> trains_info;
+		sf::Font cashed_font;
 
 	public:
 
@@ -237,9 +268,16 @@ namespace game_drawer_layer {
 
 					bool b = config.textures->RequireResource("train");
 					s = sf::Sprite(*config.textures->GetResource("train"));
-					SpriteUtils::setSize(s, sf::Vector2f{ 25, 25 });
+					SpriteUtils::setSize(s, sf::Vector2f{ 35, 35 });
 					SpriteUtils::centerOrigin(s);
 				}
+			}
+			cashed_font.loadFromFile(config.edge_length_font);
+			for (auto& p : trains_g) {
+				sf::Text& text = trains_info[p.first];
+				text.setFont(cashed_font);
+				text.setCharacterSize(24);
+				SpriteUtils::centerOrigin(text, sf::Vector2f(12, text.getCharacterSize()));
 			}
 		}
 
@@ -248,6 +286,8 @@ namespace game_drawer_layer {
 			LOG_3("game_drawer_layer::edges::reset");
 
 			trains_g.clear();
+			tMap.clear();
+			trains_info.clear();
 		}
 
 		void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
@@ -270,10 +310,45 @@ namespace game_drawer_layer {
 
 				s.second.setPosition(
 					sf::Vector2f(
-					config.padding_width.map(coords[u][0]) + (float)v_x_distance * koeff,
-					config.padding_height.map(coords[u][1]) + (float)v_y_distance * koeff
+						config.padding_width.map(coords[u][0]) + (float)v_x_distance * koeff,
+						config.padding_height.map(coords[u][1]) + (float)v_y_distance * koeff
 					));
 				window.draw(s.second);
+
+			}
+
+			for (auto& p : trains_info) {
+				sf::Text& text = p.second;
+				const Trains::Train* t = tMap[p.first];
+				
+				text.setString(std::to_string(t->goods));
+				
+				if (t->goods_type == Trains::Armor)
+				{
+					text.setFillColor(sf::Color::Blue);
+				}
+				else if (t->goods_type == Trains::Product)
+				{
+					text.setFillColor(sf::Color::Black);
+				}
+				else {
+					text.setFillColor(sf::Color::Red);
+				}
+
+				text.setPosition(trains_g[p.first].getPosition());
+
+				window.draw(text);
+			}
+		}
+
+		void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+			for (const auto& [train_idx, train] : trains_g)
+			{
+				if (train.getGlobalBounds().contains(pos))
+				{
+					std::cout << "Train = " << gamedata.trains.at(train_idx)->encodeJSON() << std::endl;
+				}
 			}
 		}
 	};
@@ -294,10 +369,10 @@ namespace game_drawer_layer {
 
 			cached_font.loadFromFile(config.edge_length_font);
 
-			gamedata.map_graph.for_each_edge_descriptor([&](GraphIdx::edge_descriptor e) {
+			Graph::for_each_edge_descriptor(gamedata.graph(), [&](Graph::edge_descriptor e) {
 				const CoordsHolder::point_type& es = gamedata.map_graph_coords->get_map()[boost::source(e, gamedata.map_graph.graph)];
 				const CoordsHolder::point_type& et = gamedata.map_graph_coords->get_map()[boost::target(e, gamedata.map_graph.graph)];
-				const GraphIdx::EdgeProperties& eprops = gamedata.map_graph.graph[e];
+				const Graph::EdgeProperties& eprops = gamedata.map_graph.graph[e];
 
 				sf::Text& line_length = cached_edges_length[eprops.idx];
 				line_length.setString(std::to_string(eprops.length));
@@ -306,9 +381,9 @@ namespace game_drawer_layer {
 					(config.padding_height.map(es[1]) + config.padding_height.map(et[1])) / 2
 				));
 
+				line_length.setCharacterSize(24);
 				SpriteUtils::centerOrigin(line_length, sf::Vector2f(12, line_length.getCharacterSize() / 2.0f));
 				line_length.setFont(cached_font);
-				line_length.setCharacterSize(24);
 				line_length.setFillColor(sf::Color::Red);
 				});
 		}
@@ -327,7 +402,91 @@ namespace game_drawer_layer {
 				window.draw(edge.second);
 			}
 		}
+
+		void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+
+		}
 	};
+
+
+	class posts_infos : public layer_base
+	{
+		sf::Font cached_font;
+		std::map<Types::post_idx_t, sf::Text> posts_texts;
+
+	public:
+
+		posts_infos() : layer_base() {}
+
+		void init(const GameData& gamedata, const game_drawer_config& config)
+		{
+			LOG_3("game_drawer_layer::posts_infos::init");
+
+			cached_font.loadFromFile(config.edge_length_font);
+
+			for (auto& p : gamedata.posts) {
+				sf::Text& text = posts_texts[p.first];
+
+				text.setCharacterSize(20);
+				SpriteUtils::centerOrigin(text, sf::Vector2f(20, text.getCharacterSize()));
+
+				text.setFont(cached_font);
+
+				if (p.second->type() == Posts::MARKET) {
+					text.setFillColor(sf::Color::Black);
+				}
+				else if (p.second->type() == Posts::STORAGE){
+					text.setFillColor(sf::Color::Blue);
+				}
+				else if (p.second->type() == Posts::TOWN) {
+					text.setFillColor(sf::Color(109, 37, 0, 255));
+				}
+
+				auto v_idx = p.second->point_idx;
+				auto v = gamedata.map_graph.vmap.at(v_idx);
+				auto point = gamedata.map_graph_coords->get_map()[v];
+				text.setPosition(
+					config.padding_width.map(point[0]),
+					config.padding_height.map(point[1])
+				);
+			}
+		}
+
+		void reset()
+		{
+			LOG_3("game_drawer_layer::edges_length::reset");
+
+			posts_texts.clear();
+		}
+
+		void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+			for (const auto& p : gamedata.posts) {
+				sf::Text& text = posts_texts[p.first];
+
+				if (p.second->type() == Posts::MARKET) {
+					const Posts::Market* ptr = (Posts::Market*)p.second.get();
+					text.setString(std::to_string(ptr->product));
+				}
+				else if (p.second->type() == Posts::STORAGE) {
+					const Posts::Storage* ptr = (Posts::Storage*)p.second.get();
+					text.setString(std::to_string(ptr->armor));
+				}
+				else if (p.second->type() == Posts::TOWN) {
+					const Posts::Town* ptr = (Posts::Town*)p.second.get();
+					text.setString(std::to_string(ptr->product)+"\n"+ (std::to_string(ptr->armor)));
+				}
+				window.draw(text);
+			}
+		}
+
+		void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+
+		}
+	};
+
 
 	class background : public layer_base
 	{
@@ -356,6 +515,11 @@ namespace game_drawer_layer {
 		void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
 		{
 			window.draw(bg);
+		}
+
+		void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+		{
+
 		}
 	};
 
@@ -388,7 +552,8 @@ public:
 		layers.push_back(new game_drawer_layer::background());
 		layers.push_back(new game_drawer_layer::edges());
 		layers.push_back(new game_drawer_layer::vertecies());
-		layers.push_back(new game_drawer_layer::edges_length());
+		//layers.push_back(new game_drawer_layer::edges_length());
+		layers.push_back(new game_drawer_layer::posts_infos());
 		layers.push_back(new game_drawer_layer::trains());
 	}
 
@@ -421,6 +586,18 @@ public:
 		}
 	}
 
+	void onMouseClick(const sf::Vector2f& pos, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+	{
+		LOG("---------------------------------------- INFO ----------------------------------------");
+
+		for (game_drawer_layer::layer_base& layer : layers)
+		{
+			layer.onMouseClick(pos, window, gamedata, config);
+		}
+
+		LOG("--------------------------------------------------------------------------------------");
+	}
+
 	
 
 	void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
@@ -435,10 +612,24 @@ public:
 	{
 		switch (s)
 		{
-			case status::AWAIT_PLAYERS:  window.clear(sf::Color::Blue);  break;
-			case status::UPDATING:  window.clear(sf::Color::Red);  break;
-			case status::CALCULATING:  window.clear(sf::Color::Yellow);   break;
-			case status::READY:  window.clear(config.clear_color); break;
+			case status::AWAIT_PLAYERS:  
+			{
+				window.setTitle("Game: Awaiting Players...");
+				window.clear(sf::Color::Green);
+			} break;
+			case status::UPDATING: 
+			{
+				window.setTitle("Game: Updating data...");
+			} break;
+			case status::CALCULATING: 
+			{
+				window.setTitle("Game: Calculating moves...");
+			} break;
+			case status::READY:
+			{
+				window.setTitle("Game: Waiting for other players...");
+				window.clear(config.clear_color);
+			} break;
 		}
 
 		if(s == status::READY)
@@ -478,21 +669,27 @@ public:
 			{
 				switch(event.type)
 				{
-				case sf::Event::Closed:
-				{
-					window.close();
-					exit(0);
-				}
-				case sf::Event::Resized:
-					const sf::Vector2u size = window.getSize();
-					config.padding_width.set_output(size.x / 10, size.x * 9 / 10);
-					config.padding_height.set_output(size.y / 10, size.y * 9 / 10);
+					case sf::Event::Closed:
+					{
+						window.close();
+						exit(0);
+					} break;
+					case sf::Event::Resized:
+					{
+						const sf::Vector2u size = window.getSize();
+						config.padding_width.set_output(size.x / 10, size.x * 9 / 10);
+						config.padding_height.set_output(size.y / 10, size.y * 9 / 10);
 
-					config.window_videomode.width = size.x;
-					config.window_videomode.height = size.y;
-					window.setView(sf::View(sf::Vector2f(size.x / 2, size.y / 2), sf::Vector2f(size.x, size.y)));
+						config.window_videomode.width = size.x;
+						config.window_videomode.height = size.y;
+						window.setView(sf::View(sf::Vector2f(size.x / 2, size.y / 2), sf::Vector2f(size.x, size.y)));
 
-					init(gamedata);
+						init(gamedata);
+					} break;
+					case sf::Event::MouseButtonPressed:
+					{
+						onMouseClick(sf::Vector2f(event.mouseButton.x, event.mouseButton.y), window, gamedata, config);
+					} break;
 				}
 				
 			}

@@ -12,17 +12,14 @@
 #include <src/game/data/player.h>
 #include <src/game/data/post.h>
 
+#include <src/lobby/data.h>
+
 
 
 
 struct GameData
 {
-	enum GameState : uint8_t
-	{
-		INIT = 1,
-		RUN = 2,
-		FINISHED = 3
-	};
+	using GameState = LobbyData::GameState;
 
 	GameState game_state;
 
@@ -32,6 +29,7 @@ struct GameData
 	bool in_game;
 
 	std::map<Types::player_uid_t, Player> players;
+	std::map<Types::train_idx_t, Trains::Train*> trains;
 
 	GraphIdx map_graph;
 	CoordsHolder* map_graph_coords = nullptr;
@@ -39,6 +37,26 @@ struct GameData
 	Types::position_t map_graph_height;
 
 	ptr_container::map<Types::post_idx_t, Posts::Post> posts;
+
+	Graph::Graph& graph()
+	{
+		return map_graph.graph;
+	}
+
+	const Graph::Graph& graph() const
+	{
+		return map_graph.graph;
+	}
+
+	Player& self_data()
+	{
+		return players.at(player_idx);
+	}
+
+	const Player& self_data() const
+	{
+		return players.at(player_idx);
+	}
 
 	void clear()
 	{
@@ -77,17 +95,14 @@ struct GameData
 		// Read Graph border size
 		val.map_graph_width = topology_width;
 		val.map_graph_height = topology_height;
-
-		val.map_graph_coords->for_each(val.map_graph.graph, [&](CoordsHolder::point_type& point) {
-			point[0] = (point[0] + topology_width) / 2;
-			point[1] = (point[1] + topology_height) / 2;
-			});
 	}
 
 	//-------------------- SERVER-SIDE COORDINATES --------------------//
 
 	static void readJSON_L10(GameData& val, const json& j)
 	{
+		if (j.find("error") != j.end()) throw std::runtime_error(j["error"].get<std::string>());
+
 		val.map_graph_coords = new CoordsHolder(val.map_graph.graph);
 
 		// Read Vertex coordinates
@@ -108,6 +123,8 @@ struct GameData
 
 	static void readJSON_L1(GameData& val, const json& j)
 	{
+		if (j.find("error") != j.end()) throw std::runtime_error(j["error"].get<std::string>());
+
 		//Parse Players
 		for (const auto& [player_idx, ji] : j["ratings"].items())
 		{
@@ -123,6 +140,7 @@ struct GameData
 
 			//Train memory initialization + value initialization
 			Trains::Train::readJSON_L1(val.players.at(player_idx).trains[train_idx], ji);
+			val.trains[train_idx] = &val.players.at(player_idx).trains.at(train_idx);
 		}
 
 		//Parse Posts
@@ -136,6 +154,8 @@ struct GameData
 
 	static void updateJSON_L1(GameData& val, const json& j)
 	{
+		if (j.find("error") != j.end()) throw std::runtime_error(j["error"].get<std::string>());
+
 		//Parse Players
 		for (const auto& [player_idx, ji] : j["ratings"].items())
 		{
@@ -162,20 +182,4 @@ struct GameData
 	}
 
 	CLASS_VIRTUAL_DESTRUCTOR(GameData);
-};
-
-struct GameLobby
-{
-	std::string name;
-	uint8_t num_players;
-	Types::tick_t num_turns;
-	GameData::GameState state;
-
-	static void readJSON_Games(GameLobby& val, const json& j)
-	{
-		j["name"].get_to(val.name);
-		j["num_plaers"].get_to(val.num_players);
-		j["num_turns"].get_to(val.num_turns);
-		j["state"].get_to(val.state);
-	}
 };

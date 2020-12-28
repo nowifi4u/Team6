@@ -28,6 +28,8 @@ namespace Posts {
 
 		virtual PostType type() const = 0;
 
+		virtual json encodeJSON() const = 0;
+
 		CLASS_VIRTUAL_DESTRUCTOR(Post);
 	};
 
@@ -38,6 +40,19 @@ namespace Posts {
 		uint32_t replenishment;
 
 		PostType type() const { return PostType::STORAGE; }
+
+		json encodeJSON() const
+		{
+			json j;
+			j["idx"] = idx;
+			j["name"] = name;
+			j["point_idx"] = point_idx;
+
+			j["armor"] = armor;
+			j["armor_capacity"] = armor_capacity;
+			j["replenishment"] = replenishment;
+			return j;
+		}
 
 		[[nodiscard]]
 		static Storage* readJSON_L1(const json& j)
@@ -68,6 +83,19 @@ namespace Posts {
 		uint32_t replenishment;
 
 		PostType type() const { return PostType::MARKET; }
+
+		json encodeJSON() const
+		{
+			json j;
+			j["idx"] = idx;
+			j["name"] = name;
+			j["point_idx"] = point_idx;
+
+			j["product"] = product;
+			j["product_capacity"] = product_capacity;
+			j["replenishment"] = replenishment;
+			return j;
+		}
 
 		[[nodiscard]]
 		static Market* readJSON_L1(const json& j)
@@ -110,6 +138,22 @@ namespace Posts {
 		Types::tick_t train_cooldown;
 
 		PostType type() const { return PostType::TOWN; }
+
+		json encodeJSON() const
+		{
+			json j;
+			j["idx"] = idx;
+			j["name"] = name;
+			j["point_idx"] = point_idx;
+
+			j["armor"] = armor;
+			j["level"] = level;
+			j["player_idx"] = player_idx;
+			j["population"] = population;
+			j["product"] = product;
+			j["train_cooldown"] = train_cooldown;
+			return j;
+		}
 
 		[[nodiscard]]
 		static Town* readJSON_L1(const json& j)

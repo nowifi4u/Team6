@@ -1,10 +1,11 @@
 #pragma once
 
 
-#include "utils/network/server_connector.h"
-#include "render/game_drawer.h"
+#include <src/utils/network/server_connector.h>
+#include <src/render/game_drawer.h>
+#include <src/game/solver.h>
 
-#include "utils/MinMax.h"
+#include <src/utils/MinMax.h>
 
 
 class Game
@@ -14,7 +15,7 @@ protected:
 	boost::thread* drawer_thread = nullptr;
 	status drawer_status = status::READY;
 
-	server_connector connector;
+	server_connector& connector;
 
 public:
 
@@ -23,8 +24,8 @@ public:
 	sf::RenderWindow* drawer_window = nullptr;
 	game_drawer_config drawer_config;
 
-	Game(boost::asio::io_service& io)
-		: connector(io)
+	Game(server_connector& connector)
+		: connector(connector)
 	{
 
 	}
@@ -83,7 +84,7 @@ public:
 			MinMaxReducer<float> minmax_x;
 			MinMaxReducer<float> minmax_y;
 
-			gamedata.map_graph.for_each_vertex_descriptor([&](GraphIdx::vertex_descriptor v) {
+			Graph::for_each_vertex_descriptor(gamedata.graph(), [&](Graph::vertex_descriptor v) {
 				const CoordsHolder::point_type& vcoords = gamedata.map_graph_coords->get_map()[v];
 
 				minmax_x.consume(vcoords[0]);
@@ -98,10 +99,8 @@ public:
 	void update()
 	{
 		this->drawer_set_state(status::UPDATING);
-		this->drawer_window->setTitle("Update game data...");
 
 		{
-			LOG("Updating game data...");
 			connector.send_Map({ 1 });
 
 			const auto response = connector.read_packet();
@@ -192,7 +191,6 @@ public:
 	void await_run()
 	{
 		this->drawer_set_state(AWAIT_PLAYERS);
-		this->drawer_window->setTitle("Awaiting players...");
 
 		this->connector.send_Turn();
 		this->connector.read_packet();
@@ -208,7 +206,6 @@ public:
 	void await_move()
 	{
 		this->drawer_set_state(status::READY);
-		this->drawer_window->setTitle("Awaiting next tick...");
 
 		this->connector.send_Turn();
 		this->connector.read_packet();
@@ -216,17 +213,21 @@ public:
 		//Sleep(1000);
 	}
 
-	void start(const std::string& addr, const std::string& port, const server_connector::Login& lobby)
+	void start(const server_connector::Login& lobby)
 	{
+		this->init(lobby);
+
 		this->drawer_start();
 		this->drawer_window_wait();
+
+		GameSolver gamesolver(gamedata, connector);
 
 		this->await_run();
 		this->update();
 
 		while (true /*gamedata.game_state == GameData::GameState::RUN*/)
 		{
-			//this->calculate_move();
+			gamesolver.calculate();
 
 			this->await_move();
 
