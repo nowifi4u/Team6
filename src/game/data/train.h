@@ -1,9 +1,6 @@
 #pragma once
 
-#include <src/Types.h>
-#include <src/utils/Logging.h>
-
-#include <nlohmann/json.hpp>
+#include <src/game/data/base_json_encodable.h>
 #include <boost/ptr_container/ptr_vector.hpp>
 
 
@@ -32,7 +29,7 @@ namespace Trains {
 		Armor = 2
 	};
 
-	struct Train
+	struct Train : public base_json_encodable
 	{
 		Types::train_idx_t idx;
 		uint8_t level;
