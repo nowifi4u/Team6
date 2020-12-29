@@ -233,7 +233,7 @@ public:
 
 			while (true)
 			{
-				//gamesolver.calculate();
+				gamesolver.calculate();
 
 				this->await_move();
 
@@ -253,6 +253,11 @@ public:
 		{
 			LOG("Error! " << err.what());
 			this->drawer_window->setTitle((std::string)"Error! " + err.what());
+			this->drawer_join();
+		}
+		catch (server_connector::Result err)
+		{
+			LOG("Invalid packet! ERROR CODE " << err);
 			this->drawer_join();
 		}
 
