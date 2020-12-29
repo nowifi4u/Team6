@@ -23,15 +23,20 @@ public:
 
 	using index_map_t = boost::property_map<Graph::Graph, boost::vertex_index_t>::type;
 
-	GraphDijkstra(const Graph::Graph& graph, const std::set<Types::edge_idx_t>& weighmap_transform)
+	template <class Ty>
+	using uPositionVec = typename std::unique_ptr<Ty[]>;
+	template <class Ty>
+	using uPositionMap = typename boost::iterator_property_map<Ty*, typename boost::property_map<Graph::Graph, boost::vertex_index_t>::type, Ty, Ty&>;
+
+	GraphDijkstra(const Graph::Graph& graph, std::set<Types::edge_idx_t>& weighmap_transform)
 		: graph_(graph), 
 		weightmap_transform(weightmap_transform),
 		vbegin(graph.null_vertex()),
 		weightmap(boost::get(&Graph::EdgeProperties::length, graph)),
-		predecessors_vec(boost::num_vertices(graph)),
-		predecessors(predecessors_vec.begin(), boost::get(boost::vertex_index, graph)),
-		distances_vec(boost::num_vertices(graph)),
-		distances(distances_vec.begin(), boost::get(boost::vertex_index, graph))
+		predecessors_vec(std::make_unique<Graph::vertex_descriptor[]>(boost::num_vertices(graph) * 100)),
+		predecessors(predecessors_vec.get(), boost::get(boost::vertex_index, graph)),
+		distances_vec(std::make_unique<double[]>(boost::num_vertices(graph) * 100)),
+		distances(distances_vec.get(), boost::get(boost::vertex_index, graph))
 	{
 		
 	}
@@ -40,23 +45,28 @@ public:
 	{
 		vbegin = v;
 
+		boost::property_map<Graph::Graph, boost::vertex_index_t>::type indexmap = boost::get(boost::vertex_index, graph_);
+
+		auto wmap = boost::make_transform_value_property_map([&](const Graph::EdgeProperties& edge) {
+			return (weightmap_transform.find(edge.idx) == weightmap_transform.end() ? INFINITY : edge.length);
+			}, 
+			boost::get(boost::edge_bundle, graph_));
+
 		boost::dijkstra_shortest_paths(
 			graph_,
 			v,
 			boost::predecessor_map(predecessors)
 			.distance_map(distances)
-			.weight_map(boost::make_transform_value_property_map([&](const Graph::EdgeProperties& edge) { 
-				return (weightmap_transform.find(edge.idx) == weightmap_transform.end() ? INFINITY : edge.length);
-				}, get(boost::edge_bundle, graph_)))
+			.weight_map(wmap)
 			);
 	}
 
-	double& operator[](Graph::vertex_descriptor v)
+	auto& operator[](Graph::vertex_descriptor v)
 	{
 		return distances[v];
 	}
 
-	const double& operator[](Graph::vertex_descriptor v) const
+	const auto& operator[](Graph::vertex_descriptor v) const
 	{
 		return distances[v];
 	}
@@ -117,12 +127,12 @@ public:
 	Graph::vertex_descriptor vbegin;
 
 	const weight_map_t weightmap;
-	const std::set<Types::edge_idx_t>& weightmap_transform;
+	std::set<Types::edge_idx_t>& weightmap_transform;
 
-	GraphVertexMap< Graph::vertex_descriptor>::PositionVec predecessors_vec;
-	GraphVertexMap< Graph::vertex_descriptor>::PositionMap predecessors;
+	typename uPositionVec< Graph::vertex_descriptor> predecessors_vec;
+	typename uPositionMap< Graph::vertex_descriptor> predecessors;
 	
-	GraphVertexMap<double>::PositionVec distances_vec;
-	GraphVertexMap<double>::PositionMap distances;
+	typename uPositionVec<double> distances_vec;
+	typename uPositionMap<double> distances;
 
 };
