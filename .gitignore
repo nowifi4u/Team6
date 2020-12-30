@@ -54,3 +54,9 @@
 **/*.cbp
 **/CMakeScripts
 **/compile_commands.json
+
+# Log files
+*.log
+*.tlog
+
+libs/*
