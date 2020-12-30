@@ -8,13 +8,22 @@
 #define CLASS_VIRTUAL_DESTRUCTOR(CLASS) \
 virtual ~CLASS() {}
 
+#define CLASS_DELETE_COPY(CLASS, ...) \
+CLASS ( const CLASS __VA_ARGS__ & ) = delete; \
+CLASS & operator=( const CLASS __VA_ARGS__ & ) = delete
+
+#define CLASS_DELETE_MOVE(CLASS, ...) \
+CLASS ( CLASS __VA_ARGS__ && ) = delete; \
+CLASS & operator=( CLASS __VA_ARGS__ && ) = delete
+
+#define CLASS_DELETE_COPY_MOVE(CLASS, ...) \
+CLASS_DELETE_COPY(CLASS, __VA_ARGS__); \
+CLASS_DELETE_MOVE(CLASS, __VA_ARGS__)
+
 #define CLASS_MAKE_STATIC(CLASS, ...) \
 CLASS() = delete; \
 ~CLASS() = delete; \
-CLASS ( const CLASS __VA_ARGS__ & ) = delete; \
-CLASS & operator=( const CLASS __VA_ARGS__ & ) = delete; \
-CLASS ( CLASS __VA_ARGS__ && ) = delete; \
-CLASS & operator=( CLASS __VA_ARGS__ && ) = delete
+CLASS_DELETE_COPY_MOVE(CLASS, __VA_ARGS__)
 
 #define CLASS_DEFAULT_COPY(CLASS, ...) \
 CLASS ( const CLASS __VA_ARGS__ & ) = default; \
