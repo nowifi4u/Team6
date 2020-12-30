@@ -1,9 +1,6 @@
 #pragma once
 
-#include <src/Types.h>
-#include <src/utils/Logging.h>
-
-#include <nlohmann/json.hpp>
+#include <src/game/data/base_json_encodable.h>
 #include <boost/ptr_container/ptr_vector.hpp>
 
 
@@ -20,7 +17,7 @@ namespace Events {
 		GAME_OVER = 100
 	};
 
-	struct Event
+	struct Event : public base_json_encodable
 	{
 		virtual EventType type() const = 0;
 	};
@@ -31,6 +28,17 @@ namespace Events {
 		Types::tick_t tick;
 
 		EventType type() const { return EventType::TRAIN_COLLISION; }
+
+		json encodeJSON() const
+		{
+			json j;
+
+			j["type"] = EventType::TRAIN_COLLISION;
+			j["trains"] = train;
+			j["tick"] = tick;
+
+			return j;
+		}
 
 		[[nodiscard]]
 		static Event_TrainCrash* readJSON_L1(const json& j)
@@ -53,6 +61,17 @@ namespace Events {
 
 		EventType type() const { return EventType::PARASITES_ASSAULT; }
 
+		json encodeJSON() const
+		{
+			json j;
+
+			j["type"] = EventType::PARASITES_ASSAULT;
+			j["parasites_power"] = parasite_power;
+			j["tick"] = tick;
+
+			return j;
+		}
+
 		[[nodiscard]]
 		static Event_Parasites* readJSON_L1(const json& j)
 		{
@@ -73,6 +92,17 @@ namespace Events {
 		Types::tick_t tick;
 
 		EventType type() const { return EventType::HIJACKERS_ASSAULT; }
+
+		json encodeJSON() const
+		{
+			json j;
+
+			j["type"] = EventType::HIJACKERS_ASSAULT;
+			j["hijackers_power"] = hijacker_power;
+			j["tick"] = tick;
+
+			return j;
+		}
 
 		[[nodiscard]]
 		static Event_Bandits* readJSON_L1(const json& j)
@@ -95,6 +125,19 @@ namespace Events {
 
 		EventType type() const { return EventType::REFUGEES_ARRIVAL; }
 
+		json encodeJSON() const
+		{
+			json j;
+
+			j["type"] = EventType::REFUGEES_ARRIVAL;
+			j["refugees_number"] = refugees_number;
+			j["tick"] = tick;
+
+			return j;
+		}
+
+
+
 		[[nodiscard]]
 		static Event_Refugees* readJSON_L1(const json& j)
 		{
@@ -113,6 +156,15 @@ namespace Events {
 	{
 		EventType type() const { return EventType::RESOURCE_OVERFLOW; }
 
+		json encodeJSON() const
+		{
+			json j;
+
+			j["type"] = EventType::RESOURCE_OVERFLOW;
+
+			return j;
+		}
+
 		[[nodiscard]]
 		static Event_ResourceOverflow* readJSON_L1(const json& j)
 		{
@@ -128,6 +180,15 @@ namespace Events {
 	{
 		EventType type() const { return EventType::RESOURCE_LACK; }
 
+		json encodeJSON() const
+		{
+			json j;
+
+			j["type"] = EventType::RESOURCE_LACK;
+
+			return j;
+		}
+
 		[[nodiscard]]
 		static Event_ResourceLack* readJSON_L1(const json& j)
 		{
@@ -142,6 +203,15 @@ namespace Events {
 	struct Event_GameOver : public Event
 	{
 		EventType type() const { return EventType::GAME_OVER; }
+
+		json encodeJSON() const
+		{
+			json j;
+
+			j["type"] = EventType::GAME_OVER;
+
+			return j;
+		}
 
 		[[nodiscard]]
 		static Event_GameOver* readJSON_L1(const json& j)

@@ -72,7 +72,7 @@ class CollisionsChecker {
 			//окажутся ли на одной позиции одного ребра?
 
 			if (move_l1 == move_l2) {
-				size_t position1 = UINT32_MAX, position2 = UINT32_MAX;
+				Types::position_t position1 = UINT32_MAX, position2 = UINT32_MAX;
 				if (l1 != move_l1) {
 					if (boost::source(g.emap.at(l1), g.graph) == boost::source(g.emap.at(move_l1), g.graph))
 						position1 = 0;

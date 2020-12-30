@@ -6,6 +6,7 @@
 #include <boost/graph/topology.hpp>
 
 #include <vector>
+#include <memory>
 
 template <class Ty>
 class GraphVertexMap
@@ -15,7 +16,7 @@ public:
 	//------------------------------ TYPEDEFS ------------------------------//
 
 	using PositionVec = std::vector<Ty>;
-	using PositionMap = typename boost::iterator_property_map< typename PositionVec::iterator, boost::property_map<Graph::Graph, boost::vertex_index_t>::type>;
+	using PositionMap = typename boost::iterator_property_map< typename PositionVec::iterator, typename boost::property_map<Graph::Graph, boost::vertex_index_t>::type>;
 
 	//------------------------------ IMPL ------------------------------//
 
@@ -31,12 +32,6 @@ public:
 	GraphVertexMap(const Graph::Graph& g)
 	{
 		init(g);
-	}
-
-	static void init(const Graph::Graph& g, PositionVec& position_vec, PositionMap& position_map)
-	{
-		m_position_vec = PositionVec(num_vertices(g));
-		m_position = PositionMap(m_position_vec.begin(), get(boost::vertex_index, g));
 	}
 
 	void init(const Graph::Graph& g)

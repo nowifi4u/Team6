@@ -92,8 +92,8 @@ namespace game_drawer_layer {
 					SpriteUtils::setSize(s, sf::Vector2f{ 40, 40 });
 				}
 				else {
-					b = config.textures->RequireResource("cs");
-					s = sf::Sprite(*config.textures->GetResource("cs"));
+					b = config.textures->RequireResource("circle");
+					s = sf::Sprite(*config.textures->GetResource("circle"));
 
 					SpriteUtils::setSize(s, sf::Vector2f{ 25, 25 });
 				}
@@ -145,7 +145,7 @@ namespace game_drawer_layer {
 					std::cout << "Vertex = " << Graph::encodeJSON_vertex(gamedata.graph(), v) << std::endl;
 					if (gamedata.map_graph.graph[v].post_idx != UINT32_MAX)
 					{
-						std::cout << "Post = " << gamedata.posts.at(gamedata.map_graph.graph[v].post_idx)->encodeJSON() << std::endl;
+						LOG("Post = " << gamedata.posts.at(gamedata.map_graph.graph[v].post_idx)->encodeJSON());
 					}
 				}
 			}
@@ -237,7 +237,7 @@ namespace game_drawer_layer {
 			{
 				if (edge.getGlobalBounds().contains(pos))
 				{
-					std::cout << "Edge = " << Graph::encodeJSON_edge(gamedata.graph(), e) << std::endl;
+					LOG("Edge = " << Graph::encodeJSON_edge(gamedata.graph(), e));
 				}
 			}
 		}
@@ -268,7 +268,7 @@ namespace game_drawer_layer {
 
 					bool b = config.textures->RequireResource("train");
 					s = sf::Sprite(*config.textures->GetResource("train"));
-					SpriteUtils::setSize(s, sf::Vector2f{ 35, 35 });
+					SpriteUtils::setSize(s, sf::Vector2f{ 20, 20 });
 					SpriteUtils::centerOrigin(s);
 				}
 			}
@@ -276,7 +276,7 @@ namespace game_drawer_layer {
 			for (auto& p : trains_g) {
 				sf::Text& text = trains_info[p.first];
 				text.setFont(cashed_font);
-				text.setCharacterSize(24);
+				text.setCharacterSize(14);
 				SpriteUtils::centerOrigin(text, sf::Vector2f(12, text.getCharacterSize()));
 			}
 		}
@@ -347,7 +347,7 @@ namespace game_drawer_layer {
 			{
 				if (train.getGlobalBounds().contains(pos))
 				{
-					std::cout << "Train = " << gamedata.trains.at(train_idx)->encodeJSON() << std::endl;
+					LOG("Train = " << gamedata.trains.at(train_idx)->encodeJSON());
 				}
 			}
 		}
@@ -598,6 +598,24 @@ public:
 		LOG("--------------------------------------------------------------------------------------");
 	}
 
+	void onKeyboardPress(const sf::Event& event, sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
+	{
+		LOG("---------------------------------------- INFO ----------------------------------------");
+
+		switch (event.key.code)
+		{
+			case sf::Keyboard::P:
+			{
+				for (const auto& [player_idx, player] : gamedata.players)
+				{
+					LOG("Player = " << player.encodeJSON());
+				}
+			} break;
+		}
+
+		LOG("--------------------------------------------------------------------------------------");
+	}
+
 	
 
 	void draw(sf::RenderWindow& window, const GameData& gamedata, const game_drawer_config& config)
@@ -629,11 +647,9 @@ public:
 			{
 				window.setTitle("Game: Waiting for other players...");
 				window.clear(config.clear_color);
+				draw(window, gamedata, config);
 			} break;
 		}
-
-		if(s == status::READY)
-			draw(window, gamedata, config);
 
 		window.display();
 	}
@@ -689,6 +705,10 @@ public:
 					case sf::Event::MouseButtonPressed:
 					{
 						onMouseClick(sf::Vector2f(event.mouseButton.x, event.mouseButton.y), window, gamedata, config);
+					} break;
+					case sf::Event::KeyPressed:
+					{
+						onKeyboardPress(event, window, gamedata, config);
 					} break;
 				}
 				
